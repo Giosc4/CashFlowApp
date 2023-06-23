@@ -1,0 +1,115 @@
+<LinearLayout
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@android:color/darker_gray"
+        android:padding="16dp"
+        android:gravity="center_vertical">
+
+        <ImageView
+            android:layout_width="24dp"
+            android:layout_height="24dp"
+            android:src="@drawable/ic_launcher_background"
+            android:contentDescription="Home Icon" />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="8dp"
+            android:text="Cash Flow App"
+            android:textSize="18sp" />
+
+    </LinearLayout>
+
+    <!-- Botoni "Expense" e "Income" -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal">
+
+        <Button
+            android:id="@+id/expenseButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginEnd="8dp"
+            android:text="Expense"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"/>
+
+        <Button
+            android:id="@+id/incomeButton"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:layout_marginStart="8dp"
+            android:text="Income"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp"
+            />
+
+    </LinearLayout>
+    <!-- Label per l'aggiunta di un numero double -->
+    <EditText
+        android:id="@+id/numberEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Aggiungi un numero double"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        />
+
+
+    <!-- Scelta del conto -->
+    <Spinner
+        android:id="@+id/accountSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Scegli un conto"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        />
+
+    <!-- Data e orario -->
+    <EditText
+        android:id="@+id/dateEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Data e orario"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp" />
+
+
+    <!-- Stringa per il luogo -->
+    <EditText
+        android:id="@+id/locationEditText"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Luogo"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        />
+
+    <!-- Pulsante "DONE" -->
+    <Button
+        android:id="@+id/doneButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="DONE"
+        android:paddingTop="16dp"
+        android:paddingBottom="16dp"
+        />
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
+
+
+</LinearLayout>
