@@ -7,101 +7,45 @@
     android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <RelativeLayout
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="100dp"
         android:background="@android:color/darker_gray"
-        android:padding="16dp"
-        android:gravity="center_vertical">
+        android:padding="10dp">
 
         <ImageView
-            android:layout_width="24dp"
-            android:layout_height="24dp"
-            android:src="@drawable/ic_launcher_background"
-            android:contentDescription="Home Icon" />
+            android:layout_width="50dp"
+            android:layout_height="50dp"
+            android:layout_alignParentStart="true"
+            android:layout_centerVertical="true"
+            android:contentDescription="Home Icon"
+            android:src="@drawable/ic_launcher_background" />
 
         <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="8dp"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_alignParentTop="true"
+            android:layout_marginStart="17dp"
+            android:layout_marginTop="25dp"
+            android:layout_marginEnd="81dp"
+            android:layout_toStartOf="@+id/btnHome"
             android:text="Cash Flow App"
             android:textSize="18sp" />
 
-    </LinearLayout>
-
-    <!-- GridLayout for Account Buttons -->
-
-    <GridLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:alignmentMode="alignMargins"
-        android:columnCount="2"
-        android:columnOrderPreserved="false"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        android:rowCount="2">
-
-        <!-- Account 1 Button -->
         <Button
-            android:id="@+id/btnAccount1"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="8dp"
-            android:text="Conto 1" />
+            android:id="@+id/btnHome"
+            android:layout_width="100dp"
+            android:layout_height="40dp"
+            android:layout_marginStart="16dp"
+            android:layout_alignParentEnd="true"
+            android:layout_centerVertical="true"
+            android:text="Home"/>
+    </RelativeLayout>
 
-        <!-- Account 2 Button -->
-        <Button
-            android:id="@+id/btnAccount2"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="8dp"
-            android:text="Conto 2" />
-
-        <!-- Account 3 Button -->
-        <Button
-            android:id="@+id/btnAccount3"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="8dp"
-            android:text="Conto 3" />
-
-        <!-- Account 4 Button -->
-        <Button
-            android:id="@+id/btnAccount4"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_columnWeight="1"
-            android:layout_margin="8dp"
-            android:text="Conto 4" />
-
-    </GridLayout>
-
-    <!-- Add Transaction Button -->
-
-    <Button
-        android:id="@+id/btnAddTransaction"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:layout_marginBottom="16dp"
-        android:text="Aggiungi Transazione" />
-
-    <!-- Statistics Button -->
-
-    <Button
-        android:id="@+id/btnStatistics"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Statistiche" />
 
     <FrameLayout
         android:id="@+id/fragment_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent" />
-
 
 </LinearLayout>
