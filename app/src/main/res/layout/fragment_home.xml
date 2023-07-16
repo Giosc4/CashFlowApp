@@ -4,6 +4,8 @@
     android:orientation="vertical"
     android:padding="16dp">
 
+
+
     <!-- GridLayout for Account Buttons -->
     <GridLayout
         android:id="@+id/gridLayout"
@@ -17,6 +19,14 @@
         android:rowCount="2">
 
     </GridLayout>
+
+    <TextView
+        android:id="@+id/myTextView"
+        android:layout_width="100dp"
+        android:layout_height="wrap_content"
+        android:text="Subtotal: "
+        android:textStyle="bold"
+        android:textSize="20sp" />
 
     <Button
         android:id="@+id/btnAddAccount"

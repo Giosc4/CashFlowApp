@@ -7,7 +7,6 @@ import java.util.ArrayList;
 
         private String name;
         private double balance;
-
         private ArrayList<Transactions>listTrans;
 
         public Account(){
