@@ -17,6 +17,8 @@ import java.util.Date;
         private String  date;
         private String city;
 
+        // AGGIUNGERE CATEGORIA
+
 
         public Transactions(){
         this.income=false;
@@ -32,36 +34,15 @@ import java.util.Date;
                 this.date=date;
                 this.city=city;
         }
-                public void saveToJson(Context context, String filename) throws IOException {
-                        Gson gson = new Gson();
 
-                        // Converti l'oggetto Transactions in formato JSON
-                        String json = gson.toJson(this);
 
-                        //Checking the availability state of the External Storage.
-                        String state = Environment.getExternalStorageState();
-                        if (!Environment.MEDIA_MOUNTED.equals(state)) {
-                                //If it isn't mounted - we can't write into it.
-                                return;
-                        }
-
-                        // Specifica il percorso in cui desideri creare il file
-                        File directory = new File(context.getExternalFilesDir(null), "my_data_directory");
-                        System.out.println("PATH: " + directory);
-
-                        // Creazione del file nella cartella di destinazione
-                        File file = new File(directory, filename);
-                        boolean created = file.createNewFile();
-                        if (created) {
-                                System.out.println("File creato con successo");
-                        } else {
-                                System.out.println("Errore durante la creazione del file");
-                        }
-
-                        // Write the JSON to the file
-                        try (FileWriter writer = new FileWriter(file)) {
-                                writer.write(json);
-                        }
+                @Override
+                public String toString() {
+                        return "Transactions{" +
+                                "income=" + income +
+                                ", amount='" + amount + '\'' +
+                                ", date='" + date + '\'' +
+                                ", city='" + city + '\'' +
+                                '}';
                 }
-
         }

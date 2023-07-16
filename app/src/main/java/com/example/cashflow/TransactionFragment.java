@@ -6,6 +6,8 @@ import android.text.Spanned;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
@@ -17,6 +19,8 @@ import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 public class TransactionFragment extends Fragment {
 
@@ -24,8 +28,13 @@ public class TransactionFragment extends Fragment {
     private Button incomeButton;
     private EditText numberEditText;
     private Spinner accountSpinner;
+//    private Account accountSelected;
+        private String accountSelected;
+
     private EditText dateEditText;
     private EditText locationEditText;
+
+    JsonReadWrite jsonReadWrite;
 
     @Nullable
     @Override
@@ -39,6 +48,10 @@ public class TransactionFragment extends Fragment {
         accountSpinner = view.findViewById(R.id.accountSpinner);
         dateEditText = view.findViewById(R.id.dateEditText);
         locationEditText = view.findViewById(R.id.locationEditText);
+        accountSpinner = view.findViewById(R.id.accountSpinner);
+
+
+
 
         // Set the input filter on numberEditText double for prices
         numberEditText.setFilters(new InputFilter[] {
@@ -86,20 +99,62 @@ public class TransactionFragment extends Fragment {
             }
         });
 
+        jsonReadWrite = new JsonReadWrite();
+
+        // da qui bisogna leggere la lista di account
+
+
+        // Creazione di una lista di conti
+        List<String> accounts = new ArrayList<>();
+        accounts.add("Conto 1");
+        accounts.add("Conto 2");
+        accounts.add("Conto 3");
+        // Aggiungi quanti conti desideri...
+
+        // Creazione di un ArrayAdapter usando la lista di conti
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, accounts);
+
+        // Impostazione del layout per quando lo Spinner viene visualizzato
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+
+        // Impostazione dell'ArrayAdapter come adapter per lo Spinner
+        accountSpinner.setAdapter(dataAdapter);
+
+        accountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedAccount = parent.getItemAtPosition(position).toString();
+                // Ora 'selectedAccount' è l'account selezionato
+                Toast.makeText(parent.getContext(), "Conto Selezionato: " + selectedAccount, Toast.LENGTH_LONG).show();
+                accountSelected = selectedAccount;
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Codice da eseguire quando non viene selezionato nessun elemento
+            }
+        });
+
+
+
         // Add OnClickListener for the "DONE" button
         Button doneButton = view.findViewById(R.id.doneButton);
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveTransaction(); // Save the transaction
+                try {
+                    saveTransaction(); // Save the transaction
+                } catch (IOException e) {
+                    throw new RuntimeException(e);
+                }
             }
         });
 
         return view;
     }
 
-    private void saveTransaction() {
-            if (numberEditText != null && accountSpinner != null && dateEditText != null && locationEditText != null) {
+    private void saveTransaction() throws IOException {
+            if (numberEditText != null && accountSpinner != null && dateEditText != null && locationEditText != null && accountSelected != null) {
 
                 boolean income = incomeButton.isSelected();
                 boolean expense = expenseButton.isSelected();
@@ -119,12 +174,12 @@ public class TransactionFragment extends Fragment {
             // Resto del codice per salvare la transazione
             Toast.makeText(getContext(), "Transaction saved: " + number + ", " + account + ", " + date + ", " + location, Toast.LENGTH_LONG).show();
 
-                try {
-                    Transactions transactions = new Transactions(income, number,  date,  location);
-                    transactions.saveToJson(requireContext(),"test1.json");
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                //jsonReadWrite.addTransaction(requireContext(), income, number, date, location, accountSelected);
+
+                System.out.println(jsonReadWrite.readJsonFromFile(requireContext(), "test2122.json"));
+
+                // il file che legge è vuoto
+
 
                 if (getActivity() != null) {
                 getActivity().getSupportFragmentManager().popBackStack();
