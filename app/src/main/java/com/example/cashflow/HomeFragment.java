@@ -13,24 +13,38 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import java.io.IOException;
+import java.util.ArrayList;
+
 public class HomeFragment extends Fragment {
 
-    private Account[] accounts;
+    private ArrayList<Account> accounts = new ArrayList<>();
+    JsonReadWrite jsonReadWrite = new JsonReadWrite(this.accounts, "test12.json");
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
+//        try {
+//            accounts = getAccounts();
+//        } catch (IOException e) {
+//            throw new RuntimeException(e);
+//        }
 
-        // TODO: Get the list of accounts from your database or data source
-        accounts = getAccounts();
+        Test test = new Test();
+        accounts = test.getList();
 
         GridLayout gridLayout = view.findViewById(R.id.gridLayout);
+
+        if (accounts == null || accounts.isEmpty()) {
+            return null;
+        }
 
         // Add account buttons dynamically
         for (Account account : accounts) {
             Button button = new Button(requireContext());
-            button.setText(account.getName());
+            System.out.println(account.getName() + "");
+            button.setText(account.getName() + "");
             button.setId(View.generateViewId());
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
             params.width = GridLayout.LayoutParams.WRAP_CONTENT;
@@ -72,17 +86,8 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
-    private Account[] getAccounts() {
-        // Esempio: Recupera gli account da un database o da una fonte di dati
-        // e restituisci un array di oggetti Account
-        Account[] accounts = new Account[5];
-        accounts[0] = new Account();
-        accounts[1] = new Account();
-        accounts[2] = new Account();
-        accounts[3] = new Account();
-        accounts[4] = new Account();
-
-        return accounts;
+    private ArrayList<Account> getAccounts() throws IOException {
+        return jsonReadWrite.writeAccountsFromJson(requireContext());
     }
 
 

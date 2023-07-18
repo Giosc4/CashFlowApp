@@ -3,72 +3,118 @@ package com.example.cashflow;
 import android.content.Context;
 
 import com.google.gson.Gson;
+import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.lang.reflect.Type;
 import java.util.ArrayList;
 
 public class JsonReadWrite {
 
     private ArrayList<Account> accounts;
+    private String fileName;
 
-    public JsonReadWrite(){
-        accounts = new ArrayList<>();
-    }
-
-    public JsonReadWrite(ArrayList<Account> accounts){
+    public JsonReadWrite(ArrayList<Account> accounts, String fileName){
+        this.fileName = fileName;
         this.accounts = accounts;
     }
 
+    public ArrayList<Account> getAccounts() {
+        return accounts;
+    }
 
     public void addTransaction(Context context, boolean income, String number, String date, String location, String accountSelected) {
         Transactions newTrans= new  Transactions(income, number, date, location);
 
+        Account account;
+        System.out.println(context.toString());
+
         for (int i = 0; i < accounts.size(); i++) {
             if (accounts.get(i).getName().equals(accountSelected)){
                 accounts.get(i).getListTrans().add(newTrans);
+
                 System.out.println("New Transaction: " + newTrans.toString());
             }
         }
         try {
-            this.saveToJson(context,"test2122.json");
+            this.saveToJson(context);
         } catch (IOException e) {
             e.printStackTrace();
         }
     }
 
 
-    public void saveToJson(Context context, String filename) throws IOException {
-        Gson gson = new Gson();
-
+    public void saveToJson(Context context) throws IOException {
         // Convert the Transactions object to JSON format
-        String json = gson.toJson(this);
+        String json = accountsToJson(this.accounts); // change is here
 
         // Specify the path where you want to create the file
-        File directory = new File(context.getExternalFilesDir(null), "my_data_directory");
+        File directory = context.getExternalFilesDir(null);
+        if (directory == null) {
+            throw new IOException("Cannot access external files directory");
+        }
+
+        directory = new File(directory, "my_data_directory");
+        if (!directory.exists() && !directory.mkdirs()) {
+            throw new IOException("Cannot create directory: " + directory);
+        }
+
         System.out.println("PATH: " + directory);
 
         // Create the file in the destination folder
-        File file = new File(directory, filename);
-        boolean created = file.createNewFile();
-        if (created) {
-            System.out.println("File successfully created");
-        } else {
-            System.out.println("Error during file creation");
+        File file = new File(directory, fileName);
+
+        // Check if the file already exists
+        if (file.exists()) {
+            System.out.println("File already exists. Overwriting.");
+        } else if (!file.createNewFile()) {
+            throw new IOException("Failed to create file: " + file);
         }
+
+        System.out.println("File successfully created");
 
         // Write the JSON to the file
         try (FileWriter writer = new FileWriter(file)) {
             writer.write(json);
         }
+
+        System.out.println("Content of the file: " + json);
     }
-    public String readJsonFromFile(Context context, String filename) throws IOException {
+
+
+    public String accountsToJson(ArrayList<Account> accounts) {
+        Gson gson = new Gson();
+        return gson.toJson(accounts);
+    }
+
+
+    // deve sostituire readJsonFromFile
+    public ArrayList<Account> writeAccountsFromJson(Context context) {
+        // Read the JSON string from the file
+        String json = null;
+        try {
+            json = readJsonFromFile(context);
+        } catch (IOException e) {
+            throw new RuntimeException(e);
+        }
+
+        // Convert the JSON string back to a list of Account objects
+        Gson gson = new Gson();
+        Type type = new TypeToken<ArrayList<Account>>() {}.getType();
+        ArrayList<Account> loadedAccounts = gson.fromJson(json, type);
+
+        return loadedAccounts;
+    }
+
+
+    public String readJsonFromFile(Context context) throws IOException {
         // Specifying the path of the file
         File directory = new File(context.getExternalFilesDir(null), "my_data_directory");
-        File file = new File(directory, filename);
+        File file = new File(directory, fileName);
 
         // Check if file exists
         if (!file.exists()) {

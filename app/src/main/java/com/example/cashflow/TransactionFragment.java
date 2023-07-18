@@ -99,20 +99,19 @@ public class TransactionFragment extends Fragment {
             }
         });
 
-        jsonReadWrite = new JsonReadWrite();
 
-        // da qui bisogna leggere la lista di account
+        Test test = new Test();
+        jsonReadWrite = new JsonReadWrite(test.getList(), "file11.json");
+//        ArrayList<Account> accounts = jsonReadWrite.writeAccountsFromJson(requireContext());
+        ArrayList<Account> accounts = jsonReadWrite.getAccounts();
 
-
-        // Creazione di una lista di conti
-        List<String> accounts = new ArrayList<>();
-        accounts.add("Conto 1");
-        accounts.add("Conto 2");
-        accounts.add("Conto 3");
-        // Aggiungi quanti conti desideri...
+        ArrayList<String> accountNames = new ArrayList<>();
+        for (Account account : accounts) {
+            accountNames.add(account.getName());
+        }
 
         // Creazione di un ArrayAdapter usando la lista di conti
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, accounts);
+        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, accountNames);
 
         // Impostazione del layout per quando lo Spinner viene visualizzato
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
@@ -144,6 +143,7 @@ public class TransactionFragment extends Fragment {
             public void onClick(View v) {
                 try {
                     saveTransaction(); // Save the transaction
+
                 } catch (IOException e) {
                     throw new RuntimeException(e);
                 }
@@ -174,12 +174,7 @@ public class TransactionFragment extends Fragment {
             // Resto del codice per salvare la transazione
             Toast.makeText(getContext(), "Transaction saved: " + number + ", " + account + ", " + date + ", " + location, Toast.LENGTH_LONG).show();
 
-                //jsonReadWrite.addTransaction(requireContext(), income, number, date, location, accountSelected);
-
-                System.out.println(jsonReadWrite.readJsonFromFile(requireContext(), "test2122.json"));
-
-                // il file che legge è vuoto
-
+                jsonReadWrite.addTransaction(requireContext(), income, number, date, location, accountSelected);
 
                 if (getActivity() != null) {
                 getActivity().getSupportFragmentManager().popBackStack();
