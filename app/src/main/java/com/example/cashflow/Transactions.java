@@ -13,7 +13,7 @@ import java.util.Date;
 
         public class Transactions{
         private Boolean income;
-        private String amount;
+        private double amount;
         private String  date;
         private String city;
 
@@ -22,19 +22,34 @@ import java.util.Date;
 
         public Transactions(){
         this.income=false;
-        this.amount="00.01";
+        this.amount= 00.01;
         this.date=null;
         this.city=null;
         }
 
         //income, number,  date,  location
-        public Transactions(Boolean income, String amount, String date, String city){
+        public Transactions(Boolean income, double amount, String date, String city){
                 this.income=income;
                 this.amount=amount;
                 this.date=date;
                 this.city=city;
         }
 
+                public Boolean isIncome() {
+                        return income;
+                }
+
+                public double getAmount() {
+                        return amount;
+                }
+
+                public String getDate() {
+                        return date;
+                }
+
+                public String getCity() {
+                        return city;
+                }
 
                 @Override
                 public String toString() {

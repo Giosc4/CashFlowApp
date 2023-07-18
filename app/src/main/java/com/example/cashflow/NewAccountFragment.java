@@ -10,12 +10,12 @@ import android.widget.Toast;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-public class AccountFragment extends Fragment {
+public class NewAccountFragment extends Fragment {
 
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_account, container, false);
+        View view = inflater.inflate(R.layout.fragment_new_account, container, false);
 
         final EditText edtName = view.findViewById(R.id.edtName);
         final EditText edtCurrency = view.findViewById(R.id.edtCurrency);
@@ -34,6 +34,7 @@ public class AccountFragment extends Fragment {
                 if(name.isEmpty() || currency.isEmpty() || liquidity.isEmpty() || color.isEmpty()) {
                     Toast.makeText(getActivity(), "Per favore, inserisci tutte le informazioni", Toast.LENGTH_SHORT).show();
                 } else {
+
                     Toast.makeText(getActivity(), "Conto creato!", Toast.LENGTH_SHORT).show();
                     // Qui potresti aggiungere la logica per creare il conto
                 }

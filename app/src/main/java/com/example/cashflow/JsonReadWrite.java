@@ -1,6 +1,7 @@
 package com.example.cashflow;
 
 import android.content.Context;
+import android.view.View;
 
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
@@ -18,39 +19,24 @@ public class JsonReadWrite {
     private ArrayList<Account> accounts;
     private String fileName;
 
+    public JsonReadWrite(String fileName){
+        this.fileName = fileName;
+        this.accounts = new ArrayList<>();
+    }
+
     public JsonReadWrite(ArrayList<Account> accounts, String fileName){
         this.fileName = fileName;
         this.accounts = accounts;
     }
 
-    public ArrayList<Account> getAccounts() {
-        return accounts;
+    public void setList(ArrayList<Account> accounts, Context context) throws IOException {
+        this.accounts = accounts;
+        saveToJson(context);
     }
-
-    public void addTransaction(Context context, boolean income, String number, String date, String location, String accountSelected) {
-        Transactions newTrans= new  Transactions(income, number, date, location);
-
-        Account account;
-        System.out.println(context.toString());
-
-        for (int i = 0; i < accounts.size(); i++) {
-            if (accounts.get(i).getName().equals(accountSelected)){
-                accounts.get(i).getListTrans().add(newTrans);
-
-                System.out.println("New Transaction: " + newTrans.toString());
-            }
-        }
-        try {
-            this.saveToJson(context);
-        } catch (IOException e) {
-            e.printStackTrace();
-        }
-    }
-
 
     public void saveToJson(Context context) throws IOException {
         // Convert the Transactions object to JSON format
-        String json = accountsToJson(this.accounts); // change is here
+        String json = accountsToJson();
 
         // Specify the path where you want to create the file
         File directory = context.getExternalFilesDir(null);
@@ -69,13 +55,26 @@ public class JsonReadWrite {
         File file = new File(directory, fileName);
 
         // Check if the file already exists
+
         if (file.exists()) {
-            System.out.println("File already exists. Overwriting.");
-        } else if (!file.createNewFile()) {
-            throw new IOException("Failed to create file: " + file);
+            if (file.delete()) {
+                System.out.println("File eliminato con successo.");
+            } else {
+                System.out.println("Impossibile eliminare il file.");
+            }
+        }else {
+            try {
+                if (file.createNewFile()) {
+                    System.out.println("File creato con successo.");
+                } else {
+                    System.out.println("Impossibile creare il file.");
+                }
+            } catch (IOException e) {
+                System.out.println("Errore durante la creazione del file: " + e.getMessage());
+            }
         }
 
-        System.out.println("File successfully created");
+
 
         // Write the JSON to the file
         try (FileWriter writer = new FileWriter(file)) {
@@ -86,18 +85,18 @@ public class JsonReadWrite {
     }
 
 
-    public String accountsToJson(ArrayList<Account> accounts) {
+    public String accountsToJson() {
         Gson gson = new Gson();
         return gson.toJson(accounts);
     }
 
 
     // deve sostituire readJsonFromFile
-    public ArrayList<Account> writeAccountsFromJson(Context context) {
+    public ArrayList<Account> readAccountsFromJson(Context context) {
         // Read the JSON string from the file
         String json = null;
         try {
-            json = readJsonFromFile(context);
+            json = readJsonFromFile( context);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
@@ -133,5 +132,6 @@ public class JsonReadWrite {
 
         return jsonContent.toString();
     }
+
 
 }

@@ -37,6 +37,10 @@ import java.util.ArrayList;
         }
 
         public double getBalance(){
+                double total =0;
+                for (Transactions trans : listTrans) {
+                        total = total + trans.getAmount();
+                }
         return balance;
         }
 
@@ -52,5 +56,12 @@ import java.util.ArrayList;
         this.listTrans=listTrans;
         }
 
-
+                @Override
+                public String toString() {
+                        return "Account{" +
+                                "name='" + name + '\'' +
+                                ", balance=" + balance +
+                                ", listTrans=" + listTrans +
+                                '}';
+                }
         }

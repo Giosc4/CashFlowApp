@@ -6,6 +6,7 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.GridLayout;
+import android.widget.TextView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
@@ -18,21 +19,22 @@ import java.util.ArrayList;
 
 public class HomeFragment extends Fragment {
 
-    private ArrayList<Account> accounts = new ArrayList<>();
-    JsonReadWrite jsonReadWrite = new JsonReadWrite(this.accounts, "test12.json");
+    ArrayList<Account> accounts;
+
+    private String subtotalText = "";
+
+
+    TextView myTextView;
+    public HomeFragment(ArrayList<Account> accounts){
+        this.accounts = accounts;
+    }
+
+
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
-//        try {
-//            accounts = getAccounts();
-//        } catch (IOException e) {
-//            throw new RuntimeException(e);
-//        }
-
-        Test test = new Test();
-        accounts = test.getList();
 
         GridLayout gridLayout = view.findViewById(R.id.gridLayout);
 
@@ -43,7 +45,6 @@ public class HomeFragment extends Fragment {
         // Add account buttons dynamically
         for (Account account : accounts) {
             Button button = new Button(requireContext());
-            System.out.println(account.getName() + "");
             button.setText(account.getName() + "");
             button.setId(View.generateViewId());
             GridLayout.LayoutParams params = new GridLayout.LayoutParams();
@@ -56,12 +57,17 @@ public class HomeFragment extends Fragment {
             gridLayout.addView(button);
         }
 
+        myTextView = view.findViewById(R.id.myTextView);
+
+        subtotalText = getSubtotal();
+        myTextView.append(subtotalText);
+
         Button btnAddAccount = view.findViewById(R.id.btnAddAccount);
         btnAddAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Handle click on "Nuovo Conto" button
-                openAccountFragment();
+                openNewAccountFragment();
             }
         });
 
@@ -86,25 +92,28 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
-    private ArrayList<Account> getAccounts() throws IOException {
-        return jsonReadWrite.writeAccountsFromJson(requireContext());
+    private String getSubtotal() {
+        double sum = 0;
+        for (Account account : accounts) {
+            sum = sum + account.getBalance();
+        }
+        return sum + "";
     }
 
-
-    private void openAccountFragment() {
+    private void openNewAccountFragment() {
         // Chiudi il fragment corrente
         requireActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
 
         // Apri il nuovo fragment AccountFragment
-        AccountFragment accountFragment = new AccountFragment();
+        NewAccountFragment newAccountFragment = new NewAccountFragment();
         requireActivity().getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, accountFragment)
+                .replace(R.id.fragment_container, newAccountFragment)
                 .addToBackStack(null)
                 .commit();
     }
 
     private void openTransactionFragment() {
-        TransactionFragment transactionFragment = new TransactionFragment();
+        TransactionFragment transactionFragment = new TransactionFragment(accounts);
 
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

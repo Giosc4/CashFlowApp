@@ -11,7 +11,9 @@ public  Test(){
     listTrans.add(new Transactions());
     this.accounts.add(new Account("account 1", 44.00, listTrans ));
     this.accounts.add(new Account("account 2", 45.00, listTrans ));
-
+    for (int i = 0; i < accounts.size(); i++) {
+        System.out.println("Test: " + accounts.get(i).toString());
+    }
 
 }
 

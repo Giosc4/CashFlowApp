@@ -12,6 +12,7 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.NonNull;
@@ -28,13 +29,18 @@ public class TransactionFragment extends Fragment {
     private Button incomeButton;
     private EditText numberEditText;
     private Spinner accountSpinner;
+
 //    private Account accountSelected;
-        private String accountSelected;
 
     private EditText dateEditText;
     private EditText locationEditText;
+    private Test test;
+    private JsonReadWrite jsonReadWrite;
+    private ArrayList<Account> accounts;
 
-    JsonReadWrite jsonReadWrite;
+    public TransactionFragment(ArrayList<Account> accounts){
+        this.accounts = accounts;
+    }
 
     @Nullable
     @Override
@@ -49,9 +55,6 @@ public class TransactionFragment extends Fragment {
         dateEditText = view.findViewById(R.id.dateEditText);
         locationEditText = view.findViewById(R.id.locationEditText);
         accountSpinner = view.findViewById(R.id.accountSpinner);
-
-
-
 
         // Set the input filter on numberEditText double for prices
         numberEditText.setFilters(new InputFilter[] {
@@ -100,11 +103,6 @@ public class TransactionFragment extends Fragment {
         });
 
 
-        Test test = new Test();
-        jsonReadWrite = new JsonReadWrite(test.getList(), "file11.json");
-//        ArrayList<Account> accounts = jsonReadWrite.writeAccountsFromJson(requireContext());
-        ArrayList<Account> accounts = jsonReadWrite.getAccounts();
-
         ArrayList<String> accountNames = new ArrayList<>();
         for (Account account : accounts) {
             accountNames.add(account.getName());
@@ -125,7 +123,6 @@ public class TransactionFragment extends Fragment {
                 String selectedAccount = parent.getItemAtPosition(position).toString();
                 // Ora 'selectedAccount' è l'account selezionato
                 Toast.makeText(parent.getContext(), "Conto Selezionato: " + selectedAccount, Toast.LENGTH_LONG).show();
-                accountSelected = selectedAccount;
             }
 
             @Override
@@ -154,7 +151,7 @@ public class TransactionFragment extends Fragment {
     }
 
     private void saveTransaction() throws IOException {
-            if (numberEditText != null && accountSpinner != null && dateEditText != null && locationEditText != null && accountSelected != null) {
+            if (numberEditText != null && accountSpinner != null && dateEditText != null && locationEditText != null) {
 
                 boolean income = incomeButton.isSelected();
                 boolean expense = expenseButton.isSelected();
@@ -166,16 +163,26 @@ public class TransactionFragment extends Fragment {
                     return; // Esce dal metodo senza salvare la transazione
                 }
             String number = numberEditText.getText() != null ? numberEditText.getText().toString() : "";
-            String account = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
+                double amount = Double.parseDouble(number);
+            String accountSelected = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
             String date = dateEditText.getText() != null ? dateEditText.getText().toString() : "";
             String location = locationEditText.getText() != null ? locationEditText.getText().toString() : "";
 
             //Transactions transaction = new Transactions(number, date, location);
             // Resto del codice per salvare la transazione
-            Toast.makeText(getContext(), "Transaction saved: " + number + ", " + account + ", " + date + ", " + location, Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Transaction saved: " + amount + ", " + accountSelected + ", " + date + ", " + location, Toast.LENGTH_LONG).show();
 
-                jsonReadWrite.addTransaction(requireContext(), income, number, date, location, accountSelected);
+                Transactions newTrans = new Transactions(income, amount, date, location);
+                jsonReadWrite = new JsonReadWrite("test12.json");
 
+                for (Account account : accounts) {
+                    if (account.getName().equals(accountSelected)) {
+                        account.getListTrans().add(newTrans);
+                        System.out.println("New Transaction: " + newTrans.toString());
+                        jsonReadWrite.setList(accounts, requireContext());
+                        break;
+                    }
+                }
                 if (getActivity() != null) {
                 getActivity().getSupportFragmentManager().popBackStack();
                 LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
