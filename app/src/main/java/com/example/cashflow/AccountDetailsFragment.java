@@ -1,5 +1,6 @@
 package com.example.cashflow;
 
+import android.content.DialogInterface;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -14,7 +15,9 @@ import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -30,6 +33,7 @@ public class AccountDetailsFragment extends Fragment {
     private EditText nameEditText;
     private TextView balanceTextView;
     private RecyclerView transactionsRecyclerView;
+    private Button deleteButton;
     private Button saveButton;
 
     public AccountDetailsFragment(Account account) {
@@ -46,6 +50,8 @@ public class AccountDetailsFragment extends Fragment {
         balanceTextView = view.findViewById(R.id.balanceTextView);
         transactionsRecyclerView = view.findViewById(R.id.transactionsRecyclerView);
         saveButton = view.findViewById(R.id.saveButton);
+        deleteButton = view.findViewById(R.id.deleteButton);
+
 
         // Set account details
         nameEditText.setText(account.getName());
@@ -66,6 +72,14 @@ public class AccountDetailsFragment extends Fragment {
                     LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
                     mainLayout.setVisibility(View.VISIBLE);
                 }
+            }
+        });
+
+
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDeleteConfirmationDialog();
             }
         });
 
@@ -102,6 +116,47 @@ public class AccountDetailsFragment extends Fragment {
         }
         return -1;
     }
+
+    // Method to show a delete confirmation dialog
+    private void showDeleteConfirmationDialog() {
+        new AlertDialog.Builder(getContext())
+                .setTitle("Delete Account")
+                .setMessage("Are you sure you want to delete this account?")
+                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        deleteAccount();
+                    }})
+                .setNegativeButton(android.R.string.no, null).show();
+    }
+
+    // Method to delete the account
+    private void deleteAccount() {
+        String accountToDelete = account.getName();
+
+        try {
+            ArrayList<Account> accounts = jsonReadWrite.readAccountsFromJson(requireContext());
+            int index = findAccountIndex(accounts, accountToDelete);
+
+            if (index != -1) {
+                accounts.remove(index);
+                jsonReadWrite.setList(accounts, requireContext());
+
+                Toast.makeText(getContext(), "Account deleted: " + accountToDelete, Toast.LENGTH_LONG).show();
+                if (getActivity() != null && isAdded()) {
+                    FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                    fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                    fragmentManager.beginTransaction()
+                            .replace(R.id.fragment_container, new HomeFragment(accounts))
+                            .commit();
+                }
+            } else {
+                Toast.makeText(getContext(), "Failed to delete account.", Toast.LENGTH_LONG).show();
+            }
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
 
     // Custom RecyclerView.Adapter for displaying transactions with a "Detail" button
     private class TransactionListAdapter extends RecyclerView.Adapter<TransactionListAdapter.ViewHolder> {
