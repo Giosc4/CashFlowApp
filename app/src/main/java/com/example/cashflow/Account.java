@@ -3,65 +3,71 @@ package com.example.cashflow;
 
 import java.util.ArrayList;
 
-        public class Account{
+public class Account {
 
-        private String name;
-        private double balance;
-        private ArrayList<Transactions> listTrans;
+    private String name;
+    private double balance;
+    private ArrayList<Transactions> listTrans;
 
-        public Account(){
-        this.name="Accountempty";
-        this.balance=0.0;
-        listTrans=new ArrayList<>();
-        }
+    public Account() {
+        this.name = "Accountempty";
+        updateBalance();
+        listTrans = new ArrayList<>();
+    }
 
-        public Account(String name,double balance){
-        this.name=name;
-        this.balance=balance;
-        listTrans=new ArrayList<>();
+    public Account(String name) {
+        this.name = name;
+        listTrans = new ArrayList<>();
+        updateBalance();
 
-        }
-                public Account(String name,double balance, ArrayList<Transactions> listTrans){
-                        this.name=name;
-                        this.balance=balance;
-                        this.listTrans=listTrans;
+    }
 
-                }
+    public Account(String name, ArrayList<Transactions> listTrans) {
+        this.name = name;
+        this.listTrans = listTrans;
+        updateBalance();
+    }
 
-        public String getName(){
+    public String getName() {
         return name;
-        }
+    }
 
-        public void setName(String name){
-        this.name=name;
-        }
+    public void setName(String name) {
+        this.name = name;
+    }
 
-        public double getBalance(){
-                double total =0;
-                for (Transactions trans : listTrans) {
-                        total = total + trans.getAmount();
-                }
+    public double getBalance() {
+        double total = 0;
+        for (Transactions trans : listTrans) {
+            total = total + trans.getAmount();
+        }
         return balance;
-        }
+    }
 
-        public void setBalance(double balance){
-        this.balance=balance;
-        }
-
-        public ArrayList<Transactions>getListTrans(){
+    public ArrayList<Transactions> getListTrans() {
         return listTrans;
-        }
+    }
 
-        public void setListTrans(ArrayList<Transactions>listTrans){
-        this.listTrans=listTrans;
-        }
+    public void setListTrans(ArrayList<Transactions> listTrans) {
+        this.listTrans = listTrans;
+    }
 
-                @Override
-                public String toString() {
-                        return "Account{" +
-                                "name='" + name + '\'' +
-                                ", balance=" + balance +
-                                ", listTrans=" + listTrans +
-                                '}';
-                }
+    public void updateBalance() {
+        double total = 0;
+        if (listTrans != null) {
+            for (Transactions trans : listTrans) {
+                total = total + trans.getAmount();
+            }
         }
+        this.balance = total;
+    }
+
+    @Override
+    public String toString() {
+        return "Account{" +
+                "name='" + name + '\'' +
+                ", balance=" + balance +
+                ", listTrans=" + listTrans +
+                '}';
+    }
+}

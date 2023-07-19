@@ -19,12 +19,12 @@ public class JsonReadWrite {
     private ArrayList<Account> accounts;
     private String fileName;
 
-    public JsonReadWrite(String fileName){
+    public JsonReadWrite(String fileName) {
         this.fileName = fileName;
         this.accounts = new ArrayList<>();
     }
 
-    public JsonReadWrite(ArrayList<Account> accounts, String fileName){
+    public JsonReadWrite(ArrayList<Account> accounts, String fileName) {
         this.fileName = fileName;
         this.accounts = accounts;
     }
@@ -62,7 +62,7 @@ public class JsonReadWrite {
             } else {
                 System.out.println("Impossibile eliminare il file.");
             }
-        }else {
+        } else {
             try {
                 if (file.createNewFile()) {
                     System.out.println("File creato con successo.");
@@ -73,7 +73,6 @@ public class JsonReadWrite {
                 System.out.println("Errore durante la creazione del file: " + e.getMessage());
             }
         }
-
 
 
         // Write the JSON to the file
@@ -96,14 +95,15 @@ public class JsonReadWrite {
         // Read the JSON string from the file
         String json = null;
         try {
-            json = readJsonFromFile( context);
+            json = readJsonFromFile(context);
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
 
         // Convert the JSON string back to a list of Account objects
         Gson gson = new Gson();
-        Type type = new TypeToken<ArrayList<Account>>() {}.getType();
+        Type type = new TypeToken<ArrayList<Account>>() {
+        }.getType();
         ArrayList<Account> loadedAccounts = gson.fromJson(json, type);
 
         return loadedAccounts;

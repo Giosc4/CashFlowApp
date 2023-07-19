@@ -1,4 +1,5 @@
 package com.example.cashflow;
+
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -29,16 +30,12 @@ public class TransactionFragment extends Fragment {
     private Button incomeButton;
     private EditText numberEditText;
     private Spinner accountSpinner;
-
-//    private Account accountSelected;
-
     private EditText dateEditText;
     private EditText locationEditText;
-    private Test test;
     private JsonReadWrite jsonReadWrite;
     private ArrayList<Account> accounts;
 
-    public TransactionFragment(ArrayList<Account> accounts){
+    public TransactionFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
     }
 
@@ -57,7 +54,7 @@ public class TransactionFragment extends Fragment {
         accountSpinner = view.findViewById(R.id.accountSpinner);
 
         // Set the input filter on numberEditText double for prices
-        numberEditText.setFilters(new InputFilter[] {
+        numberEditText.setFilters(new InputFilter[]{
                 new InputFilter() {
                     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
                         for (int i = start; i < end; i++) {
@@ -132,7 +129,6 @@ public class TransactionFragment extends Fragment {
         });
 
 
-
         // Add OnClickListener for the "DONE" button
         Button doneButton = view.findViewById(R.id.doneButton);
         doneButton.setOnClickListener(new View.OnClickListener() {
@@ -151,39 +147,39 @@ public class TransactionFragment extends Fragment {
     }
 
     private void saveTransaction() throws IOException {
-            if (numberEditText != null && accountSpinner != null && dateEditText != null && locationEditText != null) {
+        if (numberEditText != null && accountSpinner != null && dateEditText != null && locationEditText != null) {
 
-                boolean income = incomeButton.isSelected();
-                boolean expense = expenseButton.isSelected();
+            boolean income = incomeButton.isSelected();
+            boolean expense = expenseButton.isSelected();
 
-                // Verifica se almeno uno dei pulsanti è stato premuto
-                if (!income && !expense) {
-                    // Nessun pulsante selezionato, mostra un messaggio di avviso o gestisci l'errore
-                    Toast.makeText(getContext(), "Please select either Income or Expense", Toast.LENGTH_SHORT).show();
-                    return; // Esce dal metodo senza salvare la transazione
-                }
+            // Verifica se almeno uno dei pulsanti è stato premuto
+            if (!income && !expense) {
+                // Nessun pulsante selezionato, mostra un messaggio di avviso o gestisci l'errore
+                Toast.makeText(getContext(), "Please select either Income or Expense", Toast.LENGTH_SHORT).show();
+                return; // Esce dal metodo senza salvare la transazione
+            }
             String number = numberEditText.getText() != null ? numberEditText.getText().toString() : "";
-                double amount = Double.parseDouble(number);
+            double amount = Double.parseDouble(number);
             String accountSelected = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
             String date = dateEditText.getText() != null ? dateEditText.getText().toString() : "";
             String location = locationEditText.getText() != null ? locationEditText.getText().toString() : "";
 
-            //Transactions transaction = new Transactions(number, date, location);
             // Resto del codice per salvare la transazione
             Toast.makeText(getContext(), "Transaction saved: " + amount + ", " + accountSelected + ", " + date + ", " + location, Toast.LENGTH_LONG).show();
 
-                Transactions newTrans = new Transactions(income, amount, date, location);
-                jsonReadWrite = new JsonReadWrite("test12.json");
+            Transactions newTrans = new Transactions(income, amount, date, location);
+            jsonReadWrite = new JsonReadWrite("test12.json");
 
-                for (Account account : accounts) {
-                    if (account.getName().equals(accountSelected)) {
-                        account.getListTrans().add(newTrans);
-                        System.out.println("New Transaction: " + newTrans.toString());
-                        jsonReadWrite.setList(accounts, requireContext());
-                        break;
-                    }
+            for (Account account : accounts) {
+                if (account.getName().equals(accountSelected)) {
+                    account.getListTrans().add(newTrans);
+                    account.updateBalance();
+                    System.out.println("New Transaction: " + newTrans.toString());
+                    jsonReadWrite.setList(accounts, requireContext());
+                    break;
                 }
-                if (getActivity() != null) {
+            }
+            if (getActivity() != null) {
                 getActivity().getSupportFragmentManager().popBackStack();
                 LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
                 mainLayout.setVisibility(View.VISIBLE);

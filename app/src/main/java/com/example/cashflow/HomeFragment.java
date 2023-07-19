@@ -15,6 +15,8 @@ import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import java.io.IOException;
+import java.math.BigDecimal;
+import java.text.NumberFormat;
 import java.util.ArrayList;
 
 public class HomeFragment extends Fragment {
@@ -25,10 +27,10 @@ public class HomeFragment extends Fragment {
 
 
     TextView myTextView;
-    public HomeFragment(ArrayList<Account> accounts){
+
+    public HomeFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
     }
-
 
 
     @Nullable
@@ -37,6 +39,7 @@ public class HomeFragment extends Fragment {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
         GridLayout gridLayout = view.findViewById(R.id.gridLayout);
+        myTextView = view.findViewById(R.id.myTextView);
 
         if (accounts == null || accounts.isEmpty()) {
             return null;
@@ -56,11 +59,6 @@ public class HomeFragment extends Fragment {
             button.setLayoutParams(params);
             gridLayout.addView(button);
         }
-
-        myTextView = view.findViewById(R.id.myTextView);
-
-        subtotalText = getSubtotal();
-        myTextView.append(subtotalText);
 
         Button btnAddAccount = view.findViewById(R.id.btnAddAccount);
         btnAddAccount.setOnClickListener(new View.OnClickListener() {
@@ -92,20 +90,32 @@ public class HomeFragment extends Fragment {
         return view;
     }
 
-    private String getSubtotal() {
-        double sum = 0;
-        for (Account account : accounts) {
-            sum = sum + account.getBalance();
-        }
-        return sum + "";
+    @Override
+    public void onResume() {
+        super.onResume();
+
+        // Recalculate subtotal and update TextView
+        subtotalText = getSubtotal();
+        myTextView.setText("Subtotal: " + subtotalText);
+        System.out.println("Subtotal: " + subtotalText);
     }
+
+
+    private String getSubtotal() {
+        BigDecimal sum = BigDecimal.ZERO;
+        for (Account account : accounts) {
+            sum = sum.add(BigDecimal.valueOf(account.getBalance()));
+        }
+        return sum.setScale(2, BigDecimal.ROUND_HALF_UP).toString();
+    }
+
 
     private void openNewAccountFragment() {
         // Chiudi il fragment corrente
         requireActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
 
         // Apri il nuovo fragment AccountFragment
-        NewAccountFragment newAccountFragment = new NewAccountFragment();
+        NewAccountFragment newAccountFragment = new NewAccountFragment(accounts);
         requireActivity().getSupportFragmentManager().beginTransaction()
                 .replace(R.id.fragment_container, newAccountFragment)
                 .addToBackStack(null)
