@@ -1,4 +1,5 @@
 package com.example.cashflow;
+
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
@@ -15,16 +16,20 @@ public class MainActivity extends AppCompatActivity {
 
     private Button btnHome;
     private Test test;
-    private ArrayList<Account> accounts ;
-    JsonReadWrite jsonReadWrite ;
+    private ArrayList<Account> accounts;
+    JsonReadWrite jsonReadWrite;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        test = new Test();
-        accounts = test.getList();
-        jsonReadWrite = new JsonReadWrite(test.getList(), "test12.json");
+//        test = new Test();
+//        accounts = test.getList();
+//        jsonReadWrite = new JsonReadWrite(test.getList(), "test12.json");
+
+        //IN CASO NON DOVESSE CARICARE NESSUN ACCOUNT DA QUESTO FILE CARICARE TUTTO CON TEST()
+        jsonReadWrite = new JsonReadWrite("test12.json");
+        accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
 
         try {
             jsonReadWrite.setList(accounts, this);
@@ -40,7 +45,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson( this)));
+        loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(this)));
     }
 
     private void loadFragment(Fragment fragment) {
@@ -50,7 +55,6 @@ public class MainActivity extends AppCompatActivity {
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
-
 
 
 }

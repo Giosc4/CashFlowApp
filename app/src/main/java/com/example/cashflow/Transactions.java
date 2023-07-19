@@ -64,4 +64,11 @@ public class Transactions {
                 ", city='" + city + '\'' +
                 '}';
     }
+    public String printOnApp(){
+        return  "income= " + income + '\n' +
+                "amount= " + amount + '\n' +
+                "date= " + date + '\n' +
+                "city= " + city + '\n' ;
+    }
+
 }
