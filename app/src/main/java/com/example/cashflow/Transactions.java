@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Date;
 
 public class Transactions {
@@ -16,19 +17,18 @@ public class Transactions {
     private double amount;
     private String date;
     private String city;
-
-    // AGGIUNGERE CATEGORIA
-
+    private CategoriesEnum category;
 
     public Transactions() {
         this.income = false;
         this.amount = 00.01;
         this.date = null;
         this.city = null;
+        this.category = CategoriesEnum.FoodAndDrinks;
     }
 
     //income, number,  date,  location
-    public Transactions(Boolean income, double amount, String date, String city) {
+    public Transactions(Boolean income, double amount, String date, String city, CategoriesEnum category) {
         this.income = income;
         if (income == false) {
             this.amount = -amount;
@@ -37,6 +37,11 @@ public class Transactions {
         }
         this.date = date;
         this.city = city;
+        this.category = category;
+    }
+
+    public CategoriesEnum getCategory() {
+        return category;
     }
 
     public Boolean isIncome() {
@@ -59,16 +64,25 @@ public class Transactions {
     public String toString() {
         return "Transactions{" +
                 "income=" + income +
-                ", amount='" + amount + '\'' +
+                ", amount=" + amount +
                 ", date='" + date + '\'' +
                 ", city='" + city + '\'' +
+                ", category=" + category +
                 '}';
     }
-    public String printOnApp(){
-        return  "income= " + income + '\n' +
-                "amount= " + amount + '\n' +
-                "date= " + date + '\n' +
-                "city= " + city + '\n' ;
+
+    public String printOnApp() {
+        String result = "amount: ";
+        if (income == true) {
+            result = result + "+";
+        } else {
+            result = result + "-";
+        }
+        result = result + amount + " / " +
+                "date: " + date + " / " +
+                "city: " + city + " / " +
+                "category: " + category.name();
+        return result;
     }
 
 }

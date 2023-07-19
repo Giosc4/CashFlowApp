@@ -138,7 +138,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void openTransactionFragment() {
-        TransactionFragment transactionFragment = new TransactionFragment(accounts);
+        NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts);
 
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

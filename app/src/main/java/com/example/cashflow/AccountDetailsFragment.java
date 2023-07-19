@@ -49,7 +49,7 @@ public class AccountDetailsFragment extends Fragment {
 
         // Set account details
         nameEditText.setText(account.getName());
-        balanceTextView.setText(String.valueOf(account.getBalance()));
+        balanceTextView.setText("Balance Account: " + String.valueOf(account.getBalance()));
 
         // Set up RecyclerView with transactions
         TransactionListAdapter adapter = new TransactionListAdapter(account.getListTrans());
@@ -57,11 +57,10 @@ public class AccountDetailsFragment extends Fragment {
         transactionsRecyclerView.setLayoutManager(layoutManager);
         transactionsRecyclerView.setAdapter(adapter);
 
-        // Save changes when save button is clicked
         saveButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                saveChanges();
+                changeName();
                 if (getActivity() != null) {
                     getActivity().getSupportFragmentManager().popBackStack();
                     LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
@@ -73,7 +72,7 @@ public class AccountDetailsFragment extends Fragment {
         return view;
     }
 
-    private void saveChanges() {
+    private void changeName() {
         String newName = nameEditText.getText().toString();
         String oldName = account.getName();
         account.setName(newName);
@@ -122,6 +121,7 @@ public class AccountDetailsFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Transactions transaction = transactions.get(position);
+            System.out.println("Transaction category: " + transaction.getCategory());
             holder.transactionDetailTextView.setText(transaction.printOnApp());
         }
 

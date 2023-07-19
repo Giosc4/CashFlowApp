@@ -24,50 +24,73 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class TransactionFragment extends Fragment {
+public class NewTransactionFragment extends Fragment {
 
     private Button expenseButton;
     private Button incomeButton;
+    private Spinner categorySpinner;
     private EditText numberEditText;
     private Spinner accountSpinner;
     private EditText dateEditText;
     private EditText locationEditText;
     private JsonReadWrite jsonReadWrite;
     private ArrayList<Account> accounts;
+    private ArrayList<String> categories;
 
-    public TransactionFragment(ArrayList<Account> accounts) {
+    public NewTransactionFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
     }
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_transaction, container, false);
+        View view = inflater.inflate(R.layout.fragment_new_transaction, container, false);
 
         // Initialize the EditText, Spinner, and Button variables
         expenseButton = view.findViewById(R.id.expenseButton);
         incomeButton = view.findViewById(R.id.incomeButton);
+        categorySpinner = view.findViewById(R.id.categorySpinner);
         numberEditText = view.findViewById(R.id.numberEditText);
         accountSpinner = view.findViewById(R.id.accountSpinner);
         dateEditText = view.findViewById(R.id.dateEditText);
         locationEditText = view.findViewById(R.id.locationEditText);
         accountSpinner = view.findViewById(R.id.accountSpinner);
 
-        // Set the input filter on numberEditText double for prices
+// Set the input filter on numberEditText for decimal numbers
         numberEditText.setFilters(new InputFilter[]{
                 new InputFilter() {
                     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-                        for (int i = start; i < end; i++) {
-                            if (!Character.isDigit(source.charAt(i)) && source.charAt(i) != '.') {
-                                return "";
+                        // Check if the input contains a decimal point
+                        boolean hasDecimalSeparator = dest.toString().contains(".");
+
+                        // Get the current number of decimal places
+                        int decimalPlaces = 0;
+                        if (hasDecimalSeparator) {
+                            String[] split = dest.toString().split("\\.");
+                            if (split.length > 1) {
+                                decimalPlaces = split[1].length();
                             }
                         }
 
-                        // Limit decimal digits to 2
-                        if (source.toString().contains(".")) {
-                            String[] split = dest.toString().split("\\.");
-                            if (split.length > 1 && split[1].length() >= 2) {
+                        // Check if the input is a valid decimal number
+                        for (int i = start; i < end; i++) {
+                            char inputChar = source.charAt(i);
+
+                            // Allow digits and a decimal point
+                            if (!Character.isDigit(inputChar) && inputChar != '.') {
                                 return "";
+                            }
+
+                            // Allow only two decimal places
+                            if (hasDecimalSeparator && decimalPlaces >= 2) {
+                                return "";
+                            }
+
+                            // Increment the decimal places count if a decimal point is encountered
+                            if (inputChar == '.') {
+                                hasDecimalSeparator = true;
+                            } else if (hasDecimalSeparator) {
+                                decimalPlaces++;
                             }
                         }
 
@@ -76,15 +99,16 @@ public class TransactionFragment extends Fragment {
                 }
         });
 
+
         // Imposta OnClickListener per i pulsanti "EXPENSE" e "INCOME"
         expenseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
                 expenseButton.setSelected(true);
-                expenseButton.setBackgroundColor(Color.parseColor("#00FF00")); // Verde quando selezionato
+                expenseButton.setBackgroundColor(Color.parseColor("#00cc44")); // Verde quando selezionato
                 incomeButton.setSelected(false);
-                incomeButton.setBackgroundColor(Color.parseColor("#800080")); // Viola quando non selezionato
+                incomeButton.setBackgroundColor(Color.parseColor("#a7c5f9")); // azzurro quando non selezionato
             }
         });
 
@@ -93,32 +117,50 @@ public class TransactionFragment extends Fragment {
             public void onClick(View v) {
                 // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
                 incomeButton.setSelected(true);
-                incomeButton.setBackgroundColor(Color.parseColor("#00FF00")); // Verde quando selezionato
+                incomeButton.setBackgroundColor(Color.parseColor("#00cc44")); // Verde quando selezionato
                 expenseButton.setSelected(false);
-                expenseButton.setBackgroundColor(Color.parseColor("#800080")); // Viola quando non selezionato
+                expenseButton.setBackgroundColor(Color.parseColor("#a7c5f9")); // azzurro quando non selezionato
+            }
+        });
+
+        // Spinner CATEGORIES
+        categories = new ArrayList<>();
+        for (CategoriesEnum category : CategoriesEnum.values()) {
+            categories.add(category.name());
+        }
+
+        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categories);
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        categorySpinner.setAdapter(categoryAdapter);
+
+        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+            @Override
+            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+                String selectedCategory = parent.getItemAtPosition(position).toString();
+                Toast.makeText(parent.getContext(), "Selected Category: " + selectedCategory, Toast.LENGTH_LONG).show();
+            }
+
+            @Override
+            public void onNothingSelected(AdapterView<?> parent) {
+                // Codice da eseguire quando non viene selezionato nessun elemento
             }
         });
 
 
+        //SPINNER ACCOUNTS
         ArrayList<String> accountNames = new ArrayList<>();
         for (Account account : accounts) {
             accountNames.add(account.getName());
         }
 
-        // Creazione di un ArrayAdapter usando la lista di conti
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, accountNames);
-
-        // Impostazione del layout per quando lo Spinner viene visualizzato
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-
-        // Impostazione dell'ArrayAdapter come adapter per lo Spinner
         accountSpinner.setAdapter(dataAdapter);
 
         accountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedAccount = parent.getItemAtPosition(position).toString();
-                // Ora 'selectedAccount' è l'account selezionato
                 Toast.makeText(parent.getContext(), "Conto Selezionato: " + selectedAccount, Toast.LENGTH_LONG).show();
             }
 
@@ -163,11 +205,13 @@ public class TransactionFragment extends Fragment {
             String accountSelected = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
             String date = dateEditText.getText() != null ? dateEditText.getText().toString() : "";
             String location = locationEditText.getText() != null ? locationEditText.getText().toString() : "";
+            String selectedCategory = categorySpinner.getSelectedItem() != null ? categorySpinner.getSelectedItem().toString() : "";
+
 
             // Resto del codice per salvare la transazione
             Toast.makeText(getContext(), "Transaction saved: " + amount + ", " + accountSelected + ", " + date + ", " + location, Toast.LENGTH_LONG).show();
 
-            Transactions newTrans = new Transactions(income, amount, date, location);
+            Transactions newTrans = new Transactions(income, amount, date, location, CategoriesEnum.valueOf(selectedCategory));
             jsonReadWrite = new JsonReadWrite("test12.json");
 
             for (Account account : accounts) {
