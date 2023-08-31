@@ -61,8 +61,6 @@ public class HomeFragment extends Fragment {
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    // Here you can open a new fragment and pass the account to it
-                    // For example, you might open an AccountDetailsFragment which shows more details about the account
                     AccountDetailsFragment accountDetailsFragment = new AccountDetailsFragment(account);
                     FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();

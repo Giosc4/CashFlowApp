@@ -11,15 +11,14 @@ public class Account {
 
     public Account() {
         this.name = "Accountempty";
-        updateBalance();
         listTrans = new ArrayList<>();
+        updateBalance();
     }
 
     public Account(String name) {
         this.name = name;
         listTrans = new ArrayList<>();
         updateBalance();
-
     }
 
     public Account(String name, ArrayList<Transactions> listTrans) {
@@ -37,19 +36,12 @@ public class Account {
     }
 
     public double getBalance() {
-        double total = 0;
-        for (Transactions trans : listTrans) {
-            total = total + trans.getAmount();
-        }
+        updateBalance();
         return balance;
     }
 
     public ArrayList<Transactions> getListTrans() {
         return listTrans;
-    }
-
-    public void setListTrans(ArrayList<Transactions> listTrans) {
-        this.listTrans = listTrans;
     }
 
     public void updateBalance() {
@@ -60,6 +52,11 @@ public class Account {
             }
         }
         this.balance = total;
+    }
+    public boolean removeTransaction(Transactions transaction) {
+        boolean response = listTrans.remove(transaction);
+        updateBalance();
+        return response;
     }
 
     @Override

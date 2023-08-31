@@ -18,6 +18,7 @@ import androidx.annotation.Nullable;
 import androidx.appcompat.app.AlertDialog;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
@@ -46,6 +47,7 @@ public class AccountDetailsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_account_details, container, false);
 
+
         nameEditText = view.findViewById(R.id.nameEditText);
         balanceTextView = view.findViewById(R.id.balanceTextView);
         transactionsRecyclerView = view.findViewById(R.id.transactionsRecyclerView);
@@ -56,6 +58,7 @@ public class AccountDetailsFragment extends Fragment {
         // Set account details
         nameEditText.setText(account.getName());
         balanceTextView.setText("Balance Account: " + String.valueOf(account.getBalance()));
+
 
         // Set up RecyclerView with transactions
         TransactionListAdapter adapter = new TransactionListAdapter(account.getListTrans());
@@ -89,13 +92,13 @@ public class AccountDetailsFragment extends Fragment {
     private void changeName() {
         String newName = nameEditText.getText().toString();
         String oldName = account.getName();
-        account.setName(newName);
 
         try {
             ArrayList<Account> accounts = jsonReadWrite.readAccountsFromJson(requireContext());
             int index = findAccountIndex(accounts, oldName);
 
-            if (index != -1) {
+            if (index != -1 && !doesAccountExist(accounts, newName)) {
+                account.setName(newName);
                 accounts.set(index, account);
                 jsonReadWrite.setList(accounts, requireContext());
 
@@ -106,6 +109,15 @@ public class AccountDetailsFragment extends Fragment {
         } catch (IOException e) {
             e.printStackTrace();
         }
+    }
+
+    private boolean doesAccountExist(ArrayList<Account> accounts, String name) {
+        for (Account account : accounts) {
+            if (account.getName().equals(name)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     private int findAccountIndex(ArrayList<Account> accounts, String oldName) {
@@ -164,6 +176,7 @@ public class AccountDetailsFragment extends Fragment {
 
         TransactionListAdapter(ArrayList<Transactions> transactions) {
             this.transactions = transactions;
+            notifyDataSetChanged();
         }
 
         @NonNull
@@ -176,7 +189,6 @@ public class AccountDetailsFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Transactions transaction = transactions.get(position);
-            System.out.println("Transaction category: " + transaction.getCategory());
             holder.transactionDetailTextView.setText(transaction.printOnApp());
         }
 
@@ -197,8 +209,12 @@ public class AccountDetailsFragment extends Fragment {
                 detailButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        // This is where you handle the button click.
-                        // You might, for example, start a new Activity or Fragment that displays the details of the transaction.
+                        EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), account);
+                        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        fragmentTransaction.replace(R.id.fragment_container, editTransactionFragment);
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
                     }
                 });
             }

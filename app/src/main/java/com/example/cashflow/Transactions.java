@@ -27,7 +27,6 @@ public class Transactions {
         this.category = CategoriesEnum.FoodAndDrinks;
     }
 
-    //income, number,  date,  location
     public Transactions(Boolean income, double amount, String date, String city, CategoriesEnum category) {
         this.income = income;
         if (income == false) {
@@ -48,8 +47,21 @@ public class Transactions {
         return income;
     }
 
+    public double getAmountPositive() {
+        if(!income){
+            String underZero = amount+"";
+            return Double.parseDouble(underZero.substring(1));
+        } else {
+            return amount;
+        }
+    }
+
     public double getAmount() {
-        return amount;
+        if (income) {
+            return  amount;
+        } else {
+            return -amount;
+        }
     }
 
     public String getDate() {

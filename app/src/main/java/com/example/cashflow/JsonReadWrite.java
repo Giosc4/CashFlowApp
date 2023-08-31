@@ -54,15 +54,7 @@ public class JsonReadWrite {
         // Create the file in the destination folder
         File file = new File(directory, fileName);
 
-        // Check if the file already exists
-
-        if (file.exists()) {
-            if (file.delete()) {
-                System.out.println("File eliminato con successo.");
-            } else {
-                System.out.println("Impossibile eliminare il file.");
-            }
-        } else {
+        if (!file.exists()) {
             try {
                 if (file.createNewFile()) {
                     System.out.println("File creato con successo.");
