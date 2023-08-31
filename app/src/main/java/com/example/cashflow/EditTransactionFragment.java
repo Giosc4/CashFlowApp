@@ -64,7 +64,7 @@ public class EditTransactionFragment extends Fragment {
             setIncome();
         }
 
-        numberEditText.setText(String.valueOf(transactionOriginal.getAmountPositive()));
+        numberEditText.setText(String.valueOf(transactionOriginal.getAmount()));
         dateEditText.setText(transactionOriginal.getDate());
         locationEditText.setText(transactionOriginal.getCity());
 

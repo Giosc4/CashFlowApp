@@ -47,21 +47,8 @@ public class Transactions {
         return income;
     }
 
-    public double getAmountPositive() {
-        if(!income){
-            String underZero = amount+"";
-            return Double.parseDouble(underZero.substring(1));
-        } else {
-            return amount;
-        }
-    }
-
     public double getAmount() {
-        if (income) {
-            return  amount;
-        } else {
-            return -amount;
-        }
+        return  amount;
     }
 
     public String getDate() {
@@ -84,17 +71,10 @@ public class Transactions {
     }
 
     public String printOnApp() {
-        String result = "amount: ";
-        if (income == true) {
-            result = result + "+";
-        } else {
-            result = result + "-";
-        }
-        result = result + amount + " / " +
+        return  "amount: " + amount + " / " +
                 "date: " + date + " / " +
                 "city: " + city + " / " +
                 "category: " + category.name();
-        return result;
     }
 
 }

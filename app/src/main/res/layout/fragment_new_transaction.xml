@@ -73,8 +73,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Data e orario"
+        android:inputType="date"
         android:paddingTop="16dp"
         android:paddingBottom="16dp" />
+
 
 
     <!-- Stringa per il luogo -->
@@ -83,9 +85,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:hint="Luogo"
+        android:inputType="textPostalAddress"
         android:paddingTop="16dp"
-        android:paddingBottom="16dp"
-        />
+        android:paddingBottom="16dp" />
 
     <!-- Pulsante "DONE" -->
     <Button
