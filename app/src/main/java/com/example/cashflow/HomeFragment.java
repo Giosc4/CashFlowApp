@@ -27,9 +27,15 @@ public class HomeFragment extends Fragment {
 
 
     TextView myTextView;
+    String nameCity;
 
+    public HomeFragment(ArrayList<Account> accounts, String nameCity) {
+        this.accounts = accounts;
+        this.nameCity = nameCity;
+    }
     public HomeFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
+        this.nameCity = "";
     }
 
 
@@ -96,7 +102,7 @@ public class HomeFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // Handle click on "Statistiche" button
-                openStatisticsActivity();
+                openStatisticsFragment();
             }
         });
 
@@ -136,7 +142,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void openTransactionFragment() {
-        NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts);
+        NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts, nameCity);
 
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
@@ -145,8 +151,12 @@ public class HomeFragment extends Fragment {
         fragmentTransaction.commit();
     }
 
-
-    private void openStatisticsActivity() {
-        // Handle opening the statistics activity
+    private void openStatisticsFragment() {
+        StatisticsFragment statisticsFragment = new StatisticsFragment(accounts);
+        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, statisticsFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
+
 }

@@ -1,0 +1,28 @@
+<ScrollView
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content">
+
+        <!-- Altri controlli o filtri per l'intervallo di tempo e altre opzioni -->
+
+        <!-- Includi il layout del grafico a torta -->
+
+        <!-- Includi il layout del grafico a barre -->
+        <include
+            layout="@layout/fragment_pie_chart"
+             />
+
+        <include
+            layout="@layout/fragment_bar_chart"
+            android:layout_width="match_parent"
+            android:layout_height="692dp" />
+
+        <!-- Add more XML elements here as needed -->
+
+    </FrameLayout>
+</ScrollView>

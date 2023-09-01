@@ -57,14 +57,11 @@ public class NewTransactionFragment extends Fragment {
     private ArrayList<Account> accounts;
     private ArrayList<String> categories;
 
-//    private String cityName;
-//    private FusedLocationProviderClient fusedLocationProviderClient;
-//    private final static int REQUEST_CODE = 100;
-//    private LocationManager locationManager;
+    private String nameCity;
 
-
-    public NewTransactionFragment(ArrayList<Account> accounts) {
+    public NewTransactionFragment(ArrayList<Account> accounts, String nameCity) {
         this.accounts = accounts;
+        this.nameCity = nameCity;
     }
 
     @Nullable
@@ -82,23 +79,6 @@ public class NewTransactionFragment extends Fragment {
         locationEditText = view.findViewById(R.id.locationEditText);
         accountSpinner = view.findViewById(R.id.accountSpinner);
 
-//        locationManager = (LocationManager) requireActivity().getSystemService(Context.LOCATION_SERVICE);
-//        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(requireContext());
-//
-//        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-//            // GPS disabilitato, richiedi all'utente di abilitarlo
-//            Intent gpsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//            startActivity(gpsIntent);
-//        } else {
-//            getLocation(); // Chiamata solo una volta per ottenere la posizione e il nome della città
-//        }
-//        locationEditText.setText(cityName);
-//
-//        if (!locationManager.isProviderEnabled(LocationManager.GPS_PROVIDER)) {
-//            // GPS disabilitato, richiedi all'utente di abilitarlo
-//            Intent gpsIntent = new Intent(Settings.ACTION_LOCATION_SOURCE_SETTINGS);
-//            startActivity(gpsIntent);
-//        }
 
         LocalDateTime currentDateTime = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
@@ -113,6 +93,7 @@ public class NewTransactionFragment extends Fragment {
             formattedDateTime = currentDateTime.format(formatter);
         }
         dateEditText.setText(formattedDateTime);
+        locationEditText.setText(nameCity + ""); //errore, compare soltanto dopo aver premuto home
 
 
 // Set the input filter on numberEditText for decimal numbers
@@ -247,77 +228,6 @@ public class NewTransactionFragment extends Fragment {
         return view;
     }
 
-//
-//    private void getLocation() {
-//        if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-//            // Hai ottenuto il permesso, puoi procedere con l'ottenimento della posizione
-//            System.out.println("Permission granted. Getting location...");
-//            fusedLocationProviderClient.getLastLocation()
-//                    .addOnSuccessListener(requireActivity(), new OnSuccessListener<Location>() {
-//                @Override
-//                public void onSuccess(Location location) {
-//                    if (location != null) {
-//                        Geocoder geocoder= new Geocoder(requireActivity(), Locale.getDefault());
-//                        List<Address> addresses = null;
-//                        try {
-//                            addresses = geocoder.getFromLocation(location.getLatitude(),location.getLongitude(), 1);
-//                            locationEditText.setText("City: " + addresses.get(0).getLocality());
-//                        } catch (IOException e) {
-//                            throw new RuntimeException(e);
-//                        }
-//
-//
-//                        System.out.println("Got location: " + location.getLatitude() + ", " + location.getLongitude());
-//                        updateLocationUI(location);
-//                        getCityNameFromLocation(location);
-//                        System.out.println("City name (getLocation): " + cityName);
-//                    } else {
-//                        System.out.println("Location is null."); //STOP HERE
-//                    }
-//                }
-//
-//            });
-//        } else {
-//            System.out.println("Permission not granted. Requesting permission...");
-//            ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, REQUEST_CODE);
-//        }
-//    }
-//
-//    @Override
-//    public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-////        super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-//        if (requestCode==REQUEST_CODE){
-//            if (grantResults.length>0 && grantResults[0] == PackageManager.PERMISSION_GRANTED){
-//                getLocation();
-//            } else {
-//                Toast.makeText(requireContext(), "Required Permission", Toast.LENGTH_SHORT).show();
-//            }
-//        }
-//    }
-//
-//    private void updateLocationUI(Location location) {
-//        // Aggiorna l'UI con la latitudine e longitudine
-//        String coordinates = "Lat: " + location.getLatitude() + ", Lon: " + location.getLongitude();
-//        System.out.println("Updating UI with location: " + coordinates);
-//        locationEditText.setText(coordinates);
-//    }
-//
-//    private void getCityNameFromLocation(Location location) {
-//        // Utilizza la Geocoder API per ottenere il nome della città basato sulla posizione
-//        Geocoder geocoder = new Geocoder(requireContext(), Locale.getDefault());
-//        try {
-//            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-//            if (!addresses.isEmpty()) {
-//                cityName = addresses.get(0).getLocality(); // Ottieni il nome della città
-//                System.out.println("City name (getCityNameFromLocation): " + cityName);
-//                locationEditText.setText(cityName); // Aggiorna l'UI con il nome della città
-//                System.out.println("No addresses found.");
-//            }
-//        } catch (IOException e) {
-//            e.printStackTrace();
-//        }
-//    }
-
     private void saveTransaction() throws IOException {
         if (numberEditText != null && accountSpinner != null && locationEditText != null && dateEditText != null) {
 
@@ -336,16 +246,6 @@ public class NewTransactionFragment extends Fragment {
             String date = dateEditText.getText() != null ? dateEditText.getText().toString() : "";
             String location = locationEditText.getText() != null ? locationEditText.getText().toString() : "";
             String selectedCategory = categorySpinner.getSelectedItem() != null ? categorySpinner.getSelectedItem().toString() : "";
-
-            System.out.println("new transaction fragment - amount 1: ");
-            //check if is
-            if (expense){
-                amount = Double.parseDouble("-"+amount);
-                System.out.println("new transaction fragment - amount 2: ");
-
-            }
-            System.out.println("new transaction fragment - amount 3: ");
-
 
             // Resto del codice per salvare la transazione
             Toast.makeText(getContext(), "Transaction saved: " + amount + ", " + accountSelected + ", " + date + ", " + location, Toast.LENGTH_LONG).show();
