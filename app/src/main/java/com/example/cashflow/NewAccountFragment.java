@@ -44,7 +44,6 @@ public class NewAccountFragment extends Fragment {
                 String currency = edtCurrency.getText().toString();
                 String color = edtColor.getText().toString();
 
-//                if(name.isEmpty() || currency.isEmpty() ||  color.isEmpty()) {
                 if (name.isEmpty()) {
                     Toast.makeText(getActivity(), "Per favore, inserisci tutte le informazioni", Toast.LENGTH_SHORT).show();
                 } else {
@@ -56,9 +55,9 @@ public class NewAccountFragment extends Fragment {
                     }
                     Toast.makeText(getActivity(), "Conto creato!", Toast.LENGTH_SHORT).show();
                     if (getActivity() != null) {
-                        HomeFragment homeFragment = new HomeFragment(accounts); // replace with your HomeFragment class
+                        HomeFragment homeFragment = new HomeFragment(accounts);
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.fragment_container, homeFragment); // replace "container" with your Fragment container ID
+                        transaction.replace(R.id.fragment_container, homeFragment);
                         transaction.commit();
                     }
                 }

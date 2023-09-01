@@ -8,6 +8,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
 import android.Manifest;
+import android.widget.Toast;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
@@ -35,9 +37,8 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Account> accounts;
     JsonReadWrite jsonReadWrite;
 
+    private static final int PERMISSION_REQUEST_CODE = 1;
     FusedLocationProviderClient fusedLocationProviderClient;
-    LocationRequest locationRequest;
-    LocationCallback locationCallback;
     String nameCity;
 
     @Override
@@ -48,37 +49,15 @@ public class MainActivity extends AppCompatActivity {
         // Inizializza fusedLocationProviderClient usando la variabile di classe
         fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(this);
 
+        // Richiedi il permesso per l'accesso alla posizione
         if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
-                @Override
-                public void onSuccess(Location location) {
-                    if (location != null) {
-
-                        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
-                        try {
-                            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
-                            if (addresses != null && addresses.size() > 0) {
-                                nameCity = addresses.get(0).getLocality();
-                                System.out.println("City: " + nameCity);
-                            } else {
-                                System.out.println("No address found.");
-                            }
-                        } catch (IOException e) {
-                            e.printStackTrace();
-                            System.out.println("Errore durante la richiesta di geocoding: " + e.getMessage());
-                            // Gestisci l'errore qui (ad esempio, fornisci un messaggio all'utente o riprova la richiesta)
-                        }
-                    } else {
-                        System.out.println("La posizione è nulla");
-                    }
-                }
-            });
+            // Se il permesso è già concesso, ottieni la posizione
+            getDeviceLocation();
         } else {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, 1);
+            // Se il permesso non è stato concesso, richiedilo all'utente
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
         }
 
-
-        // Il resto del tuo codice rimane invariato
         jsonReadWrite = new JsonReadWrite("test12.json");
         accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
         try {
@@ -95,27 +74,59 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
-        loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(this)));
+        loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this), nameCity));
+
     }
 
+    private void getDeviceLocation() {
+        // Verifica se il permesso di ACCESS_FINE_LOCATION è stato concesso
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            // Il permesso è già concesso, procedi con l'ottenimento della posizione
+            fusedLocationProviderClient.getLastLocation().addOnSuccessListener(new OnSuccessListener<Location>() {
+                @Override
+                public void onSuccess(Location location) {
+                    if (location != null) {
+                        Geocoder geocoder = new Geocoder(MainActivity.this, Locale.getDefault());
+                        try {
+                            List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
+                            if (addresses != null && addresses.size() > 0) {
+                                nameCity = addresses.get(0).getLocality();
+                                System.out.println("City: " + nameCity);
+
+                                // Ora che hai ottenuto la posizione, carica il fragment
+                                loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this), nameCity));
+
+                            } else {
+                                System.out.println("No address found.");
+                            }
+                        } catch (IOException e) {
+                            e.printStackTrace();
+                            System.out.println("Errore durante la richiesta di geocoding: " + e.getMessage());
+                            // Gestisci l'errore qui (ad esempio, fornisci un messaggio all'utente o riprova la richiesta)
+                        }
+                    } else {
+                        System.out.println("La posizione è nulla");
+                    }
+                }
+            });
+        } else {
+            // Il permesso non è stato concesso, quindi dovresti gestire questo caso qui
+            Toast.makeText(this, "Permesso di accesso alla posizione non concesso.", Toast.LENGTH_SHORT).show();
+        }
+    }
 
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
-        if (requestCode == 1) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // L'utente ha concesso l'autorizzazione alla posizione.
-                startLocationUpdates();
-            } else {
-                // L'utente ha rifiutato l'autorizzazione alla posizione.
-                // Puoi gestire questa situazione mostrando un messaggio all'utente o altro.
-            }
-        }
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-    }
 
-    private void startLocationUpdates() {
-        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            fusedLocationProviderClient.requestLocationUpdates(locationRequest, locationCallback, null);
+        if (requestCode == PERMISSION_REQUEST_CODE) {
+            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
+                // Il permesso è stato concesso, ottieni la posizione
+                getDeviceLocation();
+            } else {
+                // Il permesso è stato negato dall'utente, puoi gestire questo caso qui
+                Toast.makeText(this, "Il permesso per la posizione è stato negato.", Toast.LENGTH_SHORT).show();
+            }
         }
     }
 
