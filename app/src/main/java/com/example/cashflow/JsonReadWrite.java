@@ -29,6 +29,7 @@ public class JsonReadWrite {
         this.accounts = accounts;
     }
 
+
     public void setList(ArrayList<Account> accounts, Context context) throws IOException {
         this.accounts = accounts;
         saveToJson(context);

@@ -59,9 +59,9 @@ public class EditTransactionFragment extends Fragment {
         doneButton = view.findViewById(R.id.doneButton);
 
         if (transactionOriginal.isIncome()) {
-            setExpense();
-        } else {
             setIncome();
+        } else {
+            setExpense();
         }
 
         numberEditText.setText(String.valueOf(transactionOriginal.getAmount()));

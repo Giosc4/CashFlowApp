@@ -58,6 +58,11 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
         }
 
+//        QUESTE RIGHE DI CODICE DEVONO ESSERE ESEGUITE SOLO ALL'INSTALLAZIONE DELL'APP.
+//        test = new Test();
+//        accounts = test.getList();
+//        jsonReadWrite = new JsonReadWrite(test.getList(), "test12.json");
+
         jsonReadWrite = new JsonReadWrite("test12.json");
         accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
         try {
@@ -92,6 +97,7 @@ public class MainActivity extends AppCompatActivity {
                             if (addresses != null && addresses.size() > 0) {
                                 nameCity = addresses.get(0).getLocality();
                                 System.out.println("City: " + nameCity);
+                                System.out.println("");
 
                                 // Ora che hai ottenuto la posizione, carica il fragment
                                 loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this), nameCity));
