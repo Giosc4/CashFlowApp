@@ -63,6 +63,7 @@ import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
+import com.google.firebase.FirebaseApp;
 
 
 import java.io.File;
@@ -101,7 +102,6 @@ public class NewTransactionFragment extends Fragment {
 
     public Bitmap bitmap;
     private String nameCity;
-    public TextRecognition textRecognition;
 
     public static final String TESS_DATA = "/tessdata";
     private String mCurrentPhotoPath;
@@ -272,13 +272,12 @@ public class NewTransactionFragment extends Fragment {
                 }
             }
         });
-
+        // Imposta un listener per il pulsante della fotocamera
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Verifica i permessi della fotocamera
                 if (checkCameraPermission()) {
-
                     // Permessi già concessi, avvia l'attività di selezione dell'immagine
                     Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                     startActivityForResult(intent, YOUR_IMAGE_SELECTION_REQUEST_CODE);
@@ -291,17 +290,15 @@ public class NewTransactionFragment extends Fragment {
         return view;
     }
 
+
     private boolean checkCameraPermission() {
-        int cameraPermission = ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA);
+        int cameraPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
         return cameraPermission == PackageManager.PERMISSION_GRANTED;
     }
 
     private void requestCameraPermission() {
-        ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_CODE);
+        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_CODE);
     }
-
-
-    // Gestisci il risultato della selezione dell'immagine
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -312,27 +309,28 @@ public class NewTransactionFragment extends Fragment {
 
             // Verifica se l'URI dell'immagine è valido
             if (selectedImageUri != null) {
-                    textRecognition = new TextRecognition(requireContext() ,selectedImageUri);
+                // Ora puoi avviare il riconoscimento del testo utilizzando la classe TextRecognition
+                TextRecognition textRecognition = new TextRecognition(getContext(), selectedImageUri);
 
-                // Avvia il riconoscimento del testo sull'immagine selezionata
+                // Ottieni il testo riconosciuto
                 String recognizedText = textRecognition.getRecognizedText();
 
                 // Mostra il testo riconosciuto in un TextView (cameraTextView)
                 if (cameraTextView != null) {
                     cameraTextView.setText(recognizedText);
-                    System.out.println("recognizedText " + recognizedText);
                 } else {
                     // Aggiungi un messaggio di errore se cameraTextView non è inizializzato correttamente
-                    Toast.makeText(requireContext(), "Errore: TextView non inizializzato correttamente", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getContext(), "Errore: TextView non inizializzato correttamente", Toast.LENGTH_SHORT).show();
                 }
 
                 System.out.println("Testo riconosciuto: " + recognizedText);
             } else {
                 // Gestisci il caso in cui l'URI dell'immagine non sia valido
-                Toast.makeText(requireContext(), "Errore: URI dell'immagine non valido", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Errore: URI dell'immagine non valido", Toast.LENGTH_SHORT).show();
             }
         }
     }
+
 
     private void saveTransaction() throws IOException {
         if (numberEditText != null && accountSpinner != null && locationEditText != null && dateEditText != null) {
