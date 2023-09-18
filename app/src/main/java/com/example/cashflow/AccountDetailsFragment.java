@@ -70,13 +70,15 @@ public class AccountDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 changeName();
-                if (getActivity() != null) {
-                    getActivity().getSupportFragmentManager().popBackStack();
-                    LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
-                    mainLayout.setVisibility(View.VISIBLE);
-                }
+                HomeFragment homeFragment = new HomeFragment(jsonReadWrite.readAccountsFromJson(requireContext()));
+                FragmentManager fragmentManager = getParentFragmentManager();
+                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                fragmentTransaction.replace(R.id.fragment_container, homeFragment);
+                fragmentTransaction.addToBackStack(null);
+                fragmentTransaction.commit();
             }
         });
+
 
 
         deleteButton.setOnClickListener(new View.OnClickListener() {
@@ -137,7 +139,8 @@ public class AccountDetailsFragment extends Fragment {
                 .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                     public void onClick(DialogInterface dialog, int whichButton) {
                         deleteAccount();
-                    }})
+                    }
+                })
                 .setNegativeButton(android.R.string.no, null).show();
     }
 

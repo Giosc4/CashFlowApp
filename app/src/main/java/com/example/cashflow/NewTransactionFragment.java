@@ -84,6 +84,8 @@ public class NewTransactionFragment extends Fragment {
     private Button expenseButton;
     private Button incomeButton;
     private Button doneButton;
+    private Button deleteButton;
+
     private Spinner categorySpinner;
     private EditText numberEditText;
     private Spinner accountSpinner;
@@ -129,6 +131,9 @@ public class NewTransactionFragment extends Fragment {
         cameraButton = view.findViewById(R.id.cameraButton);
         cameraTextView = view.findViewById(R.id.cameraTextView);
 
+        deleteButton = view.findViewById(R.id.deleteButton);
+        deleteButton.setVisibility(View.INVISIBLE);
+        deleteButton.setVisibility(View.GONE);
 
         LocalDateTime currentDateTime = null;
         if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {

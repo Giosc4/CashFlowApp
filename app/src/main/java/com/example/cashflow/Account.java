@@ -1,6 +1,7 @@
 package com.example.cashflow;
 
 
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 
 public class Account {
@@ -37,8 +38,11 @@ public class Account {
 
     public double getBalance() {
         updateBalance();
-        return balance;
+        DecimalFormat decimalFormat = new DecimalFormat("#.##"); // Imposta il formato a due decimali
+        String formattedBalance = decimalFormat.format(balance);
+        return Double.parseDouble(formattedBalance);
     }
+
 
     public ArrayList<Transactions> getListTrans() {
         return listTrans;
@@ -55,9 +59,12 @@ public class Account {
     }
     public boolean removeTransaction(Transactions transaction) {
         boolean response = listTrans.remove(transaction);
-        updateBalance();
+        if (response) {
+            updateBalance();
+        }
         return response;
     }
+
 
     @Override
     public String toString() {

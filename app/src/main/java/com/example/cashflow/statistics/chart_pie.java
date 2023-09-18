@@ -1,30 +1,39 @@
 package com.example.cashflow.statistics;
 
-import android.graphics.Color;
 import android.os.Bundle;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
+import android.widget.ArrayAdapter;
+import android.widget.Button;
+import android.widget.ListView;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
 import com.example.cashflow.Account;
+import com.example.cashflow.CategoriesEnum;
 import com.example.cashflow.R;
+import com.example.cashflow.Transactions;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.Legend;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
-import com.github.mikephil.charting.formatter.PercentFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class chart_pie extends Fragment {
 
     private ArrayList<Account> accounts;
+    private ListView categoryListView;
+    private PieChart pieChart;
+    private Button clearSelectionButton;
+    private Button selectCategoriesButton;
 
     public chart_pie(ArrayList<Account> accounts) {
         this.accounts = accounts;
@@ -33,44 +42,106 @@ public class chart_pie extends Fragment {
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Infla il layout del fragment per la visualizzazione del grafico a torta
-        View view = inflater.inflate(R.layout.fragment_statistics, container, false);
+        // Infla il layout del fragment per il grafico a torta
+        View view = inflater.inflate(R.layout.fragment_pie_chart, container, false);
 
-        // Trova il tuo PieChart nella vista inflata e configuralo
-        PieChart pieChart = view.findViewById(R.id.pieChart);
-        setupPieChart(pieChart, accounts);
+        // Trova il tuo grafico a torta nella vista inflata
+        pieChart = view.findViewById(R.id.pieChart);
+
+        // Trova la ListView delle categorie nella vista inflata
+        categoryListView = view.findViewById(R.id.categoryListView);
+
+        // Trova i pulsanti nella vista inflata
+        clearSelectionButton = view.findViewById(R.id.clearSelectionButton);
+        selectCategoriesButton = view.findViewById(R.id.selectCategoriesButton);
+
+        // Crea un adattatore per la ListView delle categorie
+        CategoriesEnum[] categories = CategoriesEnum.values();
+        ArrayAdapter<CategoriesEnum> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_list_item_multiple_choice, categories);
+        categoryListView.setAdapter(adapter);
+
+        // Imposta un listener per il pulsante "Cancella Selezione"
+        clearSelectionButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Deseleziona tutte le categorie nella ListView
+                for (int i = 0; i < categoryListView.getCount(); i++) {
+                    categoryListView.setItemChecked(i, false);
+                }
+                // Richiama la funzione per aggiornare il grafico a torta con le categorie deselezionate
+                updatePieChart();
+            }
+        });
+
+        // Imposta un listener per il pulsante "Seleziona Categorie"
+        selectCategoriesButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Implementa qui la logica per selezionare categorie specifiche, se necessario
+                // Ad esempio, puoi mostrare un dialogo per selezionare le categorie.
+                updatePieChart();
+            }
+        });
+
+        // Chiama la funzione per inizializzare il grafico a torta con tutte le categorie
+        popolaTorta(null);
 
         return view;
     }
 
-    public void setupPieChart(PieChart pieChart, ArrayList<Account> accounts) {
-        // Impostazioni per il grafico a torta
-        pieChart.setUsePercentValues(true);
-        pieChart.getDescription().setEnabled(false);
-        pieChart.setExtraOffsets(5, 10, 5, 5);
+    private void updatePieChart() {
+        // Ottieni le categorie selezionate dall'utente
+        SparseBooleanArray checkedItems = categoryListView.getCheckedItemPositions();
+        List<CategoriesEnum> selectedCategories = new ArrayList<>();
 
-        // Legenda
-        Legend legend = pieChart.getLegend();
-        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.RIGHT);
-        legend.setOrientation(Legend.LegendOrientation.VERTICAL);
-        legend.setDrawInside(false);
-        pieChart.setDrawEntryLabels(false);
-
-        // Dati per il grafico a torta
-        ArrayList<PieEntry> entries = new ArrayList<>();
-        for (Account account : accounts) {
-            entries.add(new PieEntry((float) account.getBalance(), account.getName()));
+        for (int i = 0; i < checkedItems.size(); i++) {
+            int key = checkedItems.keyAt(i);
+            if (checkedItems.get(key)) {
+                selectedCategories.add(CategoriesEnum.values()[key]);
+            }
         }
 
-        PieDataSet dataSet = new PieDataSet(entries, "Total Balance");
-        dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
-        dataSet.setValueTextSize(12f);
-        dataSet.setValueTextColor(Color.WHITE);
-
-        PieData pieData = new PieData(dataSet);
-        pieData.setValueFormatter(new PercentFormatter(pieChart));
-        pieChart.setData(pieData);
+        // Richiama la funzione per popolare il grafico a torta con le categorie selezionate
+        popolaTorta(selectedCategories);
     }
+    private void popolaTorta(List<CategoriesEnum> selectedCategories) {
+        // Crea una lista di PieEntry con i dati desiderati
+        ArrayList<PieEntry> pieEntries = new ArrayList<>();
+        float[] listForCategory = new float[CategoriesEnum.values().length];
+
+        // Scorrere gli account e le transazioni per calcolare le somme
+        for (Account account : accounts) {
+            for (Transactions transaction : account.getListTrans()) {
+                CategoriesEnum categoria = transaction.getCategory();
+                float importo = (float) transaction.getAmount();
+
+                if (selectedCategories == null || selectedCategories.isEmpty() || selectedCategories.contains(categoria)) {
+                    // Se non ci sono categorie selezionate o la categoria è selezionata, aggiungi l'importo
+                    int index = categoria.ordinal();
+                    listForCategory[index] += importo;
+                }
+            }
+        }
+
+        // Aggiungi le voci del grafico a torta solo se il totale è diverso da zero
+        for (int i = 0; i < listForCategory.length; i++) {
+            if (listForCategory[i] > 0f) {
+                String nomeCategoria = CategoriesEnum.values()[i].toString() + "\n €" + listForCategory[i];
+                pieEntries.add(new PieEntry(listForCategory[i], nomeCategoria));
+            }
+        }
+
+        // Imposta i dati del grafico a torta
+        PieDataSet dataSet = new PieDataSet(pieEntries, "Category");
+        dataSet.setColors(ColorTemplate.COLORFUL_COLORS);
+        PieData pieData = new PieData(dataSet);
+
+        pieChart.setData(pieData);
+        pieChart.setUsePercentValues(true);
+        pieChart.getDescription().setEnabled(false);
+        pieChart.animateY(1000);
+        pieChart.invalidate();
+    }
+
 
 }

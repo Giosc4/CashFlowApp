@@ -59,13 +59,16 @@ public class MainActivity extends AppCompatActivity {
             ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
         }
 
-//        QUESTE RIGHE DI CODICE DEVONO ESSERE ESEGUITE SOLO ALL'INSTALLAZIONE DELL'APP.
-//        test = new Test();
-//        accounts = test.getList();
-//        jsonReadWrite = new JsonReadWrite(test.getList(), "test12.json");
-
         jsonReadWrite = new JsonReadWrite("test12.json");
         accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
+
+        System.out.println(accounts);
+        if (accounts == null ) {
+            //        QUESTE RIGHE DI CODICE DEVONO ESSERE ESEGUITE SOLO ALL'INSTALLAZIONE DELL'APP.
+            test = new Test();
+            accounts = test.getList();
+            jsonReadWrite = new JsonReadWrite(test.getList(), "test12.json");
+        }
         try {
             jsonReadWrite.setList(accounts, this);
         } catch (IOException e) {

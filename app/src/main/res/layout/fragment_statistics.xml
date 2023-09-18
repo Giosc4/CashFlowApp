@@ -1,28 +1,27 @@
-<ScrollView
+<!-- fragment_statistics.xml -->
+
+<LinearLayout
     xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="16dp"
+    tools:context=".StatisticsFragment">
 
-    <FrameLayout
-        android:id="@+id/fragment_container"
+    <!-- Pulsanti per selezionare il tipo di grafico -->
+    <Button
+        android:id="@+id/btnPieChart"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+        android:layout_height="wrap_content"
+        android:text="Grafico a Torta"/>
 
-        <!-- Altri controlli o filtri per l'intervallo di tempo e altre opzioni -->
+    <Button
+        android:id="@+id/btnBarChart"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Grafico a Barre"/>
 
-        <!-- Includi il layout del grafico a torta -->
-
-        <!-- Includi il layout del grafico a barre -->
-        <include
-            layout="@layout/fragment_pie_chart"
-             />
-
-        <include
-            layout="@layout/fragment_bar_chart"
-            android:layout_width="match_parent"
-            android:layout_height="692dp" />
-
-        <!-- Add more XML elements here as needed -->
-
-    </FrameLayout>
-</ScrollView>
+    <!-- Aggiungi altri pulsanti per altri tipi di grafico, se necessario -->
+</LinearLayout>

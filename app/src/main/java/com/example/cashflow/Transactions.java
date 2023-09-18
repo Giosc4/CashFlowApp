@@ -29,11 +29,7 @@ public class Transactions {
 
     public Transactions(Boolean income, double amount, String date, String city, CategoriesEnum category) {
         this.income = income;
-        if (income == false) {
-            this.amount = -amount;
-        } else {
-            this.amount = amount;
-        }
+        this.amount = amount;
         this.date = date;
         this.city = city;
         this.category = category;
@@ -48,7 +44,11 @@ public class Transactions {
     }
 
     public double getAmount() {
-        return  amount;
+        if (isIncome()) {
+            return amount;
+        } else {
+            return -amount;
+        }
     }
 
     public String getDate() {
@@ -57,6 +57,27 @@ public class Transactions {
 
     public String getCity() {
         return city;
+    }
+
+
+    public void setIncome(Boolean income) {
+        this.income = income;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
+    }
+
+    public void setDate(String date) {
+        this.date = date;
+    }
+
+    public void setCity(String city) {
+        this.city = city;
+    }
+
+    public void setCategory(CategoriesEnum category) {
+        this.category = category;
     }
 
     @Override
@@ -71,10 +92,19 @@ public class Transactions {
     }
 
     public String printOnApp() {
-        return  "amount: " + amount + " / " +
-                "date: " + date + " / " +
-                "city: " + city + " / " +
-                "category: " + category.name();
+        if (income) {
+            return "INCOME / " +
+                    "amount: " + amount + " / " +
+                    "date: " + date + " / " +
+                    "city: " + city + " / " +
+                    "category: " + category.name().toString();
+        } else {
+            return "EXPENSE / " +
+                    "amount: " + amount + " / " +
+                    "date: " + date + " / " +
+                    "city: " + city + " / " +
+                    "category: " + category.name().toString();
+        }
     }
 
 }

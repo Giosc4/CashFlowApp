@@ -30,6 +30,8 @@ public class EditTransactionFragment extends Fragment {
     private EditText dateEditText;
     private EditText locationEditText;
     private Button doneButton;
+    private Button deleteButton;
+
     private Transactions transactionOriginal;
     private Account accountOriginal;
     private ArrayList<Account> accounts;
@@ -57,14 +59,19 @@ public class EditTransactionFragment extends Fragment {
         dateEditText = view.findViewById(R.id.dateEditText);
         locationEditText = view.findViewById(R.id.locationEditText);
         doneButton = view.findViewById(R.id.doneButton);
+        deleteButton = view.findViewById(R.id.deleteButton);
 
-        if (transactionOriginal.isIncome()) {
-            setIncome();
-        } else {
+        String str = "";
+        if (transactionOriginal.getAmount() < 0) {
+            str = String.valueOf(transactionOriginal.getAmount());
+            str = str.replace("-", "");
             setExpense();
+        } else {
+            str = String.valueOf(transactionOriginal.getAmount());
+            setIncome();
         }
 
-        numberEditText.setText(String.valueOf(transactionOriginal.getAmount()));
+        numberEditText.setText(str);
         dateEditText.setText(transactionOriginal.getDate());
         locationEditText.setText(transactionOriginal.getCity());
 
@@ -114,7 +121,7 @@ public class EditTransactionFragment extends Fragment {
         expenseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                setIncome();
+                setExpense();
             }
         });
 
@@ -122,7 +129,7 @@ public class EditTransactionFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
-                setExpense();
+                setIncome();
             }
         });
 
@@ -181,21 +188,25 @@ public class EditTransactionFragment extends Fragment {
             }
         });
 
+        deleteButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                deleteTransaction();
+            }
+        });
+
+
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                try {
-                    updateTransaction();
-                } catch (IOException e) {
-                    throw new RuntimeException(e);
-                }
+                updateTransaction();
             }
         });
 
         return view;
     }
 
-    private void setIncome() {
+    private void setExpense() {
         // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
         expenseButton.setSelected(true);
         expenseButton.setBackgroundColor(Color.parseColor("#00cc44")); // Verde quando selezionato
@@ -203,43 +214,79 @@ public class EditTransactionFragment extends Fragment {
         incomeButton.setBackgroundColor(Color.parseColor("#e06666")); // rosso quando non selezionato
     }
 
-    private void setExpense() {
+    private void setIncome() {
         incomeButton.setSelected(true);
         incomeButton.setBackgroundColor(Color.parseColor("#00cc44")); // Verde quando selezionato
         expenseButton.setSelected(false);
         expenseButton.setBackgroundColor(Color.parseColor("#e06666")); // rosso quando non selezionato
     }
 
-    private void updateTransaction() throws IOException {
-        boolean income = incomeButton.isSelected();
-        double amount = Double.parseDouble(numberEditText.getText().toString());
-        String date = dateEditText.getText().toString();
-        String city = locationEditText.getText().toString();
-        CategoriesEnum category = CategoriesEnum.values()[categorySpinner.getSelectedItemPosition()];
-        int selectedAccountIndex = accountSpinner.getSelectedItemPosition();
-
-        Transactions newTrans = new Transactions(income, amount, date, city, category);
-
+    private void deleteTransaction() {
+        // Rimuovi la transazione originale dall'account originale
         accountOriginal.removeTransaction(transactionOriginal);
-        accountOriginal.getListTrans().add(newTrans);
-        System.out.println("Transaction Original: " + transactionOriginal.toString());
-
-
-        Account selectedAccount = accounts.get(selectedAccountIndex);
-        selectedAccount.getListTrans().add(newTrans);
-        selectedAccount.updateBalance();
-
-        accounts.set(selectedAccountIndex, selectedAccount);
-
-        jsonReadWrite.setList(accounts, requireContext());
-
         if (getActivity() != null) {
             getActivity().getSupportFragmentManager().popBackStack();
             LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
             mainLayout.setVisibility(View.VISIBLE);
         }
 
-        Toast.makeText(getContext(), "Transaction updated", Toast.LENGTH_LONG).show();
+        Toast.makeText(getContext(), "Transaction deleted", Toast.LENGTH_LONG).show();
+    }
+
+    private void updateTransaction() {
+        boolean newIncome = incomeButton.isSelected();
+        double newAmount = Double.parseDouble(numberEditText.getText().toString());
+        String newDate = dateEditText.getText().toString();
+        String newCity = locationEditText.getText().toString();
+        CategoriesEnum newCategory = CategoriesEnum.values()[categorySpinner.getSelectedItemPosition()];
+        int newAccountIndex = accountSpinner.getSelectedItemPosition();
+
+        // Verifica se sono state apportate modifiche ai dati della transazione
+        if (transactionOriginal.isIncome() != newIncome ||
+                transactionOriginal.getAmount() != newAmount ||
+                !transactionOriginal.getDate().equals(newDate) ||
+                !transactionOriginal.getCity().equals(newCity) ||
+                transactionOriginal.getCategory() != newCategory ||
+                newAccountIndex != originalAccountIndex) {
+
+            // Rimuovi la transazione originale dall'account originale
+            accountOriginal.removeTransaction(transactionOriginal);
+
+            // Aggiorna i dati della transazione originale con i nuovi valori
+            transactionOriginal.setIncome(newIncome);
+            transactionOriginal.setAmount(newAmount);
+            transactionOriginal.setDate(newDate);
+            transactionOriginal.setCity(newCity);
+            transactionOriginal.setCategory(newCategory);
+
+            // Aggiungi la transazione modificata al nuovo account selezionato
+            Account newAccount = accounts.get(newAccountIndex);
+            newAccount.getListTrans().add(transactionOriginal);
+            newAccount.updateBalance();
+
+            // Aggiorna l'elenco degli account
+            accounts.set(originalAccountIndex, accountOriginal);
+            accounts.set(newAccountIndex, newAccount);
+
+            try {
+                // Esegui il salvataggio dei dati qui, dopo aver apportato tutte le modifiche
+                jsonReadWrite.setList(accounts, requireContext());
+
+                if (getActivity() != null) {
+                    getActivity().getSupportFragmentManager().popBackStack();
+                    LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
+                    mainLayout.setVisibility(View.VISIBLE);
+                }
+
+                Toast.makeText(getContext(), "Transaction updated", Toast.LENGTH_LONG).show();
+            } catch (IOException e) {
+                e.printStackTrace();
+                Toast.makeText(getContext(), "Errore durante il salvataggio delle modifiche", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            // Nessuna modifica apportata alla transazione, nessuna azione necessaria
+            Toast.makeText(getContext(), "Nessuna modifica apportata alla transazione", Toast.LENGTH_LONG).show();
+        }
     }
 
 
