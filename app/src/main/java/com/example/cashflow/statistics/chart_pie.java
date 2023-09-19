@@ -1,5 +1,6 @@
 package com.example.cashflow.statistics;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
@@ -18,10 +19,19 @@ import com.example.cashflow.Account;
 import com.example.cashflow.CategoriesEnum;
 import com.example.cashflow.R;
 import com.example.cashflow.Transactions;
+import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
+import com.github.mikephil.charting.components.AxisBase;
+import com.github.mikephil.charting.components.XAxis;
+import com.github.mikephil.charting.components.YAxis;
+import com.github.mikephil.charting.data.BarData;
+import com.github.mikephil.charting.data.BarDataSet;
+import com.github.mikephil.charting.data.BarEntry;
 import com.github.mikephil.charting.data.PieData;
 import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
+import com.github.mikephil.charting.formatter.IndexAxisValueFormatter;
+import com.github.mikephil.charting.formatter.ValueFormatter;
 import com.github.mikephil.charting.utils.ColorTemplate;
 
 import java.util.ArrayList;
@@ -32,6 +42,8 @@ public class chart_pie extends Fragment {
     private ArrayList<Account> accounts;
     private ListView categoryListView;
     private PieChart pieChart;
+    private BarChart barChart;
+
     private Button clearSelectionButton;
     private Button selectCategoriesButton;
 
@@ -47,6 +59,7 @@ public class chart_pie extends Fragment {
 
         // Trova il tuo grafico a torta nella vista inflata
         pieChart = view.findViewById(R.id.pieChart);
+        barChart = view.findViewById(R.id.barChart);
 
         // Trova la ListView delle categorie nella vista inflata
         categoryListView = view.findViewById(R.id.categoryListView);
@@ -85,6 +98,8 @@ public class chart_pie extends Fragment {
 
         // Chiama la funzione per inizializzare il grafico a torta con tutte le categorie
         popolaTorta(null);
+        popolaBarre(null);
+
 
         return view;
     }
@@ -103,7 +118,54 @@ public class chart_pie extends Fragment {
 
         // Richiama la funzione per popolare il grafico a torta con le categorie selezionate
         popolaTorta(selectedCategories);
+        popolaBarre(selectedCategories);
     }
+    private void popolaBarre(List<CategoriesEnum> selectedCategories) {
+        // Crea una lista di BarEntry con i dati desiderati
+        ArrayList<BarEntry> barEntries = new ArrayList<>();
+        float[] listForCategory = new float[CategoriesEnum.values().length];
+
+        // Scorrere gli account e le transazioni per calcolare le somme
+        for (Account account : accounts) {
+            for (Transactions transaction : account.getListTrans()) {
+                CategoriesEnum categoria = transaction.getCategory();
+                float importo = (float) transaction.getAmount();
+
+                if (selectedCategories == null || selectedCategories.isEmpty() || selectedCategories.contains(categoria)) {
+                    // Aggiungi l'importo alla lista corretta in base al segno
+                    int index = categoria.ordinal();
+                    listForCategory[index] += importo;
+                }
+            }
+        }
+
+        // Aggiungi le voci al grafico a barre
+        for (int i = 0; i < listForCategory.length; i++) {
+            barEntries.add(new BarEntry(i, listForCategory[i]));
+        }
+
+        // Imposta i dati del grafico a barre
+        BarDataSet dataSet = new BarDataSet(barEntries, "Category");
+        dataSet.setColors(ColorTemplate.MATERIAL_COLORS); // Utilizza colori casuali
+
+        BarData barData = new BarData(dataSet);
+
+        // Imposta le etichette sull'asse X con il nome delle categorie
+        String[] labels = new String[barEntries.size()];
+        for (int i = 0; i < barEntries.size(); i++) {
+            labels[i] = CategoriesEnum.values()[(int) barEntries.get(i).getX()].toString();
+        }
+        XAxis xAxis = barChart.getXAxis();
+        xAxis.setValueFormatter(new IndexAxisValueFormatter(labels));
+
+        // Imposta il grafico a barre
+        barChart.setData(barData);
+        barChart.setFitBars(true);
+        barChart.getDescription().setEnabled(false);
+        barChart.invalidate();
+    }
+
+
     private void popolaTorta(List<CategoriesEnum> selectedCategories) {
         // Crea una lista di PieEntry con i dati desiderati
         ArrayList<PieEntry> pieEntries = new ArrayList<>();

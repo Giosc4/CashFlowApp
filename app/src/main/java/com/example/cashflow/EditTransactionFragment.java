@@ -224,14 +224,25 @@ public class EditTransactionFragment extends Fragment {
     private void deleteTransaction() {
         // Rimuovi la transazione originale dall'account originale
         accountOriginal.removeTransaction(transactionOriginal);
-        if (getActivity() != null) {
-            getActivity().getSupportFragmentManager().popBackStack();
-            LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
-            mainLayout.setVisibility(View.VISIBLE);
-        }
+        accounts.set(originalAccountIndex, accountOriginal);
 
-        Toast.makeText(getContext(), "Transaction deleted", Toast.LENGTH_LONG).show();
+        try {
+            // Esegui il salvataggio dell'account originale nel file JSON dopo la rimozione della transazione
+            jsonReadWrite.setList(accounts, requireContext());
+
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager().popBackStack();
+                LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
+                mainLayout.setVisibility(View.VISIBLE);
+            }
+
+            Toast.makeText(getContext(), "Transaction deleted", Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Errore durante il salvataggio delle modifiche", Toast.LENGTH_LONG).show();
+        }
     }
+
 
     private void updateTransaction() {
         boolean newIncome = incomeButton.isSelected();
