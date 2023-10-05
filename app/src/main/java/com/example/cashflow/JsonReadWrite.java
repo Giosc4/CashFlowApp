@@ -4,6 +4,12 @@ import android.content.Context;
 import android.view.View;
 
 import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonDeserializationContext;
+import com.google.gson.JsonDeserializer;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonParseException;
+import com.google.gson.JsonSyntaxException;
 import com.google.gson.reflect.TypeToken;
 
 import java.io.BufferedReader;
@@ -12,7 +18,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class JsonReadWrite {
 
@@ -37,7 +48,10 @@ public class JsonReadWrite {
 
     public void saveToJson(Context context) throws IOException {
         // Convert the Transactions object to JSON format
-        String json = accountsToJson();
+        Gson gson = new GsonBuilder()
+                .setDateFormat("yyyy-MM-dd")
+                .create();
+        String json = gson.toJson(accounts);
 
         // Specify the path where you want to create the file
         File directory = context.getExternalFilesDir(null);
@@ -93,10 +107,9 @@ public class JsonReadWrite {
             throw new RuntimeException(e);
         }
 
-        // Convert the JSON string back to a list of Account objects
+        // Deserialize JSON as a list of Account objects
         Gson gson = new Gson();
-        Type type = new TypeToken<ArrayList<Account>>() {
-        }.getType();
+        Type type = new TypeToken<ArrayList<Account>>() {}.getType();
         ArrayList<Account> loadedAccounts = gson.fromJson(json, type);
 
         return loadedAccounts;

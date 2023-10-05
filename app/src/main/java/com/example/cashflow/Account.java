@@ -57,6 +57,14 @@ public class Account {
         }
         this.balance = total;
     }
+
+    public boolean addTransaction(Transactions transaction) {
+        boolean response = listTrans.add(transaction);
+        if (response) {
+            updateBalance();
+        }
+        return response;
+    }
     public boolean removeTransaction(Transactions transaction) {
         boolean response = listTrans.remove(transaction);
         if (response) {
@@ -65,6 +73,12 @@ public class Account {
         return response;
     }
 
+    public boolean editTransactions(Transactions transactionOriginal, Transactions newTrans) {
+        if (removeTransaction(transactionOriginal) && addTransaction(newTrans)){
+            return true;
+        }
+        return false;
+    }
 
     @Override
     public String toString() {

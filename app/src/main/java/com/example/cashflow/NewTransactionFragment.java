@@ -4,7 +4,9 @@ import static android.app.Activity.RESULT_OK;
 import static android.content.ContentValues.TAG;
 
 import android.app.Activity;
+import android.app.DatePickerDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.AssetManager;
@@ -27,6 +29,7 @@ import android.provider.MediaStore;
 import android.provider.Settings;
 import android.text.InputFilter;
 import android.text.Spanned;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.util.SparseArray;
 import android.view.LayoutInflater;
@@ -35,16 +38,19 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 import android.Manifest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.appcompat.app.AlertDialog;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
@@ -75,6 +81,7 @@ import java.text.SimpleDateFormat;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.List;
 import java.util.Locale;
@@ -89,13 +96,16 @@ public class NewTransactionFragment extends Fragment {
     private Spinner categorySpinner;
     private EditText numberEditText;
     private Spinner accountSpinner;
-    private EditText dateEditText;
+    private Calendar selectedDate;
+
+    private Button dateTimeButton;
     private EditText locationEditText;
     private JsonReadWrite jsonReadWrite;
     private ArrayList<Account> accounts;
     private ArrayList<String> categories;
     private ImageView cameraButton;
     private TextView cameraTextView;
+    private TextView selectedTimeTextView;
 
     private static final int REQUEST_CAMERA_CODE = 100;
     private static final int YOUR_IMAGE_SELECTION_REQUEST_CODE = 123;
@@ -125,30 +135,29 @@ public class NewTransactionFragment extends Fragment {
         categorySpinner = view.findViewById(R.id.categorySpinner);
         numberEditText = view.findViewById(R.id.numberEditText);
         accountSpinner = view.findViewById(R.id.accountSpinner);
-        dateEditText = view.findViewById(R.id.dateEditText);
         locationEditText = view.findViewById(R.id.locationEditText);
         accountSpinner = view.findViewById(R.id.accountSpinner);
         cameraButton = view.findViewById(R.id.cameraButton);
         cameraTextView = view.findViewById(R.id.cameraTextView);
+        selectedTimeTextView = view.findViewById(R.id.selectedTimeTextView);
+
+        dateTimeButton = view.findViewById(R.id.dateTimeButton);
+
 
         deleteButton = view.findViewById(R.id.deleteButton);
         deleteButton.setVisibility(View.INVISIBLE);
         deleteButton.setVisibility(View.GONE);
 
-        LocalDateTime currentDateTime = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            currentDateTime = LocalDateTime.now();
-        }
-        DateTimeFormatter formatter = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm");
-        }
-        String formattedDateTime = null;
-        if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O) {
-            formattedDateTime = currentDateTime.format(formatter);
-        }
-        dateEditText.setText(formattedDateTime);
-        locationEditText.setText(nameCity + ""); //errore, compare soltanto dopo aver premuto home
+        selectedDate = Calendar.getInstance();
+        dateTimeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDatePickerDialog();
+            }
+        });
+
+
+        locationEditText.setText(nameCity + "");
 
 
 // Set the input filter on numberEditText for decimal numbers
@@ -240,6 +249,8 @@ public class NewTransactionFragment extends Fragment {
                 // Codice da eseguire quando non viene selezionato nessun elemento
             }
         });
+
+
 
 
         //SPINNER ACCOUNTS
@@ -338,7 +349,7 @@ public class NewTransactionFragment extends Fragment {
 
 
     private void saveTransaction() throws IOException {
-        if (numberEditText != null && accountSpinner != null && locationEditText != null && dateEditText != null) {
+        if (numberEditText != null && accountSpinner != null && locationEditText != null && selectedDate != null) {
 
             boolean income = incomeButton.isSelected();
             boolean expense = expenseButton.isSelected();
@@ -352,14 +363,14 @@ public class NewTransactionFragment extends Fragment {
             String number = numberEditText.getText() != null ? numberEditText.getText().toString() : "";
             double amount = Double.parseDouble(number);
             String accountSelected = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
-            String date = dateEditText.getText() != null ? dateEditText.getText().toString() : "";
+            System.out.println("DateTimeUtil.createDateTimeFromDateAndTimePickers " + selectedDate);
             String location = locationEditText.getText() != null ? locationEditText.getText().toString() : "";
             String selectedCategory = categorySpinner.getSelectedItem() != null ? categorySpinner.getSelectedItem().toString() : "";
 
             // Resto del codice per salvare la transazione
-            Toast.makeText(getContext(), "Transaction saved: " + amount + ", " + accountSelected + ", " + date + ", " + location, Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Transaction saved: " + amount + ", " + accountSelected + ", " + selectedDate + ", " + location, Toast.LENGTH_LONG).show();
 
-            Transactions newTrans = new Transactions(income, amount, date, location, CategoriesEnum.valueOf(selectedCategory));
+            Transactions newTrans = new Transactions(income, amount, selectedDate, location, CategoriesEnum.valueOf(selectedCategory));
             jsonReadWrite = new JsonReadWrite("test12.json");
 
             for (Account account : accounts) {
@@ -380,4 +391,33 @@ public class NewTransactionFragment extends Fragment {
             // Gestisci il caso in cui uno dei componenti UI sia nullo
         }
     }
+
+    private void showDatePickerDialog() {
+        Calendar calendar = Calendar.getInstance();
+        int year = calendar.get(Calendar.YEAR);
+        int month = calendar.get(Calendar.MONTH);
+        int dayOfMonth = calendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                // Qui puoi fare qualcosa con la data selezionata dall'utente
+                // Ad esempio, puoi impostarla in un EditText o fare altro
+                calendar.set(Calendar.YEAR, year);
+                calendar.set(Calendar.MONTH, monthOfYear);
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                String selectedDateString = year + "-" + (monthOfYear + 1) + "-" + dayOfMonth;
+                System.out.println(selectedDateString + " selectedDateString");
+                selectedTimeTextView.setText(selectedDateString);
+            }
+        }, year, month, dayOfMonth);
+
+        // Mostra il dialog per la selezione della data
+        datePickerDialog.show();
+    }
+
+
+
+
 }

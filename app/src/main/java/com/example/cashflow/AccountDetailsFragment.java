@@ -80,7 +80,6 @@ public class AccountDetailsFragment extends Fragment {
         });
 
 
-
         deleteButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -209,6 +208,17 @@ public class AccountDetailsFragment extends Fragment {
                 transactionDetailTextView = itemView.findViewById(R.id.transactionDetailTextView);
                 detailButton = itemView.findViewById(R.id.detailButton);
 
+                transactionDetailTextView.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View view) {
+                        EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), account);
+                        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+                        fragmentTransaction.replace(R.id.fragment_container, editTransactionFragment);
+                        fragmentTransaction.addToBackStack(null);
+                        fragmentTransaction.commit();
+                    }
+                });
                 detailButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

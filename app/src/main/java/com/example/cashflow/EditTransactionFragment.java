@@ -1,5 +1,6 @@
 package com.example.cashflow;
 
+import android.app.DatePickerDialog;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.text.InputFilter;
@@ -10,15 +11,22 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
+import android.widget.TextView;
+import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.Date;
+import java.util.Locale;
 
 public class EditTransactionFragment extends Fragment {
 
@@ -27,11 +35,16 @@ public class EditTransactionFragment extends Fragment {
     private Spinner categorySpinner;
     private EditText numberEditText;
     private Spinner accountSpinner;
-    private EditText dateEditText;
+
+    private TextView selectedTimeTextView;
+
+    private Calendar calendar;
+
     private EditText locationEditText;
     private Button doneButton;
     private Button deleteButton;
 
+    private Button dateTimeButton;
     private Transactions transactionOriginal;
     private Account accountOriginal;
     private ArrayList<Account> accounts;
@@ -56,10 +69,12 @@ public class EditTransactionFragment extends Fragment {
         categorySpinner = view.findViewById(R.id.categorySpinner);
         numberEditText = view.findViewById(R.id.numberEditText);
         accountSpinner = view.findViewById(R.id.accountSpinner);
-        dateEditText = view.findViewById(R.id.dateEditText);
+        selectedTimeTextView = view.findViewById(R.id.selectedTimeTextView);
         locationEditText = view.findViewById(R.id.locationEditText);
         doneButton = view.findViewById(R.id.doneButton);
         deleteButton = view.findViewById(R.id.deleteButton);
+        dateTimeButton = view.findViewById(R.id.dateTimeButton);
+        calendar = transactionOriginal.getDate();
 
         String str = "";
         if (transactionOriginal.getAmount() < 0) {
@@ -72,8 +87,20 @@ public class EditTransactionFragment extends Fragment {
         }
 
         numberEditText.setText(str);
-        dateEditText.setText(transactionOriginal.getDate());
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+        String selectedDateString = dateFormat.format(transactionOriginal.getDate().getTime());
+        selectedTimeTextView.setText(selectedDateString);
+
+
         locationEditText.setText(transactionOriginal.getCity());
+
+        dateTimeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDatePickerDialog();
+            }
+        });
 
         numberEditText.setFilters(new InputFilter[]{
                 new InputFilter() {
@@ -243,41 +270,65 @@ public class EditTransactionFragment extends Fragment {
         }
     }
 
-
     private void updateTransaction() {
+        System.out.println("\n NEW TRANSACTION:\n");
         boolean newIncome = incomeButton.isSelected();
+        System.out.println("newIncome " + newIncome);
         double newAmount = Double.parseDouble(numberEditText.getText().toString());
-        String newDate = dateEditText.getText().toString();
+        System.out.println("newAmount " + newAmount);
         String newCity = locationEditText.getText().toString();
+        System.out.println("newCity " + newCity);
         CategoriesEnum newCategory = CategoriesEnum.values()[categorySpinner.getSelectedItemPosition()];
+        System.out.println("newCategory " + newCategory);
         int newAccountIndex = accountSpinner.getSelectedItemPosition();
+        System.out.println("newAccountIndex " + newAccountIndex);
+        Calendar newDate = calendar;
+        System.out.println("newDate " + newDate);
+//        System.out.println("newDate.getTime() " + newDate.getTime());
+
+        System.out.println("\n"+transactionOriginal.printOnApp()+"\n");
+
+        System.out.println("\n transactionOriginal.isIncome() " + transactionOriginal.isIncome() + "\n transactionOriginal.getAmount() " + transactionOriginal.getAmount() + "\n transactionOriginal.getDate() " + transactionOriginal.getDate().getTime() + "\n transactionOriginal.getCity() "+ transactionOriginal.getCity() + "\n transactionOriginal.getCategory() "+transactionOriginal.getCategory() );
+
 
         // Verifica se sono state apportate modifiche ai dati della transazione
         if (transactionOriginal.isIncome() != newIncome ||
-                transactionOriginal.getAmount() != newAmount ||
-                !transactionOriginal.getDate().equals(newDate) ||
+                transactionOriginal.getAmountValue() != newAmount ||
+                transactionOriginal.getDate() != newDate ||
                 !transactionOriginal.getCity().equals(newCity) ||
                 transactionOriginal.getCategory() != newCategory ||
                 newAccountIndex != originalAccountIndex) {
 
-            // Rimuovi la transazione originale dall'account originale
-            accountOriginal.removeTransaction(transactionOriginal);
+            System.out.println("transactionOriginal.isIncome() != newIncome " + (transactionOriginal.isIncome() != newIncome) +
+                    "\ntransactionOriginal.getAmountValue() != newAmount " + (transactionOriginal.getAmountValue() != newAmount) +
+                    "\ntransactionOriginal.getDate() != newDate " + transactionOriginal.getDate() != newDate +
+                    "\ntransactionOriginal.getCity().equals(newCity) " + transactionOriginal.getCity().equals(newCity) +
+                    "\ntransactionOriginal.getCategory() != newCategory " + (transactionOriginal.getCategory() != newCategory) +
+                    "\n newAccountIndex" + newAccountIndex +
+                    "\n originalAccountIndex " + originalAccountIndex);
 
-            // Aggiorna i dati della transazione originale con i nuovi valori
-            transactionOriginal.setIncome(newIncome);
-            transactionOriginal.setAmount(newAmount);
-            transactionOriginal.setDate(newDate);
-            transactionOriginal.setCity(newCity);
-            transactionOriginal.setCategory(newCategory);
+            // Crea una copia della transazione con i nuovi dati
+            Transactions newTrans = new Transactions(newIncome, newAmount, newDate, newCity, newCategory);
+            System.out.println("\n"+newTrans.printOnApp()+"\n");
 
-            // Aggiungi la transazione modificata al nuovo account selezionato
-            Account newAccount = accounts.get(newAccountIndex);
-            newAccount.getListTrans().add(transactionOriginal);
-            newAccount.updateBalance();
+            System.out.println("newAccountIndex " + newAccountIndex);
 
-            // Aggiorna l'elenco degli account
-            accounts.set(originalAccountIndex, accountOriginal);
-            accounts.set(newAccountIndex, newAccount);
+            System.out.println("originalAccountIndex " + originalAccountIndex);
+
+            // Se originalAccountIndex è uguale a newAccountIndex e l'importo è stato modificato,
+            // modifica direttamente la transazione esistente nell'account
+            if (originalAccountIndex == newAccountIndex && transactionOriginal.getAmountValue() != newAmount) {
+                System.out.println("Modifica importo rilevata. Modifica transazione esistente nell'account.");
+                accounts.get(originalAccountIndex).editTransactions(transactionOriginal, newTrans);
+            } else {
+                // Rimuovi la transazione originale dall'account originale
+                System.out.println("Rimuovi la transazione originale dall'account originale.");
+                accounts.get(originalAccountIndex).removeTransaction(transactionOriginal);
+
+                // Aggiungi la nuova transazione al nuovo account selezionato
+                System.out.println("Aggiungi la nuova transazione al nuovo account selezionato.");
+                accounts.get(newAccountIndex).addTransaction(newTrans);
+            }
 
             try {
                 // Esegui il salvataggio dei dati qui, dopo aver apportato tutte le modifiche
@@ -299,6 +350,35 @@ public class EditTransactionFragment extends Fragment {
             Toast.makeText(getContext(), "Nessuna modifica apportata alla transazione", Toast.LENGTH_LONG).show();
         }
     }
+
+
+
+    private void showDatePickerDialog() {
+        Calendar newCalendar = Calendar.getInstance();
+        int year = newCalendar.get(Calendar.YEAR);
+        int month = newCalendar.get(Calendar.MONTH);
+        int dayOfMonth = newCalendar.get(Calendar.DAY_OF_MONTH);
+
+        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), new DatePickerDialog.OnDateSetListener() {
+            @Override
+            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
+                newCalendar.set(Calendar.YEAR, year);
+                newCalendar.set(Calendar.MONTH, monthOfYear);
+                newCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+
+                calendar = newCalendar; // Imposta la variabile globale
+
+                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
+                String selectedDateString = dateFormat.format(calendar.getTime());
+                System.out.println(selectedDateString + " selectedDateString");
+                selectedTimeTextView.setText(selectedDateString);
+            }
+        }, year, month, dayOfMonth);
+
+        // Mostra il dialog per la selezione della data
+        datePickerDialog.show();
+    }
+
 
 
 }

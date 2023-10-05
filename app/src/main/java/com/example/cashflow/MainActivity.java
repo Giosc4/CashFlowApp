@@ -61,7 +61,7 @@ public class MainActivity extends AppCompatActivity {
 
         jsonReadWrite = new JsonReadWrite("test12.json");
         accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
-
+//        accounts = null;
         System.out.println(accounts);
         if (accounts == null ) {
             //        QUESTE RIGHE DI CODICE DEVONO ESSERE ESEGUITE SOLO ALL'INSTALLAZIONE DELL'APP.
