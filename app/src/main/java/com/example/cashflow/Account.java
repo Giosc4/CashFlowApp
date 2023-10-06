@@ -73,12 +73,16 @@ public class Account {
         return response;
     }
 
-    public boolean editTransactions(Transactions transactionOriginal, Transactions newTrans) {
-        if (removeTransaction(transactionOriginal) && addTransaction(newTrans)){
+    public boolean editTransaction(Transactions transactionOriginal, Transactions newTrans) {
+        int index = listTrans.indexOf(transactionOriginal);
+        if (index >= 0) {
+            listTrans.set(index, newTrans);
+            updateBalance();
             return true;
         }
         return false;
     }
+
 
     @Override
     public String toString() {

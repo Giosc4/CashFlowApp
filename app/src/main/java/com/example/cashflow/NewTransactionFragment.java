@@ -251,8 +251,6 @@ public class NewTransactionFragment extends Fragment {
         });
 
 
-
-
         //SPINNER ACCOUNTS
         ArrayList<String> accountNames = new ArrayList<>();
         for (Account account : accounts) {
@@ -315,6 +313,7 @@ public class NewTransactionFragment extends Fragment {
     private void requestCameraPermission() {
         ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_CODE);
     }
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
@@ -416,8 +415,6 @@ public class NewTransactionFragment extends Fragment {
         // Mostra il dialog per la selezione della data
         datePickerDialog.show();
     }
-
-
 
 
 }

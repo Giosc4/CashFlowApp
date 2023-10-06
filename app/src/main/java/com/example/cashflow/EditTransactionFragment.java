@@ -16,7 +16,6 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
 
 import androidx.fragment.app.Fragment;
@@ -25,7 +24,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
 import java.util.Locale;
 
 public class EditTransactionFragment extends Fragment {
@@ -34,7 +32,12 @@ public class EditTransactionFragment extends Fragment {
     private Button incomeButton;
     private Spinner categorySpinner;
     private EditText numberEditText;
+
+    // NON C'E' cameraButton
+
     private Spinner accountSpinner;
+
+    private Button dateTimeButton;
 
     private TextView selectedTimeTextView;
 
@@ -44,12 +47,17 @@ public class EditTransactionFragment extends Fragment {
     private Button doneButton;
     private Button deleteButton;
 
-    private Button dateTimeButton;
+    //CONSTRUCTOR
     private Transactions transactionOriginal;
     private Account accountOriginal;
-    private ArrayList<Account> accounts;
     private ArrayList<String> categories;
+
+    //GET FROM JSON
+
     private JsonReadWrite jsonReadWrite;
+    private ArrayList<Account> accounts;
+
+    //CHANGE ACCCOUNT TRANS
     private int originalTransactionIndex;
     private int originalAccountIndex;
 
@@ -271,86 +279,42 @@ public class EditTransactionFragment extends Fragment {
     }
 
     private void updateTransaction() {
-        System.out.println("\n NEW TRANSACTION:\n");
         boolean newIncome = incomeButton.isSelected();
-        System.out.println("newIncome " + newIncome);
         double newAmount = Double.parseDouble(numberEditText.getText().toString());
-        System.out.println("newAmount " + newAmount);
         String newCity = locationEditText.getText().toString();
-        System.out.println("newCity " + newCity);
         CategoriesEnum newCategory = CategoriesEnum.values()[categorySpinner.getSelectedItemPosition()];
-        System.out.println("newCategory " + newCategory);
         int newAccountIndex = accountSpinner.getSelectedItemPosition();
-        System.out.println("newAccountIndex " + newAccountIndex);
         Calendar newDate = calendar;
-        System.out.println("newDate " + newDate);
-//        System.out.println("newDate.getTime() " + newDate.getTime());
+        
+// crea la nuova transazione, verifica se è nello stesso account
+        // SI: sostituisce la vecchia transazione con la nuova
+        // NO: elimina la transazione dall'account originale, lo aggiunge all'account selezionato
+        //sostituisce l'account originale con quello con la transazione aggiornata e poi salva tutto su JSON
 
-        System.out.println("\n"+transactionOriginal.printOnApp()+"\n");
-
-        System.out.println("\n transactionOriginal.isIncome() " + transactionOriginal.isIncome() + "\n transactionOriginal.getAmount() " + transactionOriginal.getAmount() + "\n transactionOriginal.getDate() " + transactionOriginal.getDate().getTime() + "\n transactionOriginal.getCity() "+ transactionOriginal.getCity() + "\n transactionOriginal.getCategory() "+transactionOriginal.getCategory() );
-
-
-        // Verifica se sono state apportate modifiche ai dati della transazione
-        if (transactionOriginal.isIncome() != newIncome ||
-                transactionOriginal.getAmountValue() != newAmount ||
-                transactionOriginal.getDate() != newDate ||
-                !transactionOriginal.getCity().equals(newCity) ||
-                transactionOriginal.getCategory() != newCategory ||
-                newAccountIndex != originalAccountIndex) {
-
-            System.out.println("transactionOriginal.isIncome() != newIncome " + (transactionOriginal.isIncome() != newIncome) +
-                    "\ntransactionOriginal.getAmountValue() != newAmount " + (transactionOriginal.getAmountValue() != newAmount) +
-                    "\ntransactionOriginal.getDate() != newDate " + transactionOriginal.getDate() != newDate +
-                    "\ntransactionOriginal.getCity().equals(newCity) " + transactionOriginal.getCity().equals(newCity) +
-                    "\ntransactionOriginal.getCategory() != newCategory " + (transactionOriginal.getCategory() != newCategory) +
-                    "\n newAccountIndex" + newAccountIndex +
-                    "\n originalAccountIndex " + originalAccountIndex);
-
-            // Crea una copia della transazione con i nuovi dati
-            Transactions newTrans = new Transactions(newIncome, newAmount, newDate, newCity, newCategory);
-            System.out.println("\n"+newTrans.printOnApp()+"\n");
-
-            System.out.println("newAccountIndex " + newAccountIndex);
-
-            System.out.println("originalAccountIndex " + originalAccountIndex);
-
-            // Se originalAccountIndex è uguale a newAccountIndex e l'importo è stato modificato,
-            // modifica direttamente la transazione esistente nell'account
-            if (originalAccountIndex == newAccountIndex && transactionOriginal.getAmountValue() != newAmount) {
-                System.out.println("Modifica importo rilevata. Modifica transazione esistente nell'account.");
-                accounts.get(originalAccountIndex).editTransactions(transactionOriginal, newTrans);
-            } else {
-                // Rimuovi la transazione originale dall'account originale
-                System.out.println("Rimuovi la transazione originale dall'account originale.");
-                accounts.get(originalAccountIndex).removeTransaction(transactionOriginal);
-
-                // Aggiungi la nuova transazione al nuovo account selezionato
-                System.out.println("Aggiungi la nuova transazione al nuovo account selezionato.");
-                accounts.get(newAccountIndex).addTransaction(newTrans);
-            }
-
-            try {
-                // Esegui il salvataggio dei dati qui, dopo aver apportato tutte le modifiche
-                jsonReadWrite.setList(accounts, requireContext());
-
-                if (getActivity() != null) {
-                    getActivity().getSupportFragmentManager().popBackStack();
-                    LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
-                    mainLayout.setVisibility(View.VISIBLE);
-                }
-
-                Toast.makeText(getContext(), "Transaction updated", Toast.LENGTH_LONG).show();
-            } catch (IOException e) {
-                e.printStackTrace();
-                Toast.makeText(getContext(), "Errore durante il salvataggio delle modifiche", Toast.LENGTH_LONG).show();
-            }
+        Transactions newTrans = new Transactions(newIncome, newAmount, newDate, newCity, newCategory);
+        if (newAccountIndex != originalAccountIndex) {
+            accountOriginal.removeTransaction(transactionOriginal);
+            accounts.get(newAccountIndex).addTransaction(newTrans);
         } else {
-            // Nessuna modifica apportata alla transazione, nessuna azione necessaria
-            Toast.makeText(getContext(), "Nessuna modifica apportata alla transazione", Toast.LENGTH_LONG).show();
+            accountOriginal.editTransaction(transactionOriginal, newTrans);
         }
-    }
+        try {
+            // Esegui il salvataggio dei dati qui, dopo aver apportato tutte le modifiche
+            accounts.set(originalAccountIndex, accountOriginal);
+            jsonReadWrite.setList(accounts, requireContext());
 
+            if (getActivity() != null) {
+                getActivity().getSupportFragmentManager().popBackStack();
+                LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
+                mainLayout.setVisibility(View.VISIBLE);
+            }
+            Toast.makeText(getContext(), "Transaction updated", Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            e.printStackTrace();
+            Toast.makeText(getContext(), "Errore durante il salvataggio delle modifiche", Toast.LENGTH_LONG).show();
+        }
+
+    }
 
 
     private void showDatePickerDialog() {
@@ -378,7 +342,6 @@ public class EditTransactionFragment extends Fragment {
         // Mostra il dialog per la selezione della data
         datePickerDialog.show();
     }
-
 
 
 }
