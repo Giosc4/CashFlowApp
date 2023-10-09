@@ -285,7 +285,7 @@ public class EditTransactionFragment extends Fragment {
         CategoriesEnum newCategory = CategoriesEnum.values()[categorySpinner.getSelectedItemPosition()];
         int newAccountIndex = accountSpinner.getSelectedItemPosition();
         Calendar newDate = calendar;
-        
+
 // crea la nuova transazione, verifica se è nello stesso account
         // SI: sostituisce la vecchia transazione con la nuova
         // NO: elimina la transazione dall'account originale, lo aggiunge all'account selezionato

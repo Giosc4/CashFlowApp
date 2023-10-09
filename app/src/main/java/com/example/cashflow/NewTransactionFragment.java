@@ -64,12 +64,17 @@ import com.google.android.gms.location.LocationCallback;
 import com.google.android.gms.location.LocationRequest;
 import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
 
 import com.google.android.gms.vision.Frame;
 import com.google.android.gms.vision.text.TextBlock;
 import com.google.android.gms.vision.text.TextRecognizer;
 import com.google.firebase.FirebaseApp;
+import com.google.firebase.ml.vision.FirebaseVision;
+import com.google.firebase.ml.vision.common.FirebaseVisionImage;
+import com.google.firebase.ml.vision.text.FirebaseVisionText;
+import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
 
 
 import java.io.File;
@@ -107,10 +112,7 @@ public class NewTransactionFragment extends Fragment {
     private TextView cameraTextView;
     private TextView selectedTimeTextView;
 
-    private static final int REQUEST_CAMERA_CODE = 100;
-    private static final int YOUR_IMAGE_SELECTION_REQUEST_CODE = 123;
-    private static final int REQUEST_IMAGE_CAPTURE = 1;
-    public static final String DATA_PATH = Environment.getExternalStorageDirectory().toString() + "/com.example.cashflow/";
+    private static final int REQUEST_IMAGE_PICK = 123;
 
     public Bitmap bitmap;
     private String nameCity;
@@ -294,7 +296,7 @@ public class NewTransactionFragment extends Fragment {
                 if (checkCameraPermission()) {
                     // Permessi già concessi, avvia l'attività di selezione dell'immagine
                     Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(intent, YOUR_IMAGE_SELECTION_REQUEST_CODE);
+                    startActivityForResult(intent, REQUEST_IMAGE_PICK);
                 } else {
                     // Richiedi i permessi della fotocamera all'utente
                     requestCameraPermission();
@@ -311,37 +313,42 @@ public class NewTransactionFragment extends Fragment {
     }
 
     private void requestCameraPermission() {
-        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_CAMERA_CODE);
+        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_IMAGE_PICK);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == YOUR_IMAGE_SELECTION_REQUEST_CODE && resultCode == Activity.RESULT_OK && data != null) {
-            // Ottieni l'URI dell'immagine selezionata dall'utente
-            Uri selectedImageUri = data.getData();
+        if (requestCode == REQUEST_IMAGE_PICK) {
 
-            // Verifica se l'URI dell'immagine è valido
-            if (selectedImageUri != null) {
-                // Ora puoi avviare il riconoscimento del testo utilizzando la classe TextRecognition
-                TextRecognition textRecognition = new TextRecognition(getContext(), selectedImageUri);
+            FirebaseVisionImage image;
+            try {
+                image = FirebaseVisionImage.fromFilePath(requireContext(), data.getData());
 
-                // Ottieni il testo riconosciuto
-                String recognizedText = textRecognition.getRecognizedText();
+                FirebaseVisionTextRecognizer textRecognizer = FirebaseVision.getInstance()
+                        .getCloudTextRecognizer();
 
-                // Mostra il testo riconosciuto in un TextView (cameraTextView)
-                if (cameraTextView != null) {
-                    cameraTextView.setText(recognizedText);
-                } else {
-                    // Aggiungi un messaggio di errore se cameraTextView non è inizializzato correttamente
-                    Toast.makeText(getContext(), "Errore: TextView non inizializzato correttamente", Toast.LENGTH_SHORT).show();
-                }
+                textRecognizer.processImage(image)
+                        .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
+                            @Override
+                            public void onSuccess(FirebaseVisionText result) {
 
-                System.out.println("Testo riconosciuto: " + recognizedText);
-            } else {
-                // Gestisci il caso in cui l'URI dell'immagine non sia valido
-                Toast.makeText(getContext(), "Errore: URI dell'immagine non valido", Toast.LENGTH_SHORT).show();
+                                cameraTextView.setText(result.getText());
+                                System.out.println(result.getText());
+                            }
+                        })
+                        .addOnFailureListener(
+                                new OnFailureListener() {
+                                    @Override
+                                    public void onFailure(@NonNull Exception e) {
+                                        // Task failed with an exception
+                                        // ...
+                                    }
+                                });
+
+            } catch (IOException e) {
+                e.printStackTrace();
             }
         }
     }
