@@ -14,8 +14,6 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.google.firebase.FirebaseApp;
-
 import java.io.IOException;
 import java.math.BigDecimal;
 import java.text.NumberFormat;
@@ -35,6 +33,7 @@ public class HomeFragment extends Fragment {
         this.accounts = accounts;
         this.nameCity = nameCity;
     }
+
     public HomeFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
         this.nameCity = "";
@@ -48,10 +47,6 @@ public class HomeFragment extends Fragment {
 
         GridLayout gridLayout = view.findViewById(R.id.gridLayout);
         myTextView = view.findViewById(R.id.myTextView);
-
-
-        //per l'OCR -> riconoscimento del testo dalle immagini
-        FirebaseApp.initializeApp(requireContext() );
 
         if (accounts == null || accounts.isEmpty()) {
             return null;

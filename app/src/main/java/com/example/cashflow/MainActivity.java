@@ -13,18 +13,13 @@ import android.widget.Toast;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.firebase.FirebaseApp;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -63,7 +58,7 @@ public class MainActivity extends AppCompatActivity {
         accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
 //        accounts = null;
         System.out.println(accounts);
-        if (accounts == null ) {
+        if (accounts == null) {
             //        QUESTE RIGHE DI CODICE DEVONO ESSERE ESEGUITE SOLO ALL'INSTALLAZIONE DELL'APP.
             test = new Test();
             accounts = test.getList();
@@ -74,9 +69,6 @@ public class MainActivity extends AppCompatActivity {
         } catch (IOException e) {
             throw new RuntimeException(e);
         }
-
-        //per l'OCR -> riconoscimento del testo dalle immagini
-        FirebaseApp.initializeApp(this);
 
         btnHome = findViewById(R.id.btnHome);
         btnHome.setOnClickListener(new View.OnClickListener() {

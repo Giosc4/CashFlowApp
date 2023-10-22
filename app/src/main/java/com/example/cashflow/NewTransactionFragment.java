@@ -55,6 +55,8 @@ import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentManager;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.github.mikephil.charting.BuildConfig;
 import com.google.android.gms.common.ConnectionResult;
@@ -66,16 +68,11 @@ import com.google.android.gms.location.LocationResult;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnFailureListener;
 import com.google.android.gms.tasks.OnSuccessListener;
-
-import com.google.android.gms.vision.Frame;
-import com.google.android.gms.vision.text.TextBlock;
-import com.google.android.gms.vision.text.TextRecognizer;
-import com.google.firebase.FirebaseApp;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
-
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -112,13 +109,9 @@ public class NewTransactionFragment extends Fragment {
     private TextView cameraTextView;
     private TextView selectedTimeTextView;
 
-    private static final int REQUEST_IMAGE_PICK = 123;
-
-    public Bitmap bitmap;
+    public static final int REQUEST_IMAGE_PICK = 123;
     private String nameCity;
 
-    public static final String TESS_DATA = "/tessdata";
-    private String mCurrentPhotoPath;
 
     public NewTransactionFragment(ArrayList<Account> accounts, String nameCity) {
         this.accounts = accounts;
@@ -144,8 +137,6 @@ public class NewTransactionFragment extends Fragment {
         selectedTimeTextView = view.findViewById(R.id.selectedTimeTextView);
 
         dateTimeButton = view.findViewById(R.id.dateTimeButton);
-
-
         deleteButton = view.findViewById(R.id.deleteButton);
         deleteButton.setVisibility(View.INVISIBLE);
         deleteButton.setVisibility(View.GONE);
@@ -292,67 +283,76 @@ public class NewTransactionFragment extends Fragment {
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                // Verifica i permessi della fotocamera
-                if (checkCameraPermission()) {
-                    // Permessi già concessi, avvia l'attività di selezione dell'immagine
-                    Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-                    startActivityForResult(intent, REQUEST_IMAGE_PICK);
-                } else {
-                    // Richiedi i permessi della fotocamera all'utente
-                    requestCameraPermission();
-                }
+
+                // Crea un dialog per scegliere tra Fotocamera e Galleria
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+                builder.setTitle("Scegli la fonte dell'immagine");
+                builder.setItems(new CharSequence[]{"Fotocamera", "Galleria"}, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == 0) { // Fotocamera
+                            openCamera();
+                        } else if (which == 1) { // Galleria
+                            openGallery();
+                        }
+                    }
+                });
+                builder.show();
             }
         });
         return view;
     }
 
-
-    private boolean checkCameraPermission() {
-        int cameraPermission = ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.CAMERA);
-        return cameraPermission == PackageManager.PERMISSION_GRANTED;
+    private void openCamera() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_PICK);
+        }
     }
 
-    private void requestCameraPermission() {
-        ActivityCompat.requestPermissions(getActivity(), new String[]{Manifest.permission.CAMERA}, REQUEST_IMAGE_PICK);
+    private void openGallery() {
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(galleryIntent, REQUEST_IMAGE_PICK);
+
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_IMAGE_PICK) {
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK && data != null) {
+            Uri imageUri = data.getData();
 
-            FirebaseVisionImage image;
-            try {
-                image = FirebaseVisionImage.fromFilePath(requireContext(), data.getData());
+            if (imageUri != null) {
+                FirebaseVisionImage image;
+                try {
+                    image = FirebaseVisionImage.fromFilePath(requireContext(), imageUri);
 
-                FirebaseVisionTextRecognizer textRecognizer = FirebaseVision.getInstance()
-                        .getCloudTextRecognizer();
+                    FirebaseVisionTextRecognizer textRecognizer = FirebaseVision.getInstance()
+                            .getCloudTextRecognizer();
 
-                textRecognizer.processImage(image)
-                        .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
-                            @Override
-                            public void onSuccess(FirebaseVisionText result) {
-
-                                cameraTextView.setText(result.getText());
-                                System.out.println(result.getText());
-                            }
-                        })
-                        .addOnFailureListener(
-                                new OnFailureListener() {
-                                    @Override
-                                    public void onFailure(@NonNull Exception e) {
-                                        // Task failed with an exception
-                                        // ...
-                                    }
-                                });
-
-            } catch (IOException e) {
-                e.printStackTrace();
+                    textRecognizer.processImage(image)
+                            .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
+                                @Override
+                                public void onSuccess(FirebaseVisionText result) {
+                                    cameraTextView.setText(result.getText());
+                                    Log.d("TextRecognition", result.getText());
+                                    System.out.println("TextRecognition " +  result.getText());
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    // Gestisci eventuali errori
+                                    e.printStackTrace();
+                                }
+                            });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
             }
         }
     }
-
 
     private void saveTransaction() throws IOException {
         if (numberEditText != null && accountSpinner != null && locationEditText != null && selectedDate != null) {
