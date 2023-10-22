@@ -337,7 +337,7 @@ public class NewTransactionFragment extends Fragment {
                                 public void onSuccess(FirebaseVisionText result) {
                                     cameraTextView.setText(result.getText());
                                     Log.d("TextRecognition", result.getText());
-                                    System.out.println("TextRecognition " +  result.getText());
+                                    System.out.println("TextRecognition " + result.getText());
                                 }
                             })
                             .addOnFailureListener(new OnFailureListener() {

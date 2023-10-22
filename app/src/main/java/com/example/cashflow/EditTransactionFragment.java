@@ -1,10 +1,17 @@
 package com.example.cashflow;
 
+import static android.app.Activity.RESULT_OK;
+
 import android.app.DatePickerDialog;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.graphics.Color;
+import android.net.Uri;
 import android.os.Bundle;
+import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -13,12 +20,23 @@ import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
+import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
+
+import com.google.android.gms.tasks.OnFailureListener;
+import com.google.android.gms.tasks.OnSuccessListener;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+import com.google.firebase.ml.vision.FirebaseVision;
+import com.google.firebase.ml.vision.common.FirebaseVisionImage;
+import com.google.firebase.ml.vision.text.FirebaseVisionText;
+import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
 
 import java.io.IOException;
 import java.text.SimpleDateFormat;
@@ -33,7 +51,10 @@ public class EditTransactionFragment extends Fragment {
     private Spinner categorySpinner;
     private EditText numberEditText;
 
-    // NON C'E' cameraButton
+    private ImageView cameraButton;
+    private TextView cameraTextView;
+
+    public static final int REQUEST_IMAGE_PICK = 123;
 
     private Spinner accountSpinner;
 
@@ -83,6 +104,8 @@ public class EditTransactionFragment extends Fragment {
         deleteButton = view.findViewById(R.id.deleteButton);
         dateTimeButton = view.findViewById(R.id.dateTimeButton);
         calendar = transactionOriginal.getDate();
+        cameraButton = view.findViewById(R.id.cameraButton);
+        cameraTextView = view.findViewById(R.id.cameraTextView);
 
         String str = "";
         if (transactionOriginal.getAmount() < 0) {
@@ -238,7 +261,79 @@ public class EditTransactionFragment extends Fragment {
             }
         });
 
+        // Imposta un listener per il pulsante della fotocamera
+        cameraButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+                // Crea un dialog per scegliere tra Fotocamera e Galleria
+                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
+                builder.setTitle("Scegli la fonte dell'immagine");
+                builder.setItems(new CharSequence[]{"Fotocamera", "Galleria"}, new DialogInterface.OnClickListener() {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        if (which == 0) { // Fotocamera
+                            openCamera();
+                        } else if (which == 1) { // Galleria
+                            openGallery();
+                        }
+                    }
+                });
+                builder.show();
+            }
+        });
         return view;
+    }
+
+    private void openCamera() {
+        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
+        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_PICK);
+        }
+    }
+
+    private void openGallery() {
+        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
+        startActivityForResult(galleryIntent, REQUEST_IMAGE_PICK);
+
+    }
+
+    @Override
+    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK && data != null) {
+            Uri imageUri = data.getData();
+
+            if (imageUri != null) {
+                FirebaseVisionImage image;
+                try {
+                    image = FirebaseVisionImage.fromFilePath(requireContext(), imageUri);
+
+                    FirebaseVisionTextRecognizer textRecognizer = FirebaseVision.getInstance()
+                            .getCloudTextRecognizer();
+
+                    textRecognizer.processImage(image)
+                            .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
+                                @Override
+                                public void onSuccess(FirebaseVisionText result) {
+                                    cameraTextView.setText(result.getText());
+                                    Log.d("TextRecognition", result.getText());
+                                    System.out.println("TextRecognition " + result.getText());
+                                }
+                            })
+                            .addOnFailureListener(new OnFailureListener() {
+                                @Override
+                                public void onFailure(@NonNull Exception e) {
+                                    // Gestisci eventuali errori
+                                    e.printStackTrace();
+                                }
+                            });
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
     }
 
     private void setExpense() {
