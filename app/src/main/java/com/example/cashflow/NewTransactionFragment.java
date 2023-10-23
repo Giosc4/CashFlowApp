@@ -73,6 +73,8 @@ import com.google.firebase.ml.vision.FirebaseVision;
 import com.google.firebase.ml.vision.common.FirebaseVisionImage;
 import com.google.firebase.ml.vision.text.FirebaseVisionText;
 import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
+import com.theartofdev.edmodo.cropper.CropImage;
+import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.File;
 import java.io.FileOutputStream;
@@ -106,11 +108,12 @@ public class NewTransactionFragment extends Fragment {
     private ArrayList<Account> accounts;
     private ArrayList<String> categories;
     private ImageView cameraButton;
-    private TextView cameraTextView;
     private TextView selectedTimeTextView;
 
     public static final int REQUEST_IMAGE_PICK = 123;
     private String nameCity;
+
+    private OCRManager ocrManager;
 
 
     public NewTransactionFragment(ArrayList<Account> accounts, String nameCity) {
@@ -133,7 +136,8 @@ public class NewTransactionFragment extends Fragment {
         locationEditText = view.findViewById(R.id.locationEditText);
         accountSpinner = view.findViewById(R.id.accountSpinner);
         cameraButton = view.findViewById(R.id.cameraButton);
-        cameraTextView = view.findViewById(R.id.cameraTextView);
+        ocrManager = new OCRManager(requireContext());
+
         selectedTimeTextView = view.findViewById(R.id.selectedTimeTextView);
 
         dateTimeButton = view.findViewById(R.id.dateTimeButton);
@@ -313,7 +317,6 @@ public class NewTransactionFragment extends Fragment {
     private void openGallery() {
         Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
         startActivityForResult(galleryIntent, REQUEST_IMAGE_PICK);
-
     }
 
     @Override
@@ -324,31 +327,33 @@ public class NewTransactionFragment extends Fragment {
             Uri imageUri = data.getData();
 
             if (imageUri != null) {
-                FirebaseVisionImage image;
-                try {
-                    image = FirebaseVisionImage.fromFilePath(requireContext(), imageUri);
+                // Utilizza android-image-cropper per il cropping dell'immagine
+                CropImage.activity(imageUri)
+                        .setGuidelines(CropImageView.Guidelines.ON)
+                        .start(requireContext(), this);
+            }
+        }
 
-                    FirebaseVisionTextRecognizer textRecognizer = FirebaseVision.getInstance()
-                            .getCloudTextRecognizer();
+        // Gestire l'output del cropping
+        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+            CropImage.ActivityResult result = CropImage.getActivityResult(data);
+            if (resultCode == RESULT_OK) {
+                Uri croppedImageUri = result.getUri();
+                // Ora puoi inviare l'immagine croppata a OCRManager che utilizza FirebaseVisionImage
+                if (croppedImageUri != null) {
+                    ocrManager.processImage(croppedImageUri, new OCRManager.OCRListener() {
+                        @Override
+                        public void onTextRecognized(String text) {
+                            System.out.println(text);
+                            numberEditText.setText(text);
+                        }
 
-                    textRecognizer.processImage(image)
-                            .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
-                                @Override
-                                public void onSuccess(FirebaseVisionText result) {
-                                    cameraTextView.setText(result.getText());
-                                    Log.d("TextRecognition", result.getText());
-                                    System.out.println("TextRecognition " + result.getText());
-                                }
-                            })
-                            .addOnFailureListener(new OnFailureListener() {
-                                @Override
-                                public void onFailure(@NonNull Exception e) {
-                                    // Gestisci eventuali errori
-                                    e.printStackTrace();
-                                }
-                            });
-                } catch (IOException e) {
-                    e.printStackTrace();
+                        @Override
+                        public void onFailure(Exception e) {
+                            // Gestisci eventuali errori
+                            e.printStackTrace();
+                        }
+                    });
                 }
             }
         }

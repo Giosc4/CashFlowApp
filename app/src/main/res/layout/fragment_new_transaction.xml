@@ -68,13 +68,7 @@
             android:contentDescription="Icona della fotocamera"
             android:src="@drawable/fotocamera" />
     </LinearLayout>
-
-
-    <TextView
-        android:id="@+id/cameraTextView"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="TextView" />
+    
 
     <Spinner
         android:id="@+id/accountSpinner"
