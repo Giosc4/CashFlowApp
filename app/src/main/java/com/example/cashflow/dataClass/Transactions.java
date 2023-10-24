@@ -1,4 +1,6 @@
-package com.example.cashflow;
+package com.example.cashflow.dataClass;
+
+import com.example.cashflow.dataClass.CategoriesEnum;
 
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
@@ -9,18 +11,19 @@ public class Transactions {
     private Boolean income;
     private double amount;
     private Calendar date;
-    private String city;
+    private City city;
     private CategoriesEnum category;
 
     public Transactions() {
         this.income = false;
         this.amount = 00.01;
         this.date = Calendar.getInstance();
-        this.city = null;
+        this.city = new City();
+
         this.category = CategoriesEnum.FoodAndDrinks;
     }
 
-    public Transactions(Boolean income, double amount, Calendar date, String city, CategoriesEnum category) {
+    public Transactions(Boolean income, double amount, Calendar date, City city, CategoriesEnum category) {
         this.income = income;
         this.amount = amount;
         this.date = date;
@@ -52,8 +55,8 @@ public class Transactions {
         return date;
     }
 
-    public String getCity() {
-        return city;
+    public City getCity() {
+        return this.city;
     }
 
 
@@ -69,7 +72,7 @@ public class Transactions {
         this.date = date;
     }
 
-    public void setCity(String city) {
+    public void setCity(City city) {
         this.city = city;
     }
 
@@ -83,7 +86,7 @@ public class Transactions {
                 "income=" + income +
                 ", amount=" + amount +
                 ", date='" + date + '\'' +
-                ", city='" + city + '\'' +
+                ", city='" + city.toString() + '\'' +
                 ", category=" + category +
                 '}';
     }
@@ -97,13 +100,13 @@ public class Transactions {
             return "INCOME / " +
                     "amount: " + amount + " / " +
                     "date: " + formattedDate + " / " +
-                    "city: " + city + " / " +
+                    "city: " + city.toString() + " / " +
                     "category: " + category.name().toString();
         } else {
             return "EXPENSE / " +
                     "amount: " + amount + " / " +
                     "date: " + formattedDate + " / " +
-                    "city: " + city + " / " +
+                    "city: " +  city.toString() + " / " +
                     "category: " + category.name().toString();
         }
     }

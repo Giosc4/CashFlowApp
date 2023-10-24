@@ -1,5 +1,10 @@
 package com.example.cashflow;
 
+import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.dataClass.CategoriesEnum;
+import com.example.cashflow.dataClass.City;
+import com.example.cashflow.dataClass.Transactions;
+
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -9,7 +14,7 @@ public class Test {
     public Test() {
         this.accounts = new ArrayList<Account>();
         ArrayList<Transactions> listTrans = new ArrayList<Transactions>();
-        Transactions trans = new Transactions(true, 1000.00, Calendar.getInstance(), "Bologna", CategoriesEnum.Salary);
+        Transactions trans = new Transactions(true, 1000.00, Calendar.getInstance(), new City(), CategoriesEnum.Salary);
         listTrans.add(trans);
         this.accounts.add(new Account("Bank", listTrans));
         this.accounts.add(new Account("Cash", listTrans));

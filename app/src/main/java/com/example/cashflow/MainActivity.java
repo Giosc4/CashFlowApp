@@ -17,6 +17,8 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
+import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.dataClass.City;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -35,7 +37,7 @@ public class MainActivity extends AppCompatActivity {
 
     private static final int PERMISSION_REQUEST_CODE = 1;
     FusedLocationProviderClient fusedLocationProviderClient;
-    String nameCity;
+    City cityPosition;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -74,11 +76,11 @@ public class MainActivity extends AppCompatActivity {
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this), nameCity));
+                loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this), cityPosition));
             }
         });
 
-        loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this), nameCity));
+        loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this), cityPosition));
 
     }
 
@@ -94,12 +96,12 @@ public class MainActivity extends AppCompatActivity {
                         try {
                             List<Address> addresses = geocoder.getFromLocation(location.getLatitude(), location.getLongitude(), 1);
                             if (addresses != null && addresses.size() > 0) {
-                                nameCity = addresses.get(0).getLocality();
-                                System.out.println("City: " + nameCity);
+                                cityPosition = new City(addresses.get(0).getLocality(), addresses.get(0).getLatitude(), addresses.get(0).getLongitude());
+                                System.out.println("City: " + cityPosition.toString());
                                 System.out.println("");
 
                                 // Ora che hai ottenuto la posizione, carica il fragment
-                                loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this), nameCity));
+                                loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this), cityPosition));
 
                             } else {
                                 System.out.println("No address found.");

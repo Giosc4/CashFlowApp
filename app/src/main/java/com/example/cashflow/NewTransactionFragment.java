@@ -1,37 +1,16 @@
 package com.example.cashflow;
 
 import static android.app.Activity.RESULT_OK;
-import static android.content.ContentValues.TAG;
 
-import android.app.Activity;
 import android.app.DatePickerDialog;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.content.res.AssetManager;
-import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.graphics.Canvas;
 import android.graphics.Color;
-import android.graphics.drawable.BitmapDrawable;
-import android.graphics.drawable.Drawable;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
-import android.location.LocationManager;
-import android.net.ConnectivityManager;
-import android.net.NetworkInfo;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
-import android.provider.Settings;
 import android.text.InputFilter;
 import android.text.Spanned;
-import android.text.format.DateFormat;
-import android.util.Log;
-import android.util.SparseArray;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -44,51 +23,23 @@ import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
-import android.widget.TimePicker;
 import android.widget.Toast;
-import android.Manifest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
 
-import com.github.mikephil.charting.BuildConfig;
-import com.google.android.gms.common.ConnectionResult;
-import com.google.android.gms.common.GoogleApiAvailability;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationCallback;
-import com.google.android.gms.location.LocationRequest;
-import com.google.android.gms.location.LocationResult;
-import com.google.android.gms.location.LocationServices;
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.dataClass.CategoriesEnum;
+import com.example.cashflow.dataClass.City;
+import com.example.cashflow.dataClass.Transactions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.ml.vision.FirebaseVision;
-import com.google.firebase.ml.vision.common.FirebaseVisionImage;
-import com.google.firebase.ml.vision.text.FirebaseVisionText;
-import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.File;
-import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
-import java.io.OutputStream;
-import java.text.SimpleDateFormat;
-import java.time.LocalDateTime;
-import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
 
 public class NewTransactionFragment extends Fragment {
 
@@ -111,14 +62,14 @@ public class NewTransactionFragment extends Fragment {
     private TextView selectedTimeTextView;
 
     public static final int REQUEST_IMAGE_PICK = 123;
-    private String nameCity;
+    private City cityPosition;
 
     private OCRManager ocrManager;
 
 
-    public NewTransactionFragment(ArrayList<Account> accounts, String nameCity) {
+    public NewTransactionFragment(ArrayList<Account> accounts, City cityPosition) {
         this.accounts = accounts;
-        this.nameCity = nameCity;
+        this.cityPosition = cityPosition;
     }
 
     @Nullable
@@ -154,7 +105,7 @@ public class NewTransactionFragment extends Fragment {
         });
 
 
-        locationEditText.setText(nameCity + "");
+        locationEditText.setText(cityPosition.getNameCity() + "");
 
 
 // Set the input filter on numberEditText for decimal numbers
@@ -360,28 +311,44 @@ public class NewTransactionFragment extends Fragment {
     }
 
     private void saveTransaction() throws IOException {
-        if (numberEditText != null && accountSpinner != null && locationEditText != null && selectedDate != null) {
+        if (numberEditText != null && accountSpinner != null && cityPosition != null && selectedDate != null) {
 
             boolean income = incomeButton.isSelected();
             boolean expense = expenseButton.isSelected();
+            String numberText = numberEditText.getText() != null ? numberEditText.getText().toString() : "";
 
-            // Verifica se almeno uno dei pulsanti è stato premuto
+
+            // Verifica se almeno uno dei pulsanti della spesa o entrata è stato premuto e quello della data
             if (!income && !expense) {
                 // Nessun pulsante selezionato, mostra un messaggio di avviso o gestisci l'errore
                 Toast.makeText(getContext(), "Please select either Income or Expense", Toast.LENGTH_SHORT).show();
                 return; // Esce dal metodo senza salvare la transazione
             }
-            String number = numberEditText.getText() != null ? numberEditText.getText().toString() : "";
-            double amount = Double.parseDouble(number);
+
+            if (numberText.isEmpty() || numberText.equals("0")|| numberText.equals("0.0")) {
+                // L'utente non ha inserito un valore numerico, mostra un messaggio di errore
+                Toast.makeText(getContext(), "Please enter a numeric value", Toast.LENGTH_SHORT).show();
+                return; // Esce dal metodo senza salvare la transazione
+            }
+
+            double amount;
+            try {
+                amount = Double.parseDouble(numberText);
+            } catch (NumberFormatException e) {
+                // Il valore inserito non è un numero valido, mostra un messaggio di errore
+                Toast.makeText(getContext(), "Invalid numeric value", Toast.LENGTH_SHORT).show();
+                return; // Esce dal metodo senza salvare la transazione
+            }
+
             String accountSelected = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
             System.out.println("DateTimeUtil.createDateTimeFromDateAndTimePickers " + selectedDate);
-            String location = locationEditText.getText() != null ? locationEditText.getText().toString() : "";
+            String location = cityPosition.getNameCity() != null ? cityPosition.getNameCity().toString() : "";
             String selectedCategory = categorySpinner.getSelectedItem() != null ? categorySpinner.getSelectedItem().toString() : "";
 
             // Resto del codice per salvare la transazione
             Toast.makeText(getContext(), "Transaction saved: " + amount + ", " + accountSelected + ", " + selectedDate + ", " + location, Toast.LENGTH_LONG).show();
 
-            Transactions newTrans = new Transactions(income, amount, selectedDate, location, CategoriesEnum.valueOf(selectedCategory));
+            Transactions newTrans = new Transactions(income, amount, selectedDate, cityPosition, CategoriesEnum.valueOf(selectedCategory));
             jsonReadWrite = new JsonReadWrite("test12.json");
 
             for (Account account : accounts) {

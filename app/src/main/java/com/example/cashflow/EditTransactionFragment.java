@@ -11,7 +11,6 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.Spanned;
-import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -26,17 +25,14 @@ import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
 
-import com.google.android.gms.tasks.OnFailureListener;
-import com.google.android.gms.tasks.OnSuccessListener;
+import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.dataClass.CategoriesEnum;
+import com.example.cashflow.dataClass.City;
+import com.example.cashflow.dataClass.Transactions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.google.firebase.ml.vision.FirebaseVision;
-import com.google.firebase.ml.vision.common.FirebaseVisionImage;
-import com.google.firebase.ml.vision.text.FirebaseVisionText;
-import com.google.firebase.ml.vision.text.FirebaseVisionTextRecognizer;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
@@ -53,7 +49,7 @@ public class EditTransactionFragment extends Fragment {
     private Spinner categorySpinner;
     private EditText numberEditText;
 
-    private Button cameraButton;
+    private ImageView cameraButton;
 
     private OCRManager ocrManager;
 
@@ -128,7 +124,7 @@ public class EditTransactionFragment extends Fragment {
         selectedTimeTextView.setText(selectedDateString);
 
 
-        locationEditText.setText(transactionOriginal.getCity());
+        locationEditText.setText(transactionOriginal.getCity().getNameCity());
 
         dateTimeButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -382,7 +378,9 @@ public class EditTransactionFragment extends Fragment {
     private void updateTransaction() {
         boolean newIncome = incomeButton.isSelected();
         double newAmount = Double.parseDouble(numberEditText.getText().toString());
-        String newCity = locationEditText.getText().toString();
+        String nuovacitta = locationEditText.getText().toString();
+        //transactionOriginal.getCity().getNameCity())
+        City newCity = new City(locationEditText.getText().toString(), 0, 0);
         CategoriesEnum newCategory = CategoriesEnum.values()[categorySpinner.getSelectedItemPosition()];
         int newAccountIndex = accountSpinner.getSelectedItemPosition();
         Calendar newDate = calendar;

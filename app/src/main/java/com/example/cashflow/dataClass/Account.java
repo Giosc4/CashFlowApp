@@ -1,4 +1,4 @@
-package com.example.cashflow;
+package com.example.cashflow.dataClass;
 
 
 import java.text.DecimalFormat;

@@ -1,4 +1,4 @@
-package com.example.cashflow;
+package com.example.cashflow.dataClass;
 
 public enum CategoriesEnum {
     FoodAndDrinks,

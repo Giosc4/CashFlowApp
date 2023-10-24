@@ -14,9 +14,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import java.io.IOException;
+import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.dataClass.City;
+
 import java.math.BigDecimal;
-import java.text.NumberFormat;
 import java.util.ArrayList;
 
 public class HomeFragment extends Fragment {
@@ -27,16 +28,16 @@ public class HomeFragment extends Fragment {
 
 
     TextView myTextView;
-    String nameCity;
+    City cityPosition;
 
-    public HomeFragment(ArrayList<Account> accounts, String nameCity) {
+    public HomeFragment(ArrayList<Account> accounts, City cityPosition) {
         this.accounts = accounts;
-        this.nameCity = nameCity;
+        this.cityPosition = cityPosition;
     }
 
     public HomeFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
-        this.nameCity = "";
+        this.cityPosition = new City();
     }
 
 
@@ -143,7 +144,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void openTransactionFragment() {
-        NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts, nameCity);
+        NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts, cityPosition);
 
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
