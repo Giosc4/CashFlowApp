@@ -25,19 +25,14 @@ public class HomeFragment extends Fragment {
     ArrayList<Account> accounts;
 
     private String subtotalText = "";
-
-
     TextView myTextView;
-    City cityPosition;
 
-    public HomeFragment(ArrayList<Account> accounts, City cityPosition) {
-        this.accounts = accounts;
-        this.cityPosition = cityPosition;
-    }
+    Posizione posizione;
+    City city;
+
 
     public HomeFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
-        this.cityPosition = new City();
     }
 
 
@@ -48,6 +43,21 @@ public class HomeFragment extends Fragment {
 
         GridLayout gridLayout = view.findViewById(R.id.gridLayout);
         myTextView = view.findViewById(R.id.myTextView);
+
+        this.posizione = new Posizione(requireContext());
+
+        posizione.requestDeviceLocation(new Posizione.DeviceLocationCallback() {
+            @Override
+            public void onLocationFetched(City city) {
+                HomeFragment.this.city = city;
+                System.out.println("City Home " + city);
+            }
+
+            @Override
+            public void onLocationFetchFailed(Exception e) {
+                // Gestisci l'errore in base alle tue esigenze
+            }
+        });
 
         if (accounts == null || accounts.isEmpty()) {
             return null;
@@ -144,14 +154,14 @@ public class HomeFragment extends Fragment {
     }
 
     private void openTransactionFragment() {
-        NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts, cityPosition);
-
+        NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts, city);
         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, transactionFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
+
 
     private void openStatisticsFragment() {
         StatisticsFragment statisticsFragment = new StatisticsFragment(accounts);

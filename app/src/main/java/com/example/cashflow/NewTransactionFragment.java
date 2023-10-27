@@ -3,6 +3,7 @@ package com.example.cashflow;
 import static android.app.Activity.RESULT_OK;
 
 import android.app.DatePickerDialog;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.graphics.Color;
@@ -52,8 +53,10 @@ public class NewTransactionFragment extends Fragment {
     private EditText numberEditText;
     private Spinner accountSpinner;
     private Calendar selectedDate;
+    private boolean isDateSelected = false;
 
-    private Button dateTimeButton;
+
+    private Button dateButton;
     private EditText locationEditText;
     private JsonReadWrite jsonReadWrite;
     private ArrayList<Account> accounts;
@@ -63,13 +66,13 @@ public class NewTransactionFragment extends Fragment {
 
     public static final int REQUEST_IMAGE_PICK = 123;
     private City cityPosition;
-
     private OCRManager ocrManager;
 
 
     public NewTransactionFragment(ArrayList<Account> accounts, City cityPosition) {
         this.accounts = accounts;
         this.cityPosition = cityPosition;
+
     }
 
     @Nullable
@@ -91,22 +94,30 @@ public class NewTransactionFragment extends Fragment {
 
         selectedTimeTextView = view.findViewById(R.id.selectedTimeTextView);
 
-        dateTimeButton = view.findViewById(R.id.dateTimeButton);
+        dateButton = view.findViewById(R.id.dateButton);
         deleteButton = view.findViewById(R.id.deleteButton);
         deleteButton.setVisibility(View.INVISIBLE);
         deleteButton.setVisibility(View.GONE);
 
         selectedDate = Calendar.getInstance();
-        dateTimeButton.setOnClickListener(new View.OnClickListener() {
+
+        if (cityPosition != null) {
+            if (cityPosition.getNameCity() != null) {
+                locationEditText.setText(cityPosition.getNameCity());
+            } else {
+                locationEditText.setText("Nessun nome di città disponibile");
+            }
+        } else {
+            Toast.makeText(requireContext(), "Impossibile ottenere la posizione attuale", Toast.LENGTH_SHORT).show();
+            locationEditText.setText("Posizione non disponibile");
+        }
+
+        dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showDatePickerDialog();
             }
         });
-
-
-        locationEditText.setText(cityPosition.getNameCity() + "");
-
 
 // Set the input filter on numberEditText for decimal numbers
         numberEditText.setFilters(new InputFilter[]{
@@ -189,7 +200,6 @@ public class NewTransactionFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedCategory = parent.getItemAtPosition(position).toString();
-                Toast.makeText(parent.getContext(), "Selected Category: " + selectedCategory, Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -213,7 +223,6 @@ public class NewTransactionFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedAccount = parent.getItemAtPosition(position).toString();
-                Toast.makeText(parent.getContext(), "Conto Selezionato: " + selectedAccount, Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -325,9 +334,14 @@ public class NewTransactionFragment extends Fragment {
                 return; // Esce dal metodo senza salvare la transazione
             }
 
-            if (numberText.isEmpty() || numberText.equals("0")|| numberText.equals("0.0")) {
+            if (numberText.isEmpty() || numberText.equals("0") || numberText.equals("0.0")) {
                 // L'utente non ha inserito un valore numerico, mostra un messaggio di errore
                 Toast.makeText(getContext(), "Please enter a numeric value", Toast.LENGTH_SHORT).show();
+                return; // Esce dal metodo senza salvare la transazione
+            }
+            if (!isDateSelected) {
+                // La data non è stata selezionata, mostra un messaggio di errore
+                Toast.makeText(getContext(), "Please select a date", Toast.LENGTH_SHORT).show();
                 return; // Esce dal metodo senza salvare la transazione
             }
 
@@ -388,6 +402,8 @@ public class NewTransactionFragment extends Fragment {
                 String selectedDateString = year + "-" + (monthOfYear + 1) + "-" + dayOfMonth;
                 System.out.println(selectedDateString + " selectedDateString");
                 selectedTimeTextView.setText(selectedDateString);
+                isDateSelected = true;
+
             }
         }, year, month, dayOfMonth);
 

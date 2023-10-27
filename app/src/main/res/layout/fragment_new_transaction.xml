@@ -82,11 +82,11 @@
 
 
     <Button
-        android:id="@+id/dateTimeButton"
+        android:id="@+id/dateButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="Chose date and time" />
+        android:text="Chose date" />
 
     <TextView
         android:id="@+id/selectedTimeTextView"

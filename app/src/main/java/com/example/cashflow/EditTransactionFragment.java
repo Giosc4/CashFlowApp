@@ -57,7 +57,7 @@ public class EditTransactionFragment extends Fragment {
 
     private Spinner accountSpinner;
 
-    private Button dateTimeButton;
+    private Button dateButton;
 
     private TextView selectedTimeTextView;
 
@@ -101,7 +101,7 @@ public class EditTransactionFragment extends Fragment {
         locationEditText = view.findViewById(R.id.locationEditText);
         doneButton = view.findViewById(R.id.doneButton);
         deleteButton = view.findViewById(R.id.deleteButton);
-        dateTimeButton = view.findViewById(R.id.dateTimeButton);
+        dateButton = view.findViewById(R.id.dateButton);
         calendar = transactionOriginal.getDate();
         cameraButton = view.findViewById(R.id.cameraButton);
 
@@ -126,7 +126,7 @@ public class EditTransactionFragment extends Fragment {
 
         locationEditText.setText(transactionOriginal.getCity().getNameCity());
 
-        dateTimeButton.setOnClickListener(new View.OnClickListener() {
+        dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 showDatePickerDialog();

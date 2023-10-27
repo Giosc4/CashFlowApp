@@ -1,5 +1,6 @@
 package com.example.cashflow;
 import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.statistics.MapFragment;
 import com.example.cashflow.statistics.chart_pie;
 
 import android.os.Bundle;
@@ -32,6 +33,7 @@ public class StatisticsFragment extends Fragment {
         // Trova i tuoi pulsanti nella vista inflata
         Button btnPieChart = view.findViewById(R.id.btnPieChart);
         Button btnBarChart = view.findViewById(R.id.btnBarChart);
+        Button google_maps = view.findViewById(R.id.google_maps);
         btnPieChart.setText("Grafico sulle Categorie");
 
         // Gestisci il clic sui pulsanti per selezionare il tipo di grafico
@@ -50,6 +52,21 @@ public class StatisticsFragment extends Fragment {
                 getChildFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, barChartFragment)
                         .commit(); */
+            }
+        });
+
+        google_maps.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                /*
+                chart_bar barChartFragment = new chart_bar(accounts);
+                getChildFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, barChartFragment)
+                        .commit(); */
+                MapFragment mapFragment = new MapFragment(accounts);
+                requireActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container,mapFragment)
+                        .commit();
             }
         });
 
