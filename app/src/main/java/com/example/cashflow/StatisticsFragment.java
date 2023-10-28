@@ -2,6 +2,8 @@ package com.example.cashflow;
 import com.example.cashflow.dataClass.Account;
 import com.example.cashflow.statistics.MapFragment;
 import com.example.cashflow.statistics.chart_pie;
+import com.example.cashflow.statistics.Line_chart;
+
 
 import android.os.Bundle;
 import android.view.LayoutInflater;
@@ -19,6 +21,9 @@ import java.util.ArrayList;
 public class StatisticsFragment extends Fragment {
 
     private ArrayList<Account> accounts;
+    private Button btnLineChart;
+    private Button btnPieChart;
+    private Button google_maps;
 
     public StatisticsFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
@@ -32,7 +37,7 @@ public class StatisticsFragment extends Fragment {
 
         // Trova i tuoi pulsanti nella vista inflata
         Button btnPieChart = view.findViewById(R.id.btnPieChart);
-        Button btnBarChart = view.findViewById(R.id.btnBarChart);
+        Button btnLineChart = view.findViewById(R.id.btnLineChart);
         Button google_maps = view.findViewById(R.id.google_maps);
         btnPieChart.setText("Grafico sulle Categorie");
 
@@ -44,25 +49,19 @@ public class StatisticsFragment extends Fragment {
             }
         });
 
-        btnBarChart.setOnClickListener(new View.OnClickListener() {
+        btnLineChart.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*
-                chart_bar barChartFragment = new chart_bar(accounts);
-                getChildFragmentManager().beginTransaction()
+                Line_chart barChartFragment = new Line_chart(accounts);
+                requireActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container, barChartFragment)
-                        .commit(); */
+                        .commit();
             }
         });
 
         google_maps.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                /*
-                chart_bar barChartFragment = new chart_bar(accounts);
-                getChildFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, barChartFragment)
-                        .commit(); */
                 MapFragment mapFragment = new MapFragment(accounts);
                 requireActivity().getSupportFragmentManager().beginTransaction()
                         .replace(R.id.fragment_container,mapFragment)

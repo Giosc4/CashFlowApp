@@ -3,9 +3,16 @@ package com.example.cashflow;
 import android.content.Context;
 
 import com.example.cashflow.dataClass.Account;
+import com.github.mikephil.charting.data.Entry;
+import com.github.mikephil.charting.data.LineData;
+import com.github.mikephil.charting.data.LineDataSet;
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
 import com.google.gson.reflect.TypeToken;
+
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -14,6 +21,8 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
+import java.util.Calendar;
+import java.util.List;
 
 public class JsonReadWrite {
 
@@ -70,13 +79,10 @@ public class JsonReadWrite {
                 System.out.println("Errore durante la creazione del file: " + e.getMessage());
             }
         }
-
-
         // Write the JSON to the file
         try (FileWriter writer = new FileWriter(file)) {
             writer.write(json);
         }
-
         System.out.println("Content of the file: " + json);
     }
 
@@ -127,6 +133,4 @@ public class JsonReadWrite {
 
         return jsonContent.toString();
     }
-
-
 }

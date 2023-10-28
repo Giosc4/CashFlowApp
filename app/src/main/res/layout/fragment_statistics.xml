@@ -18,10 +18,10 @@
         android:text="Grafico a Torta"/>
 
     <Button
-        android:id="@+id/btnBarChart"
+        android:id="@+id/btnLineChart"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="Grafico a Barre"/>
+        android:text="Grafico Line Chart"/>
 
     <Button
         android:id="@+id/google_maps"
