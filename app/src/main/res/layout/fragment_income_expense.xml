@@ -19,47 +19,34 @@
         <LinearLayout
             android:id="@+id/buttonLayout"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
+            android:layout_height="100dp"
             android:layout_below="@id/title"
             android:gravity="center"
             android:orientation="horizontal">
 
-            <Spinner
-                android:id="@+id/accountSpinner"
-                android:layout_width="200dp"
+            <ListView
+                android:id="@+id/accountsListView"
+                android:layout_width="250dp"
                 android:layout_height="wrap_content"
+                android:layout_margin="1dp"
+                android:padding="8dp"/>
+            <CheckBox
+                android:id="@+id/accountsCheckBox"
+                android:layout_width="130dp"
+                android:layout_height="wrap_content"
+                android:padding="8dp"
                 android:layout_margin="10dp"
                 android:background="@color/blue_light_background"
-                android:hint="Scegli un conto"
-                android:paddingTop="10dp"
-                android:paddingBottom="10dp" />
-
-            <Button
-                android:id="@+id/allAccountsButton"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Tutti i conti" />
+                android:text="Seleziona tutti gli account" />
 
         </LinearLayout>
-
-        <TextView
-            android:id="@+id/selectedAccounts"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_below="@id/buttonLayout"
-            android:layout_centerHorizontal="true"
-            android:layout_margin="8dp"
-            android:text="Legenda:" />
 
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pieChart"
             android:layout_width="match_parent"
             android:layout_height="300dp"
-            android:layout_below="@id/selectedAccounts"
-            android:layout_marginStart="16dp"
-            android:layout_marginTop="16dp"
-            android:layout_marginEnd="16dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_below="@id/buttonLayout"
+            android:layout_margin="16dp" />
 
         <com.github.mikephil.charting.charts.BarChart
             android:id="@+id/barChart"

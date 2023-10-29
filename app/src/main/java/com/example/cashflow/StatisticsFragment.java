@@ -3,7 +3,6 @@ package com.example.cashflow;
 import com.example.cashflow.dataClass.Account;
 import com.example.cashflow.statistics.Income_expense;
 import com.example.cashflow.statistics.MapFragment;
-import com.example.cashflow.statistics.chart_pie;
 import com.example.cashflow.statistics.Line_chart;
 
 
@@ -25,9 +24,7 @@ public class StatisticsFragment extends Fragment {
 
     private ArrayList<Account> accounts;
     private Button btnLineChart;
-    private Button btnPieChart;
     private Button google_maps;
-
     private Button incomeButton;
     private Button expenseButton;
 
@@ -41,20 +38,11 @@ public class StatisticsFragment extends Fragment {
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_statistics, container, false);
 
-        btnPieChart = view.findViewById(R.id.btnPieChart);
         btnLineChart = view.findViewById(R.id.btnLineChart);
         google_maps = view.findViewById(R.id.google_maps);
         incomeButton = view.findViewById(R.id.incomeButton);
         expenseButton = view.findViewById(R.id.expenseButton);
 
-
-        // Gestisci il clic sui pulsanti per selezionare il tipo di grafico
-        btnPieChart.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openGrafoATorta();
-            }
-        });
 
         btnLineChart.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -98,11 +86,4 @@ public class StatisticsFragment extends Fragment {
         return view;
     }
 
-    private void openGrafoATorta() {
-        chart_pie chart_pie = new chart_pie(accounts);
-        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, chart_pie);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-    }
 }

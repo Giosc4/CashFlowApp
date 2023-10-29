@@ -403,16 +403,14 @@ public class NewTransactionFragment extends Fragment {
         DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), new DatePickerDialog.OnDateSetListener() {
             @Override
             public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                // Qui puoi fare qualcosa con la data selezionata dall'utente
-                // Ad esempio, puoi impostarla in un EditText o fare altro
-                calendar.set(Calendar.YEAR, year);
-                calendar.set(Calendar.MONTH, monthOfYear);
-                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
+                // Aggiorna la variabile selectedDate con la data selezionata dall'utente
+                selectedDate.set(Calendar.YEAR, year);
+                selectedDate.set(Calendar.MONTH, monthOfYear);
+                selectedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
                 String selectedDateString = year + "-" + (monthOfYear + 1) + "-" + dayOfMonth;
                 selectedTimeTextView.setText(selectedDateString);
                 isDateSelected = true;
-
             }
         }, year, month, dayOfMonth);
 

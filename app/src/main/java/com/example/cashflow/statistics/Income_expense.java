@@ -16,6 +16,8 @@ import android.widget.Button;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.ListView;
 import android.widget.MultiAutoCompleteTextView;
 import android.widget.Spinner;
@@ -46,108 +48,96 @@ public class Income_expense extends Fragment {
     private ArrayList<Account> accounts;
 
     private TextView title;
-    private Spinner accountSpinner;
-    private Button allAccountsButton;
-    private TextView selectedAccounts;
-
+    private CheckBox accountsCheckBox;
+    private ListView accountsListView;
+    private ArrayList<Account> selectedAccounts;
     private PieChart pieChart;
     private BarChart barChart;
 
     public Income_expense(Boolean isIncome, ArrayList<Account> accounts) {
         this.isIncome = isIncome;
         this.accounts = accounts;
+        selectedAccounts = new ArrayList<>();
     }
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_income_expense, container, false);
 
-        accountSpinner = view.findViewById(R.id.accountSpinner);
-        allAccountsButton = view.findViewById(R.id.allAccountsButton);
-        selectedAccounts = view.findViewById(R.id.selectedAccounts);
+        accountsCheckBox = view.findViewById(R.id.accountsCheckBox);
+
+        accountsListView = view.findViewById(R.id.accountsListView);
         pieChart = view.findViewById(R.id.pieChart);
         barChart = view.findViewById(R.id.barChart);
         title = view.findViewById(R.id.title);
 
-        if (isIncome){
+        if (isIncome) {
             title.setText("INCOME");
         } else {
             title.setText("EXPENSE");
         }
 
-        //SPINNER ACCOUNTS
+        accountsCheckBox = view.findViewById(R.id.accountsCheckBox);
+        accountsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            // Controlla lo stato del checkbox e aggiorna la ListView di conseguenza
+            for (int i = 0; i < accountsListView.getCount(); i++) {
+                accountsListView.setItemChecked(i, isChecked);
+            }
+
+            // Aggiorna i grafici
+            updateSelectedAccounts();
+            initPieChart(selectedAccounts);
+            initBarChart(selectedAccounts);
+        });
+
+        accountsListView = view.findViewById(R.id.accountsListView);
+// Rimuovi l'ascoltatore corrente per evitare di influenzare lo stato del checkbox
+        accountsListView.setOnItemClickListener(null);
+
+
+        // Popola l'array di nomi degli account
         ArrayList<String> accountNames = new ArrayList<>();
         for (Account account : accounts) {
             accountNames.add(account.getName());
         }
 
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, accountNames);
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        accountSpinner.setAdapter(dataAdapter);
-
-        accountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+// Imposta l'adapter per il ListView
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_multiple_choice, accountNames);
+        accountsListView.setAdapter(adapter);
+        accountsListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
+        accountsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
             @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedAccount = parent.getItemAtPosition(position).toString();
-                /*
-                NON SUCCEDE NULLA PERCHè NEL METODO saveTransaction() VIENE SEELEZIONATO CON accountSpinner.getSelectedItem
-               String accountSelected = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
-                 */
-                System.out.println(selectedAccount);
-            }
+            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
+                updateSelectedAccounts();
+                initPieChart(selectedAccounts);
+                initBarChart(selectedAccounts);
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
-                // SE NULLA è SELEZIONATO ALLORA VIENE PRESO IL PRIMO ACCOUNT
-            }
-
-        });
-
-
-        allAccountsButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View view) {
-                // vengono selezionati tutti cli account e deselezionato l'account dallo spinner
             }
         });
 
-
-        initPieChart();
-        initBarChart();
-
+        if(selectedAccounts.isEmpty()){
+            initPieChart(accounts);
+            initBarChart(accounts);
+        }
 
         return view;
     }
 
-
-
-
-
+    private void updateSelectedAccounts() {
+        selectedAccounts.clear();
+        for (int i = 0; i < accountsListView.getCount(); i++) {
+            if (accountsListView.isItemChecked(i)) {
+                selectedAccounts.add(accounts.get(i));
+            }
+        }
+    }
     /*
 
     ERRORE MANCA LA LEGENDA E BISOGNA SISTEMARE I CONTI
 
      */
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    private void initPieChart() {
+    private void initPieChart(ArrayList<Account> selectedAccounts) {
         pieChart.getDescription().setEnabled(false);
         pieChart.setDrawHoleEnabled(true);
         pieChart.setHoleColor(android.R.color.transparent);
@@ -156,7 +146,7 @@ public class Income_expense extends Fragment {
         pieChart.setExtraTopOffset(30f);
         pieChart.setUsePercentValues(true);
 
-        PieDataSet pieDataSet = new PieDataSet(getIncomeOrExpensePieData(accounts), "Legenda Dati");
+        PieDataSet pieDataSet = new PieDataSet(getIncomeOrExpensePieData(selectedAccounts), "Legenda Dati");
         pieDataSet.setColors(getCategoryColors());
         pieDataSet.setDrawValues(false);
 
@@ -165,28 +155,21 @@ public class Income_expense extends Fragment {
         legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
         legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
         legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-        legend.setDrawInside(false);
-        legend.setXEntrySpace(10f);
-
-        // Imposta l'YOffset per posizionare la legenda sopra il grafico
-        legend.setYOffset(-30f);
+        legend.setWordWrapEnabled(true);
 
         PieData pieData = new PieData(pieDataSet);
         pieChart.setData(pieData);
     }
 
 
-
-
-
     // Inizializza il grafico a barre
-    private void initBarChart() {
+    private void initBarChart(ArrayList<Account> selectedAccounts) {
         barChart.getDescription().setEnabled(false);
         barChart.setDrawBarShadow(false);
         barChart.setDrawValueAboveBar(true);
         barChart.getLegend().setEnabled(false);
 
-        BarDataSet barDataSet = new BarDataSet(getIncomeOrExpenseBarData(accounts), "");
+        BarDataSet barDataSet = new BarDataSet(getIncomeOrExpenseBarData(selectedAccounts), "");
         int[] colors = getCategoryColors();
         barDataSet.setColors(colors);
 

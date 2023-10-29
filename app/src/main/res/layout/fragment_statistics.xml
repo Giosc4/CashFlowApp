@@ -11,11 +11,6 @@
     tools:context=".StatisticsFragment">
 
     <!-- Pulsanti per selezionare il tipo di grafico -->
-    <Button
-        android:id="@+id/btnPieChart"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="Grafico a Torta"/>
 
     <Button
         android:id="@+id/btnLineChart"
