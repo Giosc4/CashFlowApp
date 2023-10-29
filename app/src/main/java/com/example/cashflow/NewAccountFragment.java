@@ -20,6 +20,7 @@ import java.util.ArrayList;
 public class NewAccountFragment extends Fragment {
 
     private JsonReadWrite jsonReadWrite;
+    private EditText edtName;
     private ArrayList<Account> accounts;
 
     public NewAccountFragment(ArrayList<Account> accounts) {
@@ -33,20 +34,16 @@ public class NewAccountFragment extends Fragment {
 
         jsonReadWrite = new JsonReadWrite("test12.json");
 
-        final EditText edtName = view.findViewById(R.id.edtName);
-        final EditText edtCurrency = view.findViewById(R.id.edtCurrency);
-        final EditText edtColor = view.findViewById(R.id.edtColor);
+        edtName = view.findViewById(R.id.edtName);
         Button btnCreateAccount = view.findViewById(R.id.btnCreateAccount);
 
         btnCreateAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 String name = edtName.getText().toString();
-                String currency = edtCurrency.getText().toString();
-                String color = edtColor.getText().toString();
 
                 if (name.isEmpty()) {
-                    Toast.makeText(getActivity(), "Per favore, inserisci tutte le informazioni", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(getActivity(), "Inserisci il nome dell'account", Toast.LENGTH_SHORT).show();
                 } else {
                     accounts.add(new Account(name));
                     try {
@@ -64,7 +61,6 @@ public class NewAccountFragment extends Fragment {
                 }
             }
         });
-
         return view;
     }
 }

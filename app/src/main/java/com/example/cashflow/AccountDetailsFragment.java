@@ -191,6 +191,7 @@ public class AccountDetailsFragment extends Fragment {
         @Override
         public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
             Transactions transaction = transactions.get(position);
+            System.out.println(transaction.printOnApp());
             holder.transactionDetailTextView.setText(transaction.printOnApp());
         }
 
@@ -211,12 +212,12 @@ public class AccountDetailsFragment extends Fragment {
                 transactionDetailTextView.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View view) {
-                        EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), account);
-                        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        fragmentTransaction.replace(R.id.fragment_container, editTransactionFragment);
-                        fragmentTransaction.addToBackStack(null);
-                        fragmentTransaction.commit();
+//                        EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), account);
+//                        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+//                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+//                        fragmentTransaction.replace(R.id.fragment_container, editTransactionFragment);
+//                        fragmentTransaction.addToBackStack(null);
+//                        fragmentTransaction.commit();
                     }
                 });
                 detailButton.setOnClickListener(new View.OnClickListener() {

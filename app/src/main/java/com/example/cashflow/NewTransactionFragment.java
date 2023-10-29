@@ -39,6 +39,7 @@ import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
 import java.io.IOException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 
@@ -88,7 +89,6 @@ public class NewTransactionFragment extends Fragment {
         numberEditText = view.findViewById(R.id.numberEditText);
         accountSpinner = view.findViewById(R.id.accountSpinner);
         locationEditText = view.findViewById(R.id.locationEditText);
-        accountSpinner = view.findViewById(R.id.accountSpinner);
         cameraButton = view.findViewById(R.id.cameraButton);
         ocrManager = new OCRManager(requireContext());
 
@@ -223,12 +223,17 @@ public class NewTransactionFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedAccount = parent.getItemAtPosition(position).toString();
+                /*
+                NON SUCCEDE NULLA PERCHè NEL METODO saveTransaction() VIENE SEELEZIONATO CON accountSpinner.getSelectedItem
+               String accountSelected = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
+                 */
             }
 
             @Override
-            public void onNothingSelected(AdapterView<?> parent) {
-                // Codice da eseguire quando non viene selezionato nessun elemento
+            public void onNothingSelected(AdapterView<?> adapterView) {
+                // SE NULLA è SELEZIONATO ALLORA VIENE PRESO IL PRIMO ACCOUNT
             }
+
         });
 
         // Add OnClickListener for the "DONE" button
@@ -304,7 +309,7 @@ public class NewTransactionFragment extends Fragment {
                     ocrManager.processImage(croppedImageUri, new OCRManager.OCRListener() {
                         @Override
                         public void onTextRecognized(String text) {
-                            System.out.println(text);
+                            System.out.println("Text scanned " + text);
                             numberEditText.setText(text);
                         }
 
@@ -355,12 +360,17 @@ public class NewTransactionFragment extends Fragment {
             }
 
             String accountSelected = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
-            System.out.println("DateTimeUtil.createDateTimeFromDateAndTimePickers " + selectedDate);
+
+            //formatting date for Toast
+            SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+            String dataFormattata = dateFormat.format(selectedDate.getTime());
+
+            System.out.println("dataFormattata " + dataFormattata);
             String location = cityPosition.getNameCity() != null ? cityPosition.getNameCity().toString() : "";
             String selectedCategory = categorySpinner.getSelectedItem() != null ? categorySpinner.getSelectedItem().toString() : "";
 
             // Resto del codice per salvare la transazione
-            Toast.makeText(getContext(), "Transaction saved: " + amount + ", " + accountSelected + ", " + selectedDate + ", " + location, Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Transaction saved: " + amount + ", " + accountSelected + ", " + dataFormattata + ", " + location, Toast.LENGTH_LONG).show();
 
             Transactions newTrans = new Transactions(income, amount, selectedDate, cityPosition, CategoriesEnum.valueOf(selectedCategory));
             jsonReadWrite = new JsonReadWrite("test12.json");
@@ -400,7 +410,6 @@ public class NewTransactionFragment extends Fragment {
                 calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
                 String selectedDateString = year + "-" + (monthOfYear + 1) + "-" + dayOfMonth;
-                System.out.println(selectedDateString + " selectedDateString");
                 selectedTimeTextView.setText(selectedDateString);
                 isDateSelected = true;
 

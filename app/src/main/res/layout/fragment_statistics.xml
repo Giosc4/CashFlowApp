@@ -29,6 +29,16 @@
         android:layout_height="wrap_content"
         android:text="Google Maps"/>
 
-    <!-- Aggiungi altri pulsanti per altri tipi di grafico, se necessario
-    -->
+    <Button
+        android:id="@+id/incomeButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Grafico sull'entrate"/>
+
+    <Button
+        android:id="@+id/expenseButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Grafico sulle spese"/>
+
 </LinearLayout>

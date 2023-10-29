@@ -97,17 +97,15 @@ public class Transactions {
         String formattedDate = dateFormat.format(date.getTime());
 
         if (income) {
-            return "INCOME / " +
-                    "amount: " + amount + " / " +
-                    "date: " + formattedDate + " / " +
-                    "city: " + city.toString() + " / " +
-                    "category: " + category.name().toString();
+            return "INCOME " + "Amount: " + amount + "\n" +
+                    "Date: " + formattedDate + "\n" +
+                    "City: " + city.cityName() + "\n" +
+                    "Category: " + category.name().toString();
         } else {
-            return "EXPENSE / " +
-                    "amount: " + amount + " / " +
-                    "date: " + formattedDate + " / " +
-                    "city: " +  city.toString() + " / " +
-                    "category: " + category.name().toString();
+            return "EXPENSE " + "Amount: " + amount + "\n" +
+                    "Date: " + formattedDate + "\n" +
+                    "City: " + city.cityName() + "\n" +
+                    "Category: " + category.name().toString();
         }
     }
 

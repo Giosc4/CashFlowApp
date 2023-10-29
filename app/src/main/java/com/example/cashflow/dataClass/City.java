@@ -51,4 +51,9 @@ public class City {
                 ", longitude=" + longitude +
                 '}';
     }
+
+    public String cityName(){
+        return nameCity;
+    }
+
 }

@@ -1,10 +1,13 @@
 package com.example.cashflow;
+
 import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.statistics.Income_expense;
 import com.example.cashflow.statistics.MapFragment;
 import com.example.cashflow.statistics.chart_pie;
 import com.example.cashflow.statistics.Line_chart;
 
 
+import android.annotation.SuppressLint;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -25,21 +28,25 @@ public class StatisticsFragment extends Fragment {
     private Button btnPieChart;
     private Button google_maps;
 
+    private Button incomeButton;
+    private Button expenseButton;
+
     public StatisticsFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
     }
 
+    @SuppressLint("MissingInflatedId")
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        // Infla il layout del fragment per la visualizzazione dei pulsanti
         View view = inflater.inflate(R.layout.fragment_statistics, container, false);
 
-        // Trova i tuoi pulsanti nella vista inflata
-        Button btnPieChart = view.findViewById(R.id.btnPieChart);
-        Button btnLineChart = view.findViewById(R.id.btnLineChart);
-        Button google_maps = view.findViewById(R.id.google_maps);
-        btnPieChart.setText("Grafico sulle Categorie");
+        btnPieChart = view.findViewById(R.id.btnPieChart);
+        btnLineChart = view.findViewById(R.id.btnLineChart);
+        google_maps = view.findViewById(R.id.google_maps);
+        incomeButton = view.findViewById(R.id.incomeButton);
+        expenseButton = view.findViewById(R.id.expenseButton);
+
 
         // Gestisci il clic sui pulsanti per selezionare il tipo di grafico
         btnPieChart.setOnClickListener(new View.OnClickListener() {
@@ -64,13 +71,30 @@ public class StatisticsFragment extends Fragment {
             public void onClick(View v) {
                 MapFragment mapFragment = new MapFragment(accounts);
                 requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container,mapFragment)
+                        .replace(R.id.fragment_container, mapFragment)
                         .commit();
             }
         });
 
-        // Aggiungi altri pulsanti e gestisci i loro clic per altri tipi di grafico, se necessario
+        incomeButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Income_expense incomeExpense = new Income_expense(true, accounts);
+                requireActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, incomeExpense)
+                        .commit();
+            }
+        });
 
+        expenseButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                Income_expense incomeExpense = new Income_expense(false, accounts);
+                requireActivity().getSupportFragmentManager().beginTransaction()
+                        .replace(R.id.fragment_container, incomeExpense)
+                        .commit();
+            }
+        });
         return view;
     }
 
