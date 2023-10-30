@@ -131,11 +131,6 @@ public class Income_expense extends Fragment {
             }
         }
     }
-    /*
-
-    ERRORE MANCA LA LEGENDA E BISOGNA SISTEMARE I CONTI
-
-     */
 
     private void initPieChart(ArrayList<Account> selectedAccounts) {
         pieChart.getDescription().setEnabled(false);

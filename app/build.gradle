@@ -65,8 +65,7 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
     implementation 'com.google.firebase:firebase-ml-vision:24.1.0'
-    implementation platform('com.google.firebase:firebase-bom:32.4.0')
-    implementation 'com.google.firebase:firebase-analytics'
+    implementation platform('com.google.firebase:firebase-bom:32.4.0') //consente di gestire le versioni delle librerie Firebase
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
 

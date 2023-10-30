@@ -175,7 +175,6 @@ public class EditTransactionFragment extends Fragment {
                 }
         });
 
-
         expenseButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -190,7 +189,6 @@ public class EditTransactionFragment extends Fragment {
                 setIncome();
             }
         });
-
 
         // Spinner CATEGORIES
         categories = new ArrayList<>();
@@ -227,7 +225,6 @@ public class EditTransactionFragment extends Fragment {
         }
         this.originalAccountIndex = accountNames.indexOf(accountOriginal.getName() + "");
 
-
         ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, accountNames);
         dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
         accountSpinner.setAdapter(dataAdapter);
@@ -261,7 +258,6 @@ public class EditTransactionFragment extends Fragment {
             }
         });
 
-        // Imposta un listener per il pulsante della fotocamera
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -272,9 +268,9 @@ public class EditTransactionFragment extends Fragment {
                 builder.setItems(new CharSequence[]{"Fotocamera", "Galleria"}, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (which == 0) { // Fotocamera
+                        if (which == 0) {
                             openCamera();
-                        } else if (which == 1) { // Galleria
+                        } else if (which == 1) {
                             openGallery();
                         }
                     }
@@ -317,19 +313,16 @@ public class EditTransactionFragment extends Fragment {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 Uri croppedImageUri = result.getUri();
-                // Ora puoi inviare l'immagine croppata a OCRManager
                 if (croppedImageUri != null) {
                     ocrManager.processImage(croppedImageUri, new OCRManager.OCRListener() {
                         @Override
                         public void onTextRecognized(String text) {
-                            // Qui puoi fare qualcosa con il testo riconosciuto
-                            System.out.println(text);
+                            System.out.println("Testo OCR " + text);
                             numberEditText.setText(text);
                         }
 
                         @Override
                         public void onFailure(Exception e) {
-                            // Gestisci eventuali errori
                             e.printStackTrace();
                         }
                     });
@@ -385,11 +378,6 @@ public class EditTransactionFragment extends Fragment {
         int newAccountIndex = accountSpinner.getSelectedItemPosition();
         Calendar newDate = calendar;
 
-// crea la nuova transazione, verifica se è nello stesso account
-        // SI: sostituisce la vecchia transazione con la nuova
-        // NO: elimina la transazione dall'account originale, lo aggiunge all'account selezionato
-        //sostituisce l'account originale con quello con la transazione aggiornata e poi salva tutto su JSON
-
         Transactions newTrans = new Transactions(newIncome, newAmount, newDate, newCity, newCategory);
         if (newAccountIndex != originalAccountIndex) {
             accountOriginal.removeTransaction(transactionOriginal);
@@ -415,7 +403,7 @@ public class EditTransactionFragment extends Fragment {
 
     }
 
-
+    //scelta della data
     private void showDatePickerDialog() {
         Calendar newCalendar = Calendar.getInstance();
         int year = newCalendar.get(Calendar.YEAR);
@@ -429,7 +417,7 @@ public class EditTransactionFragment extends Fragment {
                 newCalendar.set(Calendar.MONTH, monthOfYear);
                 newCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
-                calendar = newCalendar; // Imposta la variabile globale
+                calendar = newCalendar;
 
                 SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
                 String selectedDateString = dateFormat.format(calendar.getTime());
@@ -438,7 +426,6 @@ public class EditTransactionFragment extends Fragment {
             }
         }, year, month, dayOfMonth);
 
-        // Mostra il dialog per la selezione della data
         datePickerDialog.show();
     }
 
