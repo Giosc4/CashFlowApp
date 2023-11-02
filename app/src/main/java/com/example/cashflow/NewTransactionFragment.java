@@ -3,12 +3,15 @@ package com.example.cashflow;
 import static android.app.Activity.RESULT_OK;
 
 import android.app.DatePickerDialog;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.Spanned;
@@ -25,9 +28,13 @@ import android.widget.LinearLayout;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.Manifest;
 
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.example.cashflow.dataClass.Account;
@@ -38,10 +45,12 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
+import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 
 public class NewTransactionFragment extends Fragment {
 
@@ -56,7 +65,7 @@ public class NewTransactionFragment extends Fragment {
     private Calendar selectedDate;
     private boolean isDateSelected = false;
 
-
+    private Uri cameraImageUri;
     private Button dateButton;
     private EditText locationEditText;
     private JsonReadWrite jsonReadWrite;
@@ -64,7 +73,7 @@ public class NewTransactionFragment extends Fragment {
     private ArrayList<String> categories;
     private ImageView cameraButton;
     private TextView selectedTimeTextView;
-
+    private static final int PERMISSION_CAMERA = 1;
     public static final int REQUEST_IMAGE_PICK = 123;
     private City cityPosition;
     private OCRManager ocrManager;
@@ -260,7 +269,14 @@ public class NewTransactionFragment extends Fragment {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         if (which == 0) { // Fotocamera
-                            openCamera();
+                            // Controlla se il permesso della fotocamera è già stato concesso
+                            if (ContextCompat.checkSelfPermission(requireContext(), Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                                // Se il permesso non è stato concesso, richiedilo
+                                ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
+                            } else {
+                                // Il permesso è già stato concesso, procedi con l'apertura della fotocamera
+                                openCamera();
+                            }
                         } else if (which == 1) { // Galleria
                             openGallery();
                         }
@@ -273,8 +289,15 @@ public class NewTransactionFragment extends Fragment {
     }
 
     private void openCamera() {
+        // Creare un file temporaneo per salvare l'immagine catturata dalla fotocamera
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "Cashflow");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Cashflow image");
+        cameraImageUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri); // Salva l'immagine nella galleria
             startActivityForResult(takePictureIntent, REQUEST_IMAGE_PICK);
         }
     }
@@ -284,18 +307,23 @@ public class NewTransactionFragment extends Fragment {
         startActivityForResult(galleryIntent, REQUEST_IMAGE_PICK);
     }
 
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK && data != null) {
-            Uri imageUri = data.getData();
-
-            if (imageUri != null) {
-                // Utilizza android-image-cropper per il cropping dell'immagine
-                CropImage.activity(imageUri)
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK) {
+            if (cameraImageUri != null) {
+                CropImage.activity(cameraImageUri)
                         .setGuidelines(CropImageView.Guidelines.ON)
                         .start(requireContext(), this);
+            } else {
+                Uri imageUri = data.getData();
+                if (imageUri != null) {
+                    CropImage.activity(imageUri)
+                            .setGuidelines(CropImageView.Guidelines.ON)
+                            .start(requireContext(), this);
+                }
             }
         }
 
@@ -304,19 +332,36 @@ public class NewTransactionFragment extends Fragment {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
                 Uri croppedImageUri = result.getUri();
-                // Ora puoi inviare l'immagine croppata a OCRManager che utilizza FirebaseVisionImage
                 if (croppedImageUri != null) {
                     ocrManager.processImage(croppedImageUri, new OCRManager.OCRListener() {
                         @Override
-                        public void onTextRecognized(String text) {
-                            System.out.println("Text scanned " + text);
-                            numberEditText.setText(text);
+                        public void onTextRecognized(double value) {
+                            numberEditText.setText(String.valueOf(value));
+                        }
+
+                        @Override
+                        public void onTextNotRecognized(String error) {
+                            // Notifica l'errore all'utente
+                            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                            // Torna al CropImage per permettere all'utente di ritagliare nuovamente l'immagine
+                            if (cameraImageUri != null) {
+                                CropImage.activity(cameraImageUri)
+                                        .setGuidelines(CropImageView.Guidelines.ON)
+                                        .start(requireContext(), NewTransactionFragment.this);
+                            } else {
+                                Uri imageUri = data.getData();
+                                if (imageUri != null) {
+                                    CropImage.activity(imageUri)
+                                            .setGuidelines(CropImageView.Guidelines.ON)
+                                            .start(requireContext(), NewTransactionFragment.this);
+                                }
+                            }
                         }
 
                         @Override
                         public void onFailure(Exception e) {
-                            // Gestisci eventuali errori
                             e.printStackTrace();
+                            // Gestisci eventuali errori
                         }
                     });
                 }
@@ -335,18 +380,18 @@ public class NewTransactionFragment extends Fragment {
             // Verifica se almeno uno dei pulsanti della spesa o entrata è stato premuto e quello della data
             if (!income && !expense) {
                 // Nessun pulsante selezionato, mostra un messaggio di avviso o gestisci l'errore
-                Toast.makeText(getContext(), "Please select either Income or Expense", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Inserisci Spesa o Entrata", Toast.LENGTH_SHORT).show();
                 return; // Esce dal metodo senza salvare la transazione
             }
 
             if (numberText.isEmpty() || numberText.equals("0") || numberText.equals("0.0")) {
                 // L'utente non ha inserito un valore numerico, mostra un messaggio di errore
-                Toast.makeText(getContext(), "Please enter a numeric value", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Aggiungi un prezzo", Toast.LENGTH_SHORT).show();
                 return; // Esce dal metodo senza salvare la transazione
             }
             if (!isDateSelected) {
                 // La data non è stata selezionata, mostra un messaggio di errore
-                Toast.makeText(getContext(), "Please select a date", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Seleziona la data", Toast.LENGTH_SHORT).show();
                 return; // Esce dal metodo senza salvare la transazione
             }
 
@@ -355,7 +400,7 @@ public class NewTransactionFragment extends Fragment {
                 amount = Double.parseDouble(numberText);
             } catch (NumberFormatException e) {
                 // Il valore inserito non è un numero valido, mostra un messaggio di errore
-                Toast.makeText(getContext(), "Invalid numeric value", Toast.LENGTH_SHORT).show();
+                Toast.makeText(getContext(), "Numero numerico non valido", Toast.LENGTH_SHORT).show();
                 return; // Esce dal metodo senza salvare la transazione
             }
 
@@ -370,7 +415,7 @@ public class NewTransactionFragment extends Fragment {
             String selectedCategory = categorySpinner.getSelectedItem() != null ? categorySpinner.getSelectedItem().toString() : "";
 
             // Resto del codice per salvare la transazione
-            Toast.makeText(getContext(), "Transaction saved: " + amount + ", " + accountSelected + ", " + dataFormattata + ", " + location, Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Transazione salvata: " + amount + ", " + accountSelected + ", " + dataFormattata + ", " + location, Toast.LENGTH_LONG).show();
 
             Transactions newTrans = new Transactions(income, amount, selectedDate, cityPosition, CategoriesEnum.valueOf(selectedCategory));
             jsonReadWrite = new JsonReadWrite("test12.json");

@@ -12,19 +12,6 @@
         android:hint="Nome"
         android:inputType="textPersonName" />
 
-    <EditText
-        android:id="@+id/edtCurrency"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Valuta"
-        android:inputType="text" />
-
-    <EditText
-        android:id="@+id/edtColor"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:hint="Colore"
-        android:inputType="text" />
 
     <Button
         android:id="@+id/btnCreateAccount"

@@ -1,8 +1,10 @@
 package com.example.cashflow;
 
 import android.content.Context;
+import android.os.Environment;
 
 import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.dataClass.Transactions;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
@@ -20,9 +22,12 @@ import java.io.FileReader;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.lang.reflect.Type;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
+import java.util.Date;
 import java.util.List;
+import java.util.Locale;
 
 public class JsonReadWrite {
 
@@ -87,13 +92,6 @@ public class JsonReadWrite {
     }
 
 
-    public String accountsToJson() {
-        Gson gson = new Gson();
-        return gson.toJson(accounts);
-    }
-
-
-    // deve sostituire readJsonFromFile
     public ArrayList<Account> readAccountsFromJson(Context context) {
         // Read the JSON string from the file
         String json = null;
@@ -133,4 +131,5 @@ public class JsonReadWrite {
 
         return jsonContent.toString();
     }
+
 }

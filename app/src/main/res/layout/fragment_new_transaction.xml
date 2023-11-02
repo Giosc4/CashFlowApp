@@ -20,7 +20,7 @@
             android:layout_weight="1"
             android:paddingTop="16dp"
             android:paddingBottom="16dp"
-            android:text="Expense" />
+            android:text="Spesa" />
 
         <Button
             android:id="@+id/incomeButton"
@@ -30,7 +30,7 @@
             android:layout_weight="1"
             android:paddingTop="16dp"
             android:paddingBottom="16dp"
-            android:text="Income" />
+            android:text="Entrata" />
 
 
     </LinearLayout>
@@ -54,7 +54,7 @@
             android:id="@+id/numberEditText"
             android:layout_width="310dp"
             android:layout_height="wrap_content"
-            android:hint="Aggiungi un numero double"
+            android:hint="Aggiungi un prezzo!"
             android:inputType="numberDecimal"
             android:paddingTop="16dp"
             android:paddingBottom="16dp" />
@@ -86,13 +86,13 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="Chose date" />
+        android:text="Seleziona Data" />
 
     <TextView
         android:id="@+id/selectedTimeTextView"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Date Selected: "
+        android:text="Data selezionata: "
         android:layout_gravity="center_horizontal" />
 
 
@@ -125,6 +125,6 @@
         android:layout_marginHorizontal="27dp"
         android:paddingTop="8dp"
         android:paddingBottom="8dp"
-        android:text="DELETE" />
+        android:text="ELIMINA" />
 
 </LinearLayout>

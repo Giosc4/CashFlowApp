@@ -9,7 +9,10 @@ import androidx.fragment.app.Fragment;
 
 import android.text.Editable;
 import android.text.TextWatcher;
-import android.util.SparseBooleanArray;
+
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -49,7 +52,9 @@ public class Income_expense extends Fragment {
 
     private TextView title;
     private CheckBox accountsCheckBox;
-    private ListView accountsListView;
+    private RecyclerView accountsRecyclerView;
+    private AccountsAdapter accountsAdapter;
+
     private ArrayList<Account> selectedAccounts;
     private PieChart pieChart;
     private BarChart barChart;
@@ -65,8 +70,7 @@ public class Income_expense extends Fragment {
         View view = inflater.inflate(R.layout.fragment_income_expense, container, false);
 
         accountsCheckBox = view.findViewById(R.id.accountsCheckBox);
-
-        accountsListView = view.findViewById(R.id.accountsListView);
+        accountsRecyclerView = view.findViewById(R.id.accountsRecyclerView);
         pieChart = view.findViewById(R.id.pieChart);
         barChart = view.findViewById(R.id.barChart);
         title = view.findViewById(R.id.title);
@@ -77,11 +81,10 @@ public class Income_expense extends Fragment {
             title.setText("EXPENSE");
         }
 
-        accountsCheckBox = view.findViewById(R.id.accountsCheckBox);
         accountsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
-            // Controlla lo stato del checkbox e aggiorna la ListView di conseguenza
-            for (int i = 0; i < accountsListView.getCount(); i++) {
-                accountsListView.setItemChecked(i, isChecked);
+            // Controlla lo stato del checkbox e aggiorna l'adapter di conseguenza
+            for (int i = 0; i < accountsAdapter.getItemCount(); i++) {
+                accountsAdapter.setSelected(i, isChecked);
             }
 
             // Aggiorna i grafici
@@ -90,32 +93,28 @@ public class Income_expense extends Fragment {
             initBarChart(selectedAccounts);
         });
 
-        accountsListView = view.findViewById(R.id.accountsListView);
-// Rimuovi l'ascoltatore corrente per evitare di influenzare lo stato del checkbox
-        accountsListView.setOnItemClickListener(null);
-
-
         // Popola l'array di nomi degli account
         ArrayList<String> accountNames = new ArrayList<>();
         for (Account account : accounts) {
             accountNames.add(account.getName());
         }
 
-// Imposta l'adapter per il ListView
-        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_list_item_multiple_choice, accountNames);
-        accountsListView.setAdapter(adapter);
-        accountsListView.setChoiceMode(ListView.CHOICE_MODE_MULTIPLE);
-        accountsListView.setOnItemClickListener(new AdapterView.OnItemClickListener() {
-            @Override
-            public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
-                updateSelectedAccounts();
-                initPieChart(selectedAccounts);
-                initBarChart(selectedAccounts);
+        // Inizializza l'adapter personalizzato per il RecyclerView
+        accountsAdapter = new AccountsAdapter(accountNames);
+        accountsRecyclerView.setAdapter(accountsAdapter);
 
-            }
+        // Imposta un layout manager per il RecyclerView
+        accountsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
+
+        accountsAdapter.setOnItemClickListener(position -> {
+            // Aggiorna i grafici quando viene selezionato un elemento nel RecyclerView
+            updateSelectedAccounts();
+            initPieChart(selectedAccounts);
+            initBarChart(selectedAccounts);
         });
 
-        if(selectedAccounts.isEmpty()){
+        if (selectedAccounts.isEmpty()) {
+            accountsCheckBox.setChecked(true);
             initPieChart(accounts);
             initBarChart(accounts);
         }
@@ -123,13 +122,15 @@ public class Income_expense extends Fragment {
         return view;
     }
 
+
     private void updateSelectedAccounts() {
         selectedAccounts.clear();
-        for (int i = 0; i < accountsListView.getCount(); i++) {
-            if (accountsListView.isItemChecked(i)) {
+        for (int i = 0; i < accountsAdapter.getItemCount(); i++) {
+            if (accountsAdapter.isSelected(i)) {
                 selectedAccounts.add(accounts.get(i));
             }
         }
+
     }
 
     private void initPieChart(ArrayList<Account> selectedAccounts) {
@@ -141,7 +142,7 @@ public class Income_expense extends Fragment {
         pieChart.setExtraTopOffset(30f);
         pieChart.setUsePercentValues(true);
 
-        PieDataSet pieDataSet = new PieDataSet(getIncomeOrExpensePieData(selectedAccounts), "Legenda Dati");
+        PieDataSet pieDataSet = new PieDataSet(getIncomeOrExpensePieData(selectedAccounts), "");
         pieDataSet.setColors(getCategoryColors());
         pieDataSet.setDrawValues(false);
 

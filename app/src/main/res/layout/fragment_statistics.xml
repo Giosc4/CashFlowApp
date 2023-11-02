@@ -8,32 +8,44 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:padding="16dp"
-    tools:context=".StatisticsFragment">
+    tools:context=".StatisticsFragment"
+    android:layout_marginTop="20dp">
 
     <!-- Pulsanti per selezionare il tipo di grafico -->
 
     <Button
         android:id="@+id/btnLineChart"
+        android:layout_margin="15dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Grafico Line Chart"/>
 
     <Button
         android:id="@+id/google_maps"
+        android:layout_margin="15dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Google Maps"/>
 
     <Button
         android:id="@+id/incomeButton"
+        android:layout_margin="15dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Grafico sull'entrate"/>
 
     <Button
         android:id="@+id/expenseButton"
+        android:layout_margin="15dp"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="Grafico sulle spese"/>
+
+    <Button
+        android:id="@+id/btnCSVFileDownload"
+        android:layout_margin="15dp"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Download File CSV"/>
 
 </LinearLayout>

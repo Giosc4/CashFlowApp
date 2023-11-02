@@ -23,7 +23,6 @@ import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 public class Posizione {
-    private static final int PERMISSION_REQUEST_CODE = 1;
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Context context;
 
@@ -39,8 +38,10 @@ public class Posizione {
                         @Override
                         public void onSuccess(Location location) {
                             if (location != null) {
-                                double latitude = location.getLatitude();
-                                double longitude = location.getLongitude();
+                                float latitude = (float) location.getLatitude();
+                                System.out.println("location.getLatitude() " + location.getLatitude());
+                                System.out.println("latitude "+ latitude);
+                                float longitude = (float) location.getLongitude();
                                 Geocoder geocoder = new Geocoder(context, Locale.getDefault());
                                 try {
                                     List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);

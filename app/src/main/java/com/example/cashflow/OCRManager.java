@@ -18,7 +18,7 @@ import java.io.IOException;
 public class OCRManager {
     private Context context;
 
-    public OCRManager(Context context){
+    public OCRManager(Context context) {
         this.context = context;
     }
 
@@ -28,31 +28,42 @@ public class OCRManager {
             image = FirebaseVisionImage.fromFilePath(context, imageUri);
 
             FirebaseVisionTextRecognizer textRecognizer = FirebaseVision.getInstance()
-                    .getCloudTextRecognizer();
+                    .getOnDeviceTextRecognizer(); // Utilizza il riconoscimento OCR su dispositivo
 
             textRecognizer.processImage(image)
                     .addOnSuccessListener(new OnSuccessListener<FirebaseVisionText>() {
                         @Override
                         public void onSuccess(FirebaseVisionText result) {
-                            listener.onTextRecognized(result.getText());
-                            System.out.println(result.getText());
+                            String text = result.getText();
+                            // Effettua il controllo del testo per verificare che sia un valore double
+                            try {
+                                double value = Double.parseDouble(text.replace(",", "."));
+                                listener.onTextRecognized(value);
+                            } catch (NumberFormatException e) {
+                                listener.onTextNotRecognized("Il testo non è un valore numerico valido");
+                            }
                         }
                     })
                     .addOnFailureListener(new OnFailureListener() {
                         @Override
                         public void onFailure(@NonNull Exception e) {
                             listener.onFailure(e);
-                            e.printStackTrace();
                         }
                     });
+
         } catch (IOException e) {
             e.printStackTrace();
             listener.onFailure(e);
         }
     }
 
+
     public interface OCRListener {
-        void onTextRecognized(String text);
+        void onTextRecognized(double value);
+
+        void onTextNotRecognized(String error);
+
         void onFailure(Exception e);
     }
+
 }

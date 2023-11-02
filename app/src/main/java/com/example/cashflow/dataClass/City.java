@@ -3,8 +3,8 @@ package com.example.cashflow.dataClass;
 public class City {
 
     private String nameCity;
-    private double latitude;
-    private double longitude;
+    private float latitude;
+    private float longitude;
 
     public City() {
         this.nameCity = "Bologna";
@@ -12,7 +12,7 @@ public class City {
         this.longitude = 11;
     }
 
-    public City(String nameCity, double latitude, double longitude) {
+    public City(String nameCity, float latitude, float longitude) {
         this.nameCity = nameCity;
         this.latitude = latitude;
         this.longitude = longitude;
@@ -26,22 +26,21 @@ public class City {
         this.nameCity = nameCity;
     }
 
-    public double getLatitude() {
+    public float getLatitude() {
         return latitude;
     }
 
-    public void setLatitude(double latitude) {
+    public void setLatitude(float latitude) {
         this.latitude = latitude;
     }
 
-    public double getLongitude() {
+    public float getLongitude() {
         return longitude;
     }
 
-    public void setLongitude(double longitude) {
+    public void setLongitude(float longitude) {
         this.longitude = longitude;
     }
-
 
     @Override
     public String toString() {
@@ -51,9 +50,4 @@ public class City {
                 ", longitude=" + longitude +
                 '}';
     }
-
-    public String cityName(){
-        return nameCity;
-    }
-
 }

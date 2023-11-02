@@ -60,26 +60,6 @@ public class Transactions {
     }
 
 
-    public void setIncome(Boolean income) {
-        this.income = income;
-    }
-
-    public void setAmount(double amount) {
-        this.amount = amount;
-    }
-
-    public void setDate(Calendar date) {
-        this.date = date;
-    }
-
-    public void setCity(City city) {
-        this.city = city;
-    }
-
-    public void setCategory(CategoriesEnum category) {
-        this.category = category;
-    }
-
     @Override
     public String toString() {
         return "Transactions{" +
@@ -99,12 +79,12 @@ public class Transactions {
         if (income) {
             return "INCOME " + "Amount: " + amount + "\n" +
                     "Date: " + formattedDate + "\n" +
-                    "City: " + city.cityName() + "\n" +
+                    "City: " + city.getNameCity() + "\n" +
                     "Category: " + category.name().toString();
         } else {
             return "EXPENSE " + "Amount: " + amount + "\n" +
                     "Date: " + formattedDate + "\n" +
-                    "City: " + city.cityName() + "\n" +
+                    "City: " + city.getNameCity() + "\n" +
                     "Category: " + category.name().toString();
         }
     }

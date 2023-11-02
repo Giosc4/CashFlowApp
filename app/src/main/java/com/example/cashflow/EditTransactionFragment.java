@@ -2,9 +2,12 @@ package com.example.cashflow;
 
 import static android.app.Activity.RESULT_OK;
 
+import android.Manifest;
 import android.app.DatePickerDialog;
+import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -26,6 +29,8 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.annotation.Nullable;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.cashflow.dataClass.Account;
@@ -52,7 +57,8 @@ public class EditTransactionFragment extends Fragment {
     private ImageView cameraButton;
 
     private OCRManager ocrManager;
-
+    private Uri cameraImageUri;
+    private static final int PERMISSION_CAMERA = 1;
     public static final int REQUEST_IMAGE_PICK = 123;
 
     private Spinner accountSpinner;
@@ -207,7 +213,6 @@ public class EditTransactionFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedCategory = parent.getItemAtPosition(position).toString();
-                Toast.makeText(parent.getContext(), "Selected Category: " + selectedCategory, Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -234,7 +239,6 @@ public class EditTransactionFragment extends Fragment {
             @Override
             public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
                 String selectedAccount = parent.getItemAtPosition(position).toString();
-                Toast.makeText(parent.getContext(), "Conto Selezionato: " + selectedAccount, Toast.LENGTH_LONG).show();
             }
 
             @Override
@@ -268,9 +272,16 @@ public class EditTransactionFragment extends Fragment {
                 builder.setItems(new CharSequence[]{"Fotocamera", "Galleria"}, new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        if (which == 0) {
-                            openCamera();
-                        } else if (which == 1) {
+                        if (which == 0) { // Fotocamera
+                            // Controlla se il permesso della fotocamera è già stato concesso
+                            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+                                // Se il permesso non è stato concesso, richiedilo
+                                ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
+                            } else {
+                                // Il permesso è già stato concesso, procedi con l'apertura della fotocamera
+                                openCamera();
+                            }
+                        } else if (which == 1) { // Galleria
                             openGallery();
                         }
                     }
@@ -281,9 +292,17 @@ public class EditTransactionFragment extends Fragment {
         return view;
     }
 
+
     private void openCamera() {
+        // Creare un file temporaneo per salvare l'immagine catturata dalla fotocamera
+        ContentValues values = new ContentValues();
+        values.put(MediaStore.Images.Media.TITLE, "Cashflow");
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Cashflow image");
+        cameraImageUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
+
         Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
         if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri); // Salva l'immagine nella galleria
             startActivityForResult(takePictureIntent, REQUEST_IMAGE_PICK);
         }
     }
@@ -293,22 +312,27 @@ public class EditTransactionFragment extends Fragment {
         startActivityForResult(galleryIntent, REQUEST_IMAGE_PICK);
     }
 
+
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK && data != null) {
-            Uri imageUri = data.getData();
-
-            if (imageUri != null) {
-                // Utilizza android-image-cropper per il cropping dell'immagine
-                CropImage.activity(imageUri)
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK) {
+            if (cameraImageUri != null) {
+                CropImage.activity(cameraImageUri)
                         .setGuidelines(CropImageView.Guidelines.ON)
                         .start(requireContext(), this);
+            } else {
+                Uri imageUri = data.getData();
+                if (imageUri != null) {
+                    CropImage.activity(imageUri)
+                            .setGuidelines(CropImageView.Guidelines.ON)
+                            .start(requireContext(), this);
+                }
             }
         }
 
-        // Gestire l'output del cropping utilizzando
+        // Gestire l'output del cropping
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
             if (resultCode == RESULT_OK) {
@@ -316,14 +340,33 @@ public class EditTransactionFragment extends Fragment {
                 if (croppedImageUri != null) {
                     ocrManager.processImage(croppedImageUri, new OCRManager.OCRListener() {
                         @Override
-                        public void onTextRecognized(String text) {
-                            System.out.println("Testo OCR " + text);
-                            numberEditText.setText(text);
+                        public void onTextRecognized(double value) {
+                            numberEditText.setText(String.valueOf(value));
+                        }
+
+                        @Override
+                        public void onTextNotRecognized(String error) {
+                            // Notifica l'errore all'utente
+                            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
+                            // Torna al CropImage per permettere all'utente di ritagliare nuovamente l'immagine
+                            if (cameraImageUri != null) {
+                                CropImage.activity(cameraImageUri)
+                                        .setGuidelines(CropImageView.Guidelines.ON)
+                                        .start(requireContext(), EditTransactionFragment.this);
+                            } else {
+                                Uri imageUri = data.getData();
+                                if (imageUri != null) {
+                                    CropImage.activity(imageUri)
+                                            .setGuidelines(CropImageView.Guidelines.ON)
+                                            .start(requireContext(), EditTransactionFragment.this);
+                                }
+                            }
                         }
 
                         @Override
                         public void onFailure(Exception e) {
                             e.printStackTrace();
+                            // Gestisci eventuali errori
                         }
                     });
                 }
@@ -361,7 +404,7 @@ public class EditTransactionFragment extends Fragment {
                 mainLayout.setVisibility(View.VISIBLE);
             }
 
-            Toast.makeText(getContext(), "Transaction deleted", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Transazione Eliminata", Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(getContext(), "Errore durante il salvataggio delle modifiche", Toast.LENGTH_LONG).show();
@@ -395,7 +438,7 @@ public class EditTransactionFragment extends Fragment {
                 LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
                 mainLayout.setVisibility(View.VISIBLE);
             }
-            Toast.makeText(getContext(), "Transaction updated", Toast.LENGTH_LONG).show();
+            Toast.makeText(getContext(), "Transazione aggiornata", Toast.LENGTH_LONG).show();
         } catch (IOException e) {
             e.printStackTrace();
             Toast.makeText(getContext(), "Errore durante il salvataggio delle modifiche", Toast.LENGTH_LONG).show();

@@ -23,7 +23,6 @@ import java.util.ArrayList;
 public class HomeFragment extends Fragment {
 
     ArrayList<Account> accounts;
-
     private String subtotalText = "";
     TextView myTextView;
 
@@ -50,7 +49,6 @@ public class HomeFragment extends Fragment {
             @Override
             public void onLocationFetched(City city) {
                 HomeFragment.this.city = city;
-                System.out.println("City Home " + city);
             }
 
             @Override
@@ -127,7 +125,7 @@ public class HomeFragment extends Fragment {
 
         // Recalculate subtotal and update TextView
         subtotalText = getSubtotal();
-        myTextView.setText("Subtotal: " + subtotalText);
+        myTextView.setText("Totale: " + subtotalText);
         System.out.println("Subtotal: " + subtotalText);
     }
 

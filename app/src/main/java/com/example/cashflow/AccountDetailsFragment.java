@@ -103,9 +103,9 @@ public class AccountDetailsFragment extends Fragment {
                 accounts.set(index, account);
                 jsonReadWrite.setList(accounts, requireContext());
 
-                Toast.makeText(getContext(), "Account updated: " + newName, Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Account aggiornato: " + newName, Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(getContext(), "Failed to update account.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Errore aggiornamto account.", Toast.LENGTH_LONG).show();
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -155,7 +155,7 @@ public class AccountDetailsFragment extends Fragment {
                 accounts.remove(index);
                 jsonReadWrite.setList(accounts, requireContext());
 
-                Toast.makeText(getContext(), "Account deleted: " + accountToDelete, Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Account eliminato: " + accountToDelete, Toast.LENGTH_LONG).show();
                 if (getActivity() != null && isAdded()) {
                     FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                     fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
@@ -164,7 +164,7 @@ public class AccountDetailsFragment extends Fragment {
                             .commit();
                 }
             } else {
-                Toast.makeText(getContext(), "Failed to delete account.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Errore per eliminare l'account.", Toast.LENGTH_LONG).show();
             }
         } catch (IOException e) {
             e.printStackTrace();
