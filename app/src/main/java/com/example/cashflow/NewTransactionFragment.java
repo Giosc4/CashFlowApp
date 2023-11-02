@@ -67,7 +67,7 @@ public class NewTransactionFragment extends Fragment {
 
     private Uri cameraImageUri;
     private Button dateButton;
-    private EditText locationEditText;
+    private TextView locationEditText;
     private JsonReadWrite jsonReadWrite;
     private ArrayList<Account> accounts;
     private ArrayList<String> categories;
@@ -112,7 +112,7 @@ public class NewTransactionFragment extends Fragment {
 
         if (cityPosition != null) {
             if (cityPosition.getNameCity() != null) {
-                locationEditText.setText(cityPosition.getNameCity());
+                locationEditText.setText(cityPosition.printOnApp());
             } else {
                 locationEditText.setText("Nessun nome di città disponibile");
             }

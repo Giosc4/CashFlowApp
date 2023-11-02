@@ -40,10 +40,8 @@ public class Line_chart extends Fragment {
     private TextView startDateTextView;
     private TextView endDateTextView;
 
-    private Calendar startDate = Calendar.getInstance();
-    private Calendar endDate = Calendar.getInstance();
-    private boolean startDateSelected = false;
-    private boolean endDateSelected = false;
+    private Calendar startDate;
+    private Calendar endDate;
 
 
     private LineChart lineChart;
@@ -65,6 +63,15 @@ public class Line_chart extends Fragment {
         endDateTextView = view.findViewById(R.id.endDateTextView);
 
         lineChart = view.findViewById(R.id.lineChart);
+
+        // Calcola le date iniziali e finali
+        startDate = Calendar.getInstance();
+        startDate.add(Calendar.DAY_OF_MONTH, -6);
+        endDate = Calendar.getInstance();
+        endDate.add(Calendar.DAY_OF_MONTH, 1);
+
+        startDateTextView.setText(formatDateKey(startDate));
+        endDateTextView.setText(formatDateKey(endDate));
 
         openStartDatePickerButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -103,12 +110,8 @@ public class Line_chart extends Fragment {
 
                 if (selectedDate.before(endDate)) {
                     startDate.set(year, month, dayOfMonth);
-                    startDateSelected = true;
                     // Imposta la data selezionata nel TextView
                     startDateTextView.setText(formatDateKey(startDate));
-                } else {
-                    // Mostra un messaggio di errore o un Toast per indicare che la data di inizio deve essere prima della data di fine
-                    startDateSelected = false;
                 }
             }
         }, year, month, day);
@@ -129,12 +132,8 @@ public class Line_chart extends Fragment {
 
                 if (selectedDate.after(startDate)) {
                     endDate.set(year, month, dayOfMonth);
-                    endDateSelected = true;
                     // Imposta la data selezionata nel TextView
                     endDateTextView.setText(formatDateKey(endDate));
-                } else {
-                    // Mostra un messaggio di errore o un Toast per indicare che la data di fine deve essere dopo la data di inizio
-                    endDateSelected = false;
                 }
             }
         }, year, month, day);
@@ -144,49 +143,45 @@ public class Line_chart extends Fragment {
 
 
     private void createLineChart() {
-        if (startDateSelected && endDateSelected) {
-            ArrayList<Entry> entries = generateDataEntries(startDate, endDate);
+        ArrayList<Entry> entries = generateDataEntries(startDate, endDate);
 
-            // Crea un elenco di etichette delle date per l'asse X
-            ArrayList<String> dateLabels = new ArrayList<>();
-            for (Calendar date = (Calendar) startDate.clone(); date.compareTo(endDate) <= 0; date.add(Calendar.DAY_OF_MONTH, 1)) {
-                dateLabels.add(formatDateKeyWithoutYear(date));
-            }
-
-            LineDataSet dataSet = new LineDataSet(entries, "Daily Total");
-            dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-            dataSet.setColor(Color.parseColor("#00796B"));
-            dataSet.setValueTextSize(12f);
-            dataSet.setLineWidth(2f);
-            dataSet.setValueTypeface(Typeface.DEFAULT_BOLD);
-
-            LineData lineData = new LineData(dataSet);
-
-            XAxis xAxis = lineChart.getXAxis();
-            xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
-
-            // Configura il formatter per le etichette dell'asse X
-            xAxis.setValueFormatter(new ValueFormatter() {
-                @Override
-                public String getFormattedValue(float value) {
-                    int index = (int) value;
-                    if (index >= 0 && index < dateLabels.size()) {
-                        return dateLabels.get(index);
-                    } else {
-                        return "";
-                    }
-                }
-            });
-
-            YAxis yAxis = lineChart.getAxisLeft();
-            yAxis.setGranularity(1f);
-
-            lineChart.setData(lineData);
-            lineChart.getLegend().setEnabled(false);
-            lineChart.invalidate();
-        } else {
-            Toast.makeText(getActivity(), "Inserisci le date di Start e di End", Toast.LENGTH_SHORT).show();
+        // Crea un elenco di etichette delle date per l'asse X
+        ArrayList<String> dateLabels = new ArrayList<>();
+        for (Calendar date = (Calendar) startDate.clone(); date.compareTo(endDate) <= 0; date.add(Calendar.DAY_OF_MONTH, 1)) {
+            dateLabels.add(formatDateKeyWithoutYear(date));
         }
+
+        LineDataSet dataSet = new LineDataSet(entries, "Daily Total");
+        dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
+        dataSet.setColor(Color.parseColor("#00796B"));
+        dataSet.setValueTextSize(12f);
+        dataSet.setLineWidth(2f);
+        dataSet.setValueTypeface(Typeface.DEFAULT_BOLD);
+
+        LineData lineData = new LineData(dataSet);
+
+        XAxis xAxis = lineChart.getXAxis();
+        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+
+        // Configura il formatter per le etichette dell'asse X
+        xAxis.setValueFormatter(new ValueFormatter() {
+            @Override
+            public String getFormattedValue(float value) {
+                int index = (int) value;
+                if (index >= 0 && index < dateLabels.size()) {
+                    return dateLabels.get(index);
+                } else {
+                    return "";
+                }
+            }
+        });
+
+        YAxis yAxis = lineChart.getAxisLeft();
+        yAxis.setGranularity(1f);
+
+        lineChart.setData(lineData);
+        lineChart.getLegend().setEnabled(false);
+        lineChart.invalidate();
     }
 
     private ArrayList<Entry> generateDataEntries(Calendar startDate, Calendar endDate) {
@@ -242,6 +237,7 @@ public class Line_chart extends Fragment {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
         return dateFormat.format(date.getTime());
     }
+
     private String formatDateKeyWithoutYear(Calendar date) {
         SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM", Locale.US);
         return dateFormat.format(date.getTime());

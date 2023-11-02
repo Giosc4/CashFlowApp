@@ -5,6 +5,7 @@ import android.util.JsonReader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
+import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
@@ -20,12 +21,12 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
-
 import java.util.ArrayList;
 
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap mMap;
+    private TextView noLocationTextView;
     private SupportMapFragment mapFragment;
     private ArrayList<MarkerOptions> markers;
     private ArrayList<Account> accounts;
@@ -40,11 +41,16 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
+        noLocationTextView = view.findViewById(R.id.noLocationTextView);
         markers = getMarkerData();
 
         if (mapFragment != null) {
             mapFragment.getMapAsync(this);
         }
+        int transactionsWithoutLocation = countTransactionsWithoutLocation();
+
+        // Aggiorna il TextView con il numero di transazioni senza posizione
+        noLocationTextView.setText(transactionsWithoutLocation + " transazioni non hanno una posizione su maps");
         return view;
     }
 
@@ -65,6 +71,23 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         }
     }
 
+    private int countTransactionsWithoutLocation() {
+        int count = 0;
+
+        for (Account account : accounts) {
+            ArrayList<Transactions> transactions = account.getListTrans();
+            if (transactions != null) {
+                for (Transactions transaction : transactions) {
+                    if (transaction.getCity() == null) {
+                        count++;
+                    }
+                }
+            }
+        }
+        return count;
+    }
+
+
     private ArrayList<MarkerOptions> getMarkerData() {
         ArrayList<MarkerOptions> markerList = getCitiesFromAccounts();
 
@@ -84,7 +107,7 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
             if (transactions != null) {
                 for (Transactions transaction : transactions) {
                     String city = transaction.getCity().getNameCity();
-                    System.out.println("city "+city);
+                    System.out.println("city " + city);
                     if (city != null) {
                         LatLng cityLatLng = new LatLng(transaction.getCity().getLatitude(), transaction.getCity().getLongitude());
                         System.out.println("cityLatLng " + cityLatLng.toString());

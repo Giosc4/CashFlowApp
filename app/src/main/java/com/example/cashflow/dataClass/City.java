@@ -50,4 +50,8 @@ public class City {
                 ", longitude=" + longitude +
                 '}';
     }
+
+    public String printOnApp() {
+        return "Città: " + nameCity ;
+    }
 }

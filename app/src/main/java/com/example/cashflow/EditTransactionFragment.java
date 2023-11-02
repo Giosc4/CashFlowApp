@@ -69,7 +69,7 @@ public class EditTransactionFragment extends Fragment {
 
     private Calendar calendar;
 
-    private EditText locationEditText;
+    private TextView locationEditText;
     private Button doneButton;
     private Button deleteButton;
 
@@ -130,7 +130,7 @@ public class EditTransactionFragment extends Fragment {
         selectedTimeTextView.setText(selectedDateString);
 
 
-        locationEditText.setText(transactionOriginal.getCity().getNameCity());
+        locationEditText.setText(transactionOriginal.getCity().printOnApp());
 
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
