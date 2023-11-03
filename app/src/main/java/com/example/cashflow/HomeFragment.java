@@ -140,33 +140,31 @@ public class HomeFragment extends Fragment {
 
 
     private void openNewAccountFragment() {
-        // Chiudi il fragment corrente
-        requireActivity().getSupportFragmentManager().beginTransaction().remove(this).commit();
-
-        // Apri il nuovo fragment AccountFragment
         NewAccountFragment newAccountFragment = new NewAccountFragment(accounts);
-        requireActivity().getSupportFragmentManager().beginTransaction()
-                .replace(R.id.fragment_container, newAccountFragment)
-                .addToBackStack(null)
-                .commit();
+        FragmentManager fragmentManager = getParentFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+        fragmentTransaction.replace(R.id.fragment_container, newAccountFragment);
+        fragmentTransaction.addToBackStack(null);
+        fragmentTransaction.commit();
     }
 
     private void openTransactionFragment() {
         NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts, city);
-        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+        FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, transactionFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
 
-
     private void openStatisticsFragment() {
         StatisticsFragment statisticsFragment = new StatisticsFragment(accounts);
-        FragmentTransaction fragmentTransaction = requireActivity().getSupportFragmentManager().beginTransaction();
+        FragmentManager fragmentManager = getParentFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, statisticsFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
+
 
 }

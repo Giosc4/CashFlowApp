@@ -63,7 +63,6 @@ public class NewTransactionFragment extends Fragment {
     private EditText numberEditText;
     private Spinner accountSpinner;
     private Calendar selectedDate;
-    private boolean isDateSelected = false;
 
     private Uri cameraImageUri;
     private Button dateButton;
@@ -109,6 +108,10 @@ public class NewTransactionFragment extends Fragment {
         deleteButton.setVisibility(View.GONE);
 
         selectedDate = Calendar.getInstance();
+
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd");
+        String dataFormattata = dateFormat.format(selectedDate.getTime());
+        selectedTimeTextView.setText(dataFormattata + "");
 
         if (cityPosition != null) {
             if (cityPosition.getNameCity() != null) {
@@ -389,11 +392,6 @@ public class NewTransactionFragment extends Fragment {
                 Toast.makeText(getContext(), "Aggiungi un prezzo", Toast.LENGTH_SHORT).show();
                 return; // Esce dal metodo senza salvare la transazione
             }
-            if (!isDateSelected) {
-                // La data non è stata selezionata, mostra un messaggio di errore
-                Toast.makeText(getContext(), "Seleziona la data", Toast.LENGTH_SHORT).show();
-                return; // Esce dal metodo senza salvare la transazione
-            }
 
             double amount;
             try {
@@ -455,7 +453,6 @@ public class NewTransactionFragment extends Fragment {
 
                 String selectedDateString = year + "-" + (monthOfYear + 1) + "-" + dayOfMonth;
                 selectedTimeTextView.setText(selectedDateString);
-                isDateSelected = true;
             }
         }, year, month, dayOfMonth);
 
