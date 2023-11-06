@@ -1,6 +1,6 @@
 package com.example.cashflow.dataClass;
 
-public enum CategoriesEnum {
+    public enum CategoriesEnum {
     FoodAndDrinks,
     Shopping,
     House,

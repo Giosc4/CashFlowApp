@@ -4,15 +4,19 @@ import android.content.pm.PackageManager;
 import android.os.Bundle;
 import android.view.View;
 import android.widget.Button;
+
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
 import com.example.cashflow.dataClass.Account;
+
 import java.io.IOException;
 import java.util.ArrayList;
+
 import android.Manifest;
 
 public class MainActivity extends AppCompatActivity {
@@ -29,15 +33,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
         // Inizializza il JsonReadWrite
-        jsonReadWrite = new JsonReadWrite("test12.json");
-//        accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
-        accounts= null;
+        jsonReadWrite = new JsonReadWrite();
+        //accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
+        accounts = null;
         System.out.println(accounts);
         if (accounts == null) {
             // Le righe di codice devono essere eseguite solo all'installazione dell'app.
             Test test = new Test();
             accounts = test.getList();
-            jsonReadWrite = new JsonReadWrite(test.getList(), "test12.json");
+            jsonReadWrite = new JsonReadWrite(test.getList());
         }
         try {
             jsonReadWrite.setList(accounts, this);

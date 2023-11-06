@@ -416,7 +416,7 @@ public class NewTransactionFragment extends Fragment {
             Toast.makeText(getContext(), "Transazione salvata: " + amount + ", " + accountSelected + ", " + dataFormattata + ", " + location, Toast.LENGTH_LONG).show();
 
             Transactions newTrans = new Transactions(income, amount, selectedDate, cityPosition, CategoriesEnum.valueOf(selectedCategory));
-            jsonReadWrite = new JsonReadWrite("test12.json");
+            jsonReadWrite = new JsonReadWrite();
 
             for (Account account : accounts) {
                 if (account.getName().equals(accountSelected)) {

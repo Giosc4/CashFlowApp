@@ -32,7 +32,7 @@ public class NewAccountFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_new_account, container, false);
 
-        jsonReadWrite = new JsonReadWrite("test12.json");
+        jsonReadWrite = new JsonReadWrite();
 
         edtName = view.findViewById(R.id.edtName);
         Button btnCreateAccount = view.findViewById(R.id.btnCreateAccount);

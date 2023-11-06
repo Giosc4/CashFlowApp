@@ -39,7 +39,7 @@ public class AccountDetailsFragment extends Fragment {
 
     public AccountDetailsFragment(Account account) {
         this.account = account;
-        jsonReadWrite = new JsonReadWrite("test12.json");
+        jsonReadWrite = new JsonReadWrite();
     }
 
     @Nullable

@@ -32,18 +32,15 @@ import java.util.Locale;
 public class JsonReadWrite {
 
     private ArrayList<Account> accounts;
-    private String fileName;
+    private String fileName = "accounts.json";
 
-    public JsonReadWrite(String fileName) {
-        this.fileName = fileName;
+    public JsonReadWrite() {
         this.accounts = new ArrayList<>();
     }
 
-    public JsonReadWrite(ArrayList<Account> accounts, String fileName) {
-        this.fileName = fileName;
+    public JsonReadWrite(ArrayList<Account> accounts) {
         this.accounts = accounts;
     }
-
 
     public void setList(ArrayList<Account> accounts, Context context) throws IOException {
         this.accounts = accounts;

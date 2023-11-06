@@ -90,7 +90,7 @@ public class EditTransactionFragment extends Fragment {
     public EditTransactionFragment(Transactions transaction, Account account) {
         this.transactionOriginal = transaction;
         this.accountOriginal = account;
-        jsonReadWrite = new JsonReadWrite("test12.json");
+        jsonReadWrite = new JsonReadWrite();
 
     }
 
