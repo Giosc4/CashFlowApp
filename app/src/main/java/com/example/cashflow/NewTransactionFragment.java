@@ -113,16 +113,13 @@ public class NewTransactionFragment extends Fragment {
         String dataFormattata = dateFormat.format(selectedDate.getTime());
         selectedTimeTextView.setText(dataFormattata + "");
 
-        if (cityPosition != null) {
-            if (cityPosition.getNameCity() != null) {
-                locationEditText.setText(cityPosition.printOnApp());
-            } else {
-                locationEditText.setText("Nessun nome di città disponibile");
-            }
+        if (cityPosition != null && cityPosition.getNameCity() != null) {
+            locationEditText.setText(cityPosition.printOnApp());
         } else {
-            Toast.makeText(requireContext(), "Impossibile ottenere la posizione attuale", Toast.LENGTH_SHORT).show();
-            locationEditText.setText("Posizione non disponibile");
+            locationEditText.setText("Nessun nome di città disponibile");
+            Toast.makeText(getContext(), "Nessun nome di città disponibile", Toast.LENGTH_SHORT).show();
         }
+
 
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -373,7 +370,7 @@ public class NewTransactionFragment extends Fragment {
     }
 
     private void saveTransaction() throws IOException {
-        if (numberEditText != null && accountSpinner != null && cityPosition != null && selectedDate != null) {
+        if (numberEditText != null && accountSpinner != null ) {
 
             boolean income = incomeButton.isSelected();
             boolean expense = expenseButton.isSelected();
@@ -409,7 +406,15 @@ public class NewTransactionFragment extends Fragment {
             String dataFormattata = dateFormat.format(selectedDate.getTime());
 
             System.out.println("dataFormattata " + dataFormattata);
-            String location = cityPosition.getNameCity() != null ? cityPosition.getNameCity().toString() : "";
+
+            String location = "";
+            if (cityPosition != null) {
+                location = cityPosition.getNameCity() != null ? cityPosition.getNameCity().toString() : "";
+            } else {
+                location = "Nessuna città disponibile";
+            }
+
+
             String selectedCategory = categorySpinner.getSelectedItem() != null ? categorySpinner.getSelectedItem().toString() : "";
 
             // Resto del codice per salvare la transazione

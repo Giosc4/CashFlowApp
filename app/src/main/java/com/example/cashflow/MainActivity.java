@@ -34,8 +34,8 @@ public class MainActivity extends AppCompatActivity {
 
         // Inizializza il JsonReadWrite
         jsonReadWrite = new JsonReadWrite();
-        //accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
-        accounts = null;
+        accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
+        //accounts = null;
         System.out.println(accounts);
         if (accounts == null) {
             // Le righe di codice devono essere eseguite solo all'installazione dell'app.

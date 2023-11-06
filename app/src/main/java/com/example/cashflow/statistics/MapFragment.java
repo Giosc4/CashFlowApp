@@ -26,7 +26,6 @@ import java.util.ArrayList;
 public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     private GoogleMap mMap;
-    private TextView noLocationTextView;
     private SupportMapFragment mapFragment;
     private ArrayList<MarkerOptions> markers;
     private ArrayList<Account> accounts;
@@ -41,7 +40,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_map, container, false);
         mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        noLocationTextView = view.findViewById(R.id.noLocationTextView);
         markers = getMarkerData();
 
         if (mapFragment != null) {
@@ -50,7 +48,6 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
         int transactionsWithoutLocation = countTransactionsWithoutLocation();
 
         // Aggiorna il TextView con il numero di transazioni senza posizione
-        noLocationTextView.setText(transactionsWithoutLocation + " transazioni non hanno una posizione su maps");
         return view;
     }
 

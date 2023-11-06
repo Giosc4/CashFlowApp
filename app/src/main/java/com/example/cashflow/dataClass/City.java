@@ -52,6 +52,10 @@ public class City {
     }
 
     public String printOnApp() {
-        return "Città: " + nameCity ;
+        if (nameCity != null) {
+            return "Città: " + nameCity;
+        } else {
+            return "Città sconosciuta";
+        }
     }
 }

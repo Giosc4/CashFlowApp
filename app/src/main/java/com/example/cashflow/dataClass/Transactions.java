@@ -47,7 +47,7 @@ public class Transactions {
         }
     }
 
-    public double getAmountValue(){
+    public double getAmountValue() {
         return amount;
     }
 
@@ -62,31 +62,33 @@ public class Transactions {
 
     @Override
     public String toString() {
+        String cityString = (city != null) ? city.toString() : "Nessuna città";
         return "Transactions{" +
-                "income=" + income +
+                "isIncome=" + isIncome() +
                 ", amount=" + amount +
-                ", date='" + date + '\'' +
-                ", city='" + city.toString() + '\'' +
+                ", date=" + date +
+                ", city=" + cityString +
                 ", category=" + category +
                 '}';
     }
 
-    public String printOnApp() {
 
+    public String printOnApp() {
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         String formattedDate = dateFormat.format(date.getTime());
+
+        String cityString = (city != null) ? city.getNameCity() : "Città sconosciuta";
 
         if (income) {
             return "INCOME " + "Amount: " + amount + "\n" +
                     "Date: " + formattedDate + "\n" +
-                    "City: " + city.getNameCity() + "\n" +
-                    "Category: " + category.name().toString();
+                    "City: " + cityString + "\n" +
+                    "Category: " + category.name();
         } else {
             return "EXPENSE " + "Amount: " + amount + "\n" +
                     "Date: " + formattedDate + "\n" +
-                    "City: " + city.getNameCity() + "\n" +
-                    "Category: " + category.name().toString();
+                    "City: " + cityString + "\n" +
+                    "Category: " + category.name();
         }
     }
-
 }
