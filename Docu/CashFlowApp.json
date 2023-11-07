@@ -1,0 +1,50 @@
+[
+    {
+        "balance": 1000,
+        "listTrans": [
+            {
+                "amount": 1000,
+                "category": "Salary",
+                "city": {
+                    "latitude": 44,
+                    "longitude": 11,
+                    "nameCity": "Bologna"
+                },
+                "date": {
+                    "year": 2023,
+                    "month": 9,
+                    "dayOfMonth": 26,
+                    "hourOfDay": 17,
+                    "minute": 27,
+                    "second": 39
+                },
+                "income": true
+            }
+        ],
+        "name": "Bank"
+    },
+    {
+        "balance": 1000,
+        "listTrans": [
+            {
+                "amount": 1000,
+                "category": "Salary",
+                "city": {
+                    "latitude": 44,
+                    "longitude": 11,
+                    "nameCity": "Bologna"
+                },
+                "date": {
+                    "year": 2023,
+                    "month": 9,
+                    "dayOfMonth": 26,
+                    "hourOfDay": 17,
+                    "minute": 27,
+                    "second": 39
+                },
+                "income": true
+            }
+        ],
+        "name": "Cash"
+    }
+]
