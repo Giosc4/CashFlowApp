@@ -30,7 +30,7 @@
 
         <meta-data
             android:name="com.google.android.geo.API_KEY"
-            android:value="AIzaSyAr17V2L18yVPnh8czx-ySA_jZ-eHo95K4" />
+            android:value="GOOGLEKEY" />
 
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
