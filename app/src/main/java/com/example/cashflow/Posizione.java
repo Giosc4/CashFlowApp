@@ -7,7 +7,6 @@ import android.location.Location;
 
 import android.content.Context;
 import android.Manifest;
-import android.net.DnsResolver;
 
 import androidx.core.app.ActivityCompat;
 
@@ -15,16 +14,15 @@ import com.example.cashflow.dataClass.City;
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
-import com.google.android.gms.tasks.Tasks;
 
 import java.io.IOException;
 import java.util.List;
 import java.util.Locale;
-import java.util.concurrent.ExecutionException;
 
 public class Posizione {
     private FusedLocationProviderClient fusedLocationProviderClient;
     private Context context;
+
 
     public Posizione(Context context) {
         this.context = context;
@@ -39,8 +37,6 @@ public class Posizione {
                         public void onSuccess(Location location) {
                             if (location != null) {
                                 float latitude = (float) location.getLatitude();
-                                System.out.println("location.getLatitude() " + location.getLatitude());
-                                System.out.println("latitude "+ latitude);
                                 float longitude = (float) location.getLongitude();
                                 Geocoder geocoder = new Geocoder(context, Locale.getDefault());
                                 try {
@@ -66,6 +62,7 @@ public class Posizione {
 
     public interface DeviceLocationCallback {
         void onLocationFetched(City city);
+
         void onLocationFetchFailed(Exception e);
     }
 }

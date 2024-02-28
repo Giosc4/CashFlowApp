@@ -8,6 +8,7 @@ import android.widget.Button;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
@@ -18,13 +19,12 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import android.Manifest;
+import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
-
     private Button btnHome;
     private ArrayList<Account> accounts;
     JsonReadWrite jsonReadWrite;
-
     private static final int PERMISSION_REQUEST_CODE = 1;
 
     @Override
@@ -49,6 +49,12 @@ public class MainActivity extends AppCompatActivity {
             throw new RuntimeException(e);
         }
 
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            // Permission is not granted, request it
+            requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
+        }
+
+
         btnHome = findViewById(R.id.btnHome);
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -56,8 +62,8 @@ public class MainActivity extends AppCompatActivity {
                 loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this)));
             }
         });
-
         loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this)));
+
     }
 
     @Override
@@ -66,9 +72,9 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                // Il permesso è stato concesso, puoi gestire questa parte se necessario
+                loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this)));
             } else {
-                // Il permesso è stato negato dall'utente, puoi gestire questo caso qui
+                System.out.println("Location permission is required to fetch the location");
             }
         }
     }

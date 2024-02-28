@@ -5,7 +5,7 @@ buildscript {
 
     }
     dependencies {
-        classpath 'com.android.tools.build:gradle:8.1.2'
+        classpath 'com.android.tools.build:gradle:8.1.4'
     }
 }
 
@@ -29,7 +29,7 @@ android {
         versionCode 1
         versionName '1.0'
         resConfigs 'en'
-        buildConfigField("String", "GOOGLE_API_KEY", "\"AIzaSyB1Xu4kfIUCMHf_40RG93o0zLNscO1hs2U\"")
+        buildConfigField("String", "GOOGLE_API_KEY", "\"AIzaSyCayb6nTFTKIDbH_d8Z3HuBiw8gwBvzfJI\"")
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
     }
@@ -65,9 +65,8 @@ dependencies {
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
 
     implementation 'com.google.firebase:firebase-ml-vision:24.1.0'
-    implementation platform('com.google.firebase:firebase-bom:32.4.0') //consente di gestire le versioni delle librerie Firebase
+    implementation platform('com.google.firebase:firebase-bom:32.4.0')
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'
     implementation 'com.google.android.gms:play-services-maps:18.2.0'
-
 
 }

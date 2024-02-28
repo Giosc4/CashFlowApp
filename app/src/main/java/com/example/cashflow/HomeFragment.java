@@ -20,6 +20,7 @@ import com.example.cashflow.dataClass.City;
 import java.math.BigDecimal;
 import java.util.ArrayList;
 
+
 public class HomeFragment extends Fragment {
 
     ArrayList<Account> accounts;
@@ -42,6 +43,7 @@ public class HomeFragment extends Fragment {
 
         GridLayout gridLayout = view.findViewById(R.id.gridLayout);
         myTextView = view.findViewById(R.id.myTextView);
+
 
         this.posizione = new Posizione(requireContext());
 
@@ -165,6 +167,5 @@ public class HomeFragment extends Fragment {
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
-
 
 }
