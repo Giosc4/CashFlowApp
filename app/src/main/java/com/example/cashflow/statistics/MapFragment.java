@@ -1,6 +1,7 @@
 package com.example.cashflow.statistics;
 
 import android.os.Bundle;
+import android.os.Handler;
 import android.util.JsonReader;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -9,6 +10,7 @@ import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
+import com.example.cashflow.BuildConfig;
 import com.example.cashflow.JsonReadWrite;
 import com.example.cashflow.R;
 import com.example.cashflow.dataClass.*;
@@ -21,13 +23,19 @@ import com.google.android.gms.maps.model.LatLng;
 import com.google.android.gms.maps.model.MarkerOptions;
 
 
+import org.osmdroid.api.IGeoPoint;
+import org.osmdroid.config.Configuration;
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
+import org.osmdroid.util.BoundingBox;
+import org.osmdroid.util.GeoPoint;
+import org.osmdroid.views.MapView;
+import org.osmdroid.views.overlay.Marker;
+
 import java.util.ArrayList;
 
-public class MapFragment extends Fragment implements OnMapReadyCallback {
+public class MapFragment extends Fragment {
 
-    private GoogleMap mMap;
-    private SupportMapFragment mapFragment;
-    private ArrayList<MarkerOptions> markers;
+    private MapView mapView;
     private ArrayList<Account> accounts;
 
 
@@ -38,62 +46,59 @@ public class MapFragment extends Fragment implements OnMapReadyCallback {
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+        // Imposta il percorso della cache prima di utilizzare la mappa
+        Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
+
+        // Carica il layout del fragment, assicurati che sia stato aggiornato per osmdroid
         View view = inflater.inflate(R.layout.fragment_map, container, false);
-        mapFragment = (SupportMapFragment) getChildFragmentManager().findFragmentById(R.id.map);
-        markers = getMarkerData();
+        mapView = view.findViewById(R.id.map);
+        mapView.setTileSource(TileSourceFactory.MAPNIK);
 
-        if (mapFragment != null) {
-            mapFragment.getMapAsync(this);
-        }
-        int transactionsWithoutLocation = countTransactionsWithoutLocation();
+        mapView.setBuiltInZoomControls(true);
+        mapView.setMultiTouchControls(true);
 
-        // Aggiorna il TextView con il numero di transazioni senza posizione
+        addMarkers();
+
         return view;
     }
 
-    @Override
-    public void onMapReady(GoogleMap googleMap) {
-        mMap = googleMap;
-
-        // Add markers from the ArrayList
-        for (MarkerOptions markerOptions : markers) {
-            mMap.addMarker(markerOptions);
-            System.out.println("\t" + markerOptions.getPosition());
+    private void addMarkers() {
+        // Controlla se la lista dei conti o delle città è vuota
+        if (accounts.isEmpty() || getCitiesFromAccounts().isEmpty()) {
+            return;
         }
 
-        // Move camera to a suitable position (e.g., first marker)
-        if (!markers.isEmpty()) {
-            LatLng firstMarkerPosition = markers.get(0).getPosition();
-            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(firstMarkerPosition, 5));
+        double minLat = Double.MAX_VALUE;
+        double maxLat = Double.MIN_VALUE;
+        double minLon = Double.MAX_VALUE;
+        double maxLon = Double.MIN_VALUE;
+
+        for (MarkerOptions markerOptions : getCitiesFromAccounts()) {
+            double lat = markerOptions.getPosition().latitude;
+            double lon = markerOptions.getPosition().longitude;
+
+            // Aggiorna i valori per il bounding box
+            if (lat < minLat) minLat = lat;
+            if (lat > maxLat) maxLat = lat;
+            if (lon < minLon) minLon = lon;
+            if (lon > maxLon) maxLon = lon;
+
+            // Crea e aggiungi il marcatore alla mappa
+            Marker marker = new Marker(mapView);
+            marker.setPosition(new GeoPoint(lat, lon));
+            marker.setTitle(markerOptions.getTitle());
+            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
+            mapView.getOverlays().add(marker);
         }
-    }
 
-    private int countTransactionsWithoutLocation() {
-        int count = 0;
+        mapView.invalidate(); // Aggiorna la mappa con i nuovi marcatori
 
-        for (Account account : accounts) {
-            ArrayList<Transactions> transactions = account.getListTrans();
-            if (transactions != null) {
-                for (Transactions transaction : transactions) {
-                    if (transaction.getCity() == null) {
-                        count++;
-                    }
-                }
-            }
-        }
-        return count;
-    }
+        // Calcola il bounding box e adatta la mappa
+        IGeoPoint southWest = new GeoPoint(minLat, minLon);
+        IGeoPoint northEast = new GeoPoint(maxLat, maxLon);
+        BoundingBox boundingBox = new BoundingBox(northEast.getLatitude(), northEast.getLongitude(), southWest.getLatitude(), southWest.getLongitude());
 
-
-    private ArrayList<MarkerOptions> getMarkerData() {
-        ArrayList<MarkerOptions> markerList = getCitiesFromAccounts();
-
-        //adding one more for test
-        MarkerOptions markerOptions = new MarkerOptions().position(new LatLng(37.38, 14.37)).title("PIAZZA ARMERINA");
-        markerOptions.contentDescription("questa è una descrizione");
-        markerList.add(markerOptions);
-        return markerList;
-
+        new Handler().postDelayed(() -> mapView.zoomToBoundingBox(boundingBox, true), 1000); // Ritarda lo zoom di 1 secondo
     }
 
     public ArrayList<MarkerOptions> getCitiesFromAccounts() {

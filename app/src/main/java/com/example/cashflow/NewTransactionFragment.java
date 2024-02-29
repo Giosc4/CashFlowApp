@@ -2,19 +2,19 @@ package com.example.cashflow;
 
 import static android.app.Activity.RESULT_OK;
 
+import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.ContentValues;
-import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
-import android.os.Environment;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -34,7 +34,6 @@ import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
-import androidx.core.content.FileProvider;
 import androidx.fragment.app.Fragment;
 
 import com.example.cashflow.dataClass.Account;
@@ -45,12 +44,11 @@ import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.File;
 import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Date;
+import java.util.Locale;
 
 public class NewTransactionFragment extends Fragment {
 
@@ -132,10 +130,24 @@ public class NewTransactionFragment extends Fragment {
         numberEditText.setFilters(new InputFilter[]{
                 new InputFilter() {
                     public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-                        // Check if the input contains a decimal point
-                        boolean hasDecimalSeparator = dest.toString().contains(".");
+                        StringBuilder builder = new StringBuilder();
+                        // Scansiona i caratteri inseriti dall'utente
+                        for (int i = start; i < end; i++) {
+                            char c = source.charAt(i);
+                            // Se trova una virgola, la sostituisce con un punto
+                            if (c == ',') {
+                                builder.append('.');
+                            } else {
+                                builder.append(c);
+                            }
+                        }
 
-                        // Get the current number of decimal places
+                        // Il testo modificato, con le virgole convertite in punti
+                        String modifiedSource = builder.toString();
+
+                        // Verifica se il testo contiene un separatore decimale
+                        boolean hasDecimalSeparator = dest.toString().contains(".");
+                        // Conta i posti decimali
                         int decimalPlaces = 0;
                         if (hasDecimalSeparator) {
                             String[] split = dest.toString().split("\\.");
@@ -144,21 +156,20 @@ public class NewTransactionFragment extends Fragment {
                             }
                         }
 
-                        // Check if the input is a valid decimal number
-                        for (int i = start; i < end; i++) {
-                            char inputChar = source.charAt(i);
-
-                            // Allow digits and a decimal point
+                        // Verifica la validità del numero decimale
+                        for (int i = 0; i < modifiedSource.length(); i++) {
+                            char inputChar = modifiedSource.charAt(i);
+                            // Consente cifre e un punto decimale
                             if (!Character.isDigit(inputChar) && inputChar != '.') {
-                                return "";
+                                return ""; // Rifiuta il carattere
                             }
 
-                            // Allow only two decimal places
+                            // Limita a due il numero di cifre decimali
                             if (hasDecimalSeparator && decimalPlaces >= 2) {
-                                return "";
+                                return ""; // Rifiuta ulteriori cifre decimali
                             }
 
-                            // Increment the decimal places count if a decimal point is encountered
+                            // Aggiorna il conteggio delle cifre decimali
                             if (inputChar == '.') {
                                 hasDecimalSeparator = true;
                             } else if (hasDecimalSeparator) {
@@ -166,7 +177,7 @@ public class NewTransactionFragment extends Fragment {
                             }
                         }
 
-                        return null;
+                        return modifiedSource; // Ritorna il testo modificato
                     }
                 }
         });
@@ -307,70 +318,64 @@ public class NewTransactionFragment extends Fragment {
         startActivityForResult(galleryIntent, REQUEST_IMAGE_PICK);
     }
 
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK) {
-            if (cameraImageUri != null) {
-                CropImage.activity(cameraImageUri)
+            Uri imageUri = (data != null && data.getData() != null) ? data.getData() : cameraImageUri;
+            if (imageUri != null) {
+                CropImage.activity(imageUri)
                         .setGuidelines(CropImageView.Guidelines.ON)
-                        .start(requireContext(), this);
-            } else {
-                Uri imageUri = data.getData();
-                if (imageUri != null) {
-                    CropImage.activity(imageUri)
-                            .setGuidelines(CropImageView.Guidelines.ON)
-                            .start(requireContext(), this);
-                }
+                        .start(getContext(), this);
             }
-        }
-
-        // Gestire l'output del cropping
-        if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
+        } else if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
-            if (resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK && result != null) {
                 Uri croppedImageUri = result.getUri();
-                if (croppedImageUri != null) {
-                    ocrManager.processImage(croppedImageUri, new OCRManager.OCRListener() {
-                        @Override
-                        public void onTextRecognized(double value) {
-                            numberEditText.setText(String.valueOf(value));
-                        }
-
-                        @Override
-                        public void onTextNotRecognized(String error) {
-                            // Notifica l'errore all'utente
-                            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
-                            // Torna al CropImage per permettere all'utente di ritagliare nuovamente l'immagine
-                            if (cameraImageUri != null) {
-                                CropImage.activity(cameraImageUri)
-                                        .setGuidelines(CropImageView.Guidelines.ON)
-                                        .start(requireContext(), NewTransactionFragment.this);
-                            } else {
-                                Uri imageUri = data.getData();
-                                if (imageUri != null) {
-                                    CropImage.activity(imageUri)
-                                            .setGuidelines(CropImageView.Guidelines.ON)
-                                            .start(requireContext(), NewTransactionFragment.this);
+                ocrManager.processImage(croppedImageUri, new OCRManager.OCRListener() {
+                    @Override
+                    public void onTextRecognized(final String value) {
+                        // Esegui sulla UI thread
+                        if (getActivity() != null) {
+                            getActivity().runOnUiThread(new Runnable() {
+                                @Override
+                                public void run() {
+                                    Log.d("OCRManager", "Updating UI with OCR result");
+                                    numberEditText.setText(String.valueOf(value));
                                 }
-                            }
+                            });
                         }
+                        Log.d("OCRManager", "Text Recognized: " + value);
+                    }
 
-                        @Override
-                        public void onFailure(Exception e) {
-                            e.printStackTrace();
-                            // Gestisci eventuali errori
-                        }
-                    });
-                }
+                    @Override
+                    public void onTextNotRecognized(String error) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+
+                    @Override
+                    public void onFailure(Exception e) {
+                        getActivity().runOnUiThread(new Runnable() {
+                            @Override
+                            public void run() {
+                                e.printStackTrace();
+                                Toast.makeText(getContext(), "Errore OCR", Toast.LENGTH_SHORT).show();
+                            }
+                        });
+                    }
+                });
             }
         }
     }
 
     private void saveTransaction() throws IOException {
-        if (numberEditText != null && accountSpinner != null ) {
+        if (numberEditText != null && accountSpinner != null) {
 
             boolean income = incomeButton.isSelected();
             boolean expense = expenseButton.isSelected();

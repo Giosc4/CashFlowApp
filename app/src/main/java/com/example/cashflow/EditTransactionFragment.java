@@ -14,6 +14,7 @@ import android.os.Bundle;
 import android.provider.MediaStore;
 import android.text.InputFilter;
 import android.text.Spanned;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -312,67 +313,78 @@ public class EditTransactionFragment extends Fragment {
         startActivityForResult(galleryIntent, REQUEST_IMAGE_PICK);
     }
 
+// ... Other code ...
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
         if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK) {
-            if (cameraImageUri != null) {
-                CropImage.activity(cameraImageUri)
+            Uri imageUri = (cameraImageUri != null) ? cameraImageUri : data.getData();
+            if (imageUri != null) {
+                CropImage.activity(imageUri)
                         .setGuidelines(CropImageView.Guidelines.ON)
-                        .start(requireContext(), this);
-            } else {
-                Uri imageUri = data.getData();
-                if (imageUri != null) {
-                    CropImage.activity(imageUri)
-                            .setGuidelines(CropImageView.Guidelines.ON)
-                            .start(requireContext(), this);
-                }
+                        .start(requireActivity());
             }
         }
 
-        // Gestire l'output del cropping
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
             CropImage.ActivityResult result = CropImage.getActivityResult(data);
-            if (resultCode == RESULT_OK) {
+            if (resultCode == RESULT_OK && result != null) {
                 Uri croppedImageUri = result.getUri();
-                if (croppedImageUri != null) {
-                    ocrManager.processImage(croppedImageUri, new OCRManager.OCRListener() {
-                        @Override
-                        public void onTextRecognized(double value) {
-                            numberEditText.setText(String.valueOf(value));
-                        }
+                processCroppedImage(croppedImageUri);
+            } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
+                Exception error = result.getError();
+                Toast.makeText(requireContext(), "Crop error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+            }
+        }
+    }
 
+    private void processCroppedImage(Uri croppedImageUri) {
+        ocrManager.processImage(croppedImageUri, new OCRManager.OCRListener() {
+            @Override
+            public void onTextRecognized(final String value) {
+                // Esegui sulla UI thread
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(new Runnable() {
                         @Override
-                        public void onTextNotRecognized(String error) {
-                            // Notifica l'errore all'utente
-                            Toast.makeText(requireContext(), error, Toast.LENGTH_SHORT).show();
-                            // Torna al CropImage per permettere all'utente di ritagliare nuovamente l'immagine
-                            if (cameraImageUri != null) {
-                                CropImage.activity(cameraImageUri)
-                                        .setGuidelines(CropImageView.Guidelines.ON)
-                                        .start(requireContext(), EditTransactionFragment.this);
-                            } else {
-                                Uri imageUri = data.getData();
-                                if (imageUri != null) {
-                                    CropImage.activity(imageUri)
-                                            .setGuidelines(CropImageView.Guidelines.ON)
-                                            .start(requireContext(), EditTransactionFragment.this);
-                                }
-                            }
+                        public void run() {
+                            Log.d("OCRManager", "Updating UI with OCR result");
+                            // Imposta direttamente il testo riconosciuto
+                            numberEditText.setText(value);
                         }
+                    });
+                }
+                Log.d("OCRManager", "Text Recognized: " + value);
+            }
 
+            @Override
+            public void onTextNotRecognized(final String error) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(new Runnable() {
                         @Override
-                        public void onFailure(Exception e) {
-                            e.printStackTrace();
-                            // Gestisci eventuali errori
+                        public void run() {
+                            Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
                         }
                     });
                 }
             }
-        }
+
+            @Override
+            public void onFailure(final Exception e) {
+                if (getActivity() != null) {
+                    getActivity().runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            e.printStackTrace();
+                            Toast.makeText(getContext(), "Errore OCR", Toast.LENGTH_SHORT).show();
+                        }
+                    });
+                }
+            }
+        });
     }
+
 
     private void setExpense() {
         // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
