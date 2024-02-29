@@ -15,13 +15,6 @@ import com.example.cashflow.JsonReadWrite;
 import com.example.cashflow.R;
 import com.example.cashflow.dataClass.*;
 
-import com.google.android.gms.maps.CameraUpdateFactory;
-import com.google.android.gms.maps.GoogleMap;
-import com.google.android.gms.maps.OnMapReadyCallback;
-import com.google.android.gms.maps.SupportMapFragment;
-import com.google.android.gms.maps.model.LatLng;
-import com.google.android.gms.maps.model.MarkerOptions;
-
 
 import org.osmdroid.api.IGeoPoint;
 import org.osmdroid.config.Configuration;
@@ -63,8 +56,7 @@ public class MapFragment extends Fragment {
     }
 
     private void addMarkers() {
-        // Controlla se la lista dei conti o delle città è vuota
-        if (accounts.isEmpty() || getCitiesFromAccounts().isEmpty()) {
+        if (accounts.isEmpty()) {
             return;
         }
 
@@ -73,9 +65,13 @@ public class MapFragment extends Fragment {
         double minLon = Double.MAX_VALUE;
         double maxLon = Double.MIN_VALUE;
 
-        for (MarkerOptions markerOptions : getCitiesFromAccounts()) {
-            double lat = markerOptions.getPosition().latitude;
-            double lon = markerOptions.getPosition().longitude;
+        ArrayList<Marker> markers = getCitiesFromAccounts(); // Assumendo che getCitiesFromAccounts ora restituisca ArrayList<Marker>
+
+        for (Marker marker : markers) {
+            GeoPoint position = marker.getPosition();
+
+            double lat = position.getLatitude();
+            double lon = position.getLongitude();
 
             // Aggiorna i valori per il bounding box
             if (lat < minLat) minLat = lat;
@@ -83,26 +79,23 @@ public class MapFragment extends Fragment {
             if (lon < minLon) minLon = lon;
             if (lon > maxLon) maxLon = lon;
 
-            // Crea e aggiungi il marcatore alla mappa
-            Marker marker = new Marker(mapView);
-            marker.setPosition(new GeoPoint(lat, lon));
-            marker.setTitle(markerOptions.getTitle());
-            marker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM);
             mapView.getOverlays().add(marker);
         }
 
         mapView.invalidate(); // Aggiorna la mappa con i nuovi marcatori
 
         // Calcola il bounding box e adatta la mappa
-        IGeoPoint southWest = new GeoPoint(minLat, minLon);
-        IGeoPoint northEast = new GeoPoint(maxLat, maxLon);
-        BoundingBox boundingBox = new BoundingBox(northEast.getLatitude(), northEast.getLongitude(), southWest.getLatitude(), southWest.getLongitude());
+        if (!markers.isEmpty()) {
+            IGeoPoint southWest = new GeoPoint(minLat, minLon);
+            IGeoPoint northEast = new GeoPoint(maxLat, maxLon);
+            BoundingBox boundingBox = new BoundingBox(northEast.getLatitude(), northEast.getLongitude(), southWest.getLatitude(), southWest.getLongitude());
 
-        new Handler().postDelayed(() -> mapView.zoomToBoundingBox(boundingBox, true), 1000); // Ritarda lo zoom di 1 secondo
+            mapView.zoomToBoundingBox(boundingBox, true); // Zoom immediato al bounding box
+        }
     }
 
-    public ArrayList<MarkerOptions> getCitiesFromAccounts() {
-        ArrayList<MarkerOptions> markerOptionsList = new ArrayList<>();
+    public ArrayList<Marker> getCitiesFromAccounts() {
+        ArrayList<Marker> markersList = new ArrayList<>();
 
         for (Account account : accounts) {
             ArrayList<Transactions> transactions = account.getListTrans();
@@ -111,16 +104,16 @@ public class MapFragment extends Fragment {
                     String city = transaction.getCity().getNameCity();
                     System.out.println("city " + city);
                     if (city != null) {
-                        LatLng cityLatLng = new LatLng(transaction.getCity().getLatitude(), transaction.getCity().getLongitude());
-                        System.out.println("cityLatLng " + cityLatLng.toString());
-                        MarkerOptions markerOptions = new MarkerOptions()
-                                .position(cityLatLng)
-                                .title(city);
-                        markerOptionsList.add(markerOptions);
+                        GeoPoint cityGeoPoint = new GeoPoint(transaction.getCity().getLatitude(), transaction.getCity().getLongitude());
+                        System.out.println("cityGeoPoint " + cityGeoPoint.toString());
+                        Marker marker = new Marker(mapView);
+                        marker.setPosition(cityGeoPoint);
+                        marker.setTitle(city);
+                        markersList.add(marker);
                     }
                 }
             }
         }
-        return markerOptionsList;
+        return markersList;
     }
 }
