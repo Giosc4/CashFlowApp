@@ -38,7 +38,9 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-
+        addBoxFragment(new box_template_fragment(), "box_template_fragment");
+        addBoxFragment(new box_transaction_fragment(), "box_transaction_fragment");
+        addBoxFragment(new box_budget_fragment(), "box_budget_fragment");
 
         // Inizializza il JsonReadWrite
         jsonReadWrite = new JsonReadWrite();
@@ -71,9 +73,7 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this)));
-        addBoxFragment(new box_template_fragment(), "box_template_fragment");
-        addBoxFragment(new box_transaction_fragment(), "box_transaction_fragment");
-        addBoxFragment(new box_budget_fragment(), "box_budget_fragment");
+
     }
 
     private void addBoxFragment(Fragment fragment, String tag) {
