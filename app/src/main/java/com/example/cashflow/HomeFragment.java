@@ -82,7 +82,7 @@ public class HomeFragment extends Fragment {
                     AccountDetailsFragment accountDetailsFragment = new AccountDetailsFragment(account);
                     FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                    fragmentTransaction.replace(R.id.fragment_container, accountDetailsFragment);
+                    fragmentTransaction.replace(R.id.linearContainer, accountDetailsFragment);
                     fragmentTransaction.addToBackStack(null);
                     fragmentTransaction.commit();
                 }
@@ -145,7 +145,7 @@ public class HomeFragment extends Fragment {
         NewAccountFragment newAccountFragment = new NewAccountFragment(accounts);
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, newAccountFragment);
+        fragmentTransaction.replace(R.id.linearContainer, newAccountFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -154,7 +154,7 @@ public class HomeFragment extends Fragment {
         NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts, city);
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, transactionFragment);
+        fragmentTransaction.replace(R.id.linearContainer, transactionFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }
@@ -163,7 +163,7 @@ public class HomeFragment extends Fragment {
         StatisticsFragment statisticsFragment = new StatisticsFragment(accounts);
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, statisticsFragment);
+        fragmentTransaction.replace(R.id.linearContainer, statisticsFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }

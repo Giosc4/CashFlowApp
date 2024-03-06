@@ -2,7 +2,7 @@ package com.example.cashflow;
 
 import android.content.pm.PackageManager;
 import android.os.Bundle;
-import android.view.LayoutInflater;
+import android.widget.HorizontalScrollView;
 import android.view.View;
 import android.widget.Button;
 
@@ -21,6 +21,8 @@ import java.io.IOException;
 import java.util.ArrayList;
 
 import android.Manifest;
+import android.widget.FrameLayout;
+import android.widget.LinearLayout;
 
 public class MainActivity extends AppCompatActivity {
     private Button btnHome;
@@ -35,14 +37,15 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        loadFragment2(new box_template_fragment());
+        addBoxFragment(new box_template_fragment(), "box_template_fragment");
+        addBoxFragment(new box_transaction_fragment(), "box_transaction_fragment");
+        addBoxFragment(new box_budget_fragment(), "box_budget_fragment");
 
 
         // Inizializza il JsonReadWrite
         jsonReadWrite = new JsonReadWrite();
         accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
         //accounts = null;
-        System.out.println(accounts);
         if (accounts == null) {
             // Le righe di codice devono essere eseguite solo all'installazione dell'app.
             Test test = new Test();
@@ -56,7 +59,6 @@ public class MainActivity extends AppCompatActivity {
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            // Permission is not granted, request it
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
         }
 
@@ -71,6 +73,20 @@ public class MainActivity extends AppCompatActivity {
         loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this)));
     }
 
+    private void addBoxFragment(Fragment fragment, String tag) {
+        FragmentManager fragmentManager = getSupportFragmentManager();
+        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+
+        FrameLayout frame = new FrameLayout(this);
+        frame.setId(View.generateViewId());
+        LinearLayout dynamicContainer = findViewById(R.id.linearContainer);
+        dynamicContainer.addView(frame);
+
+        fragmentTransaction.add(frame.getId(), fragment, tag);
+        fragmentTransaction.commit();
+    }
+
+
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -84,17 +100,10 @@ public class MainActivity extends AppCompatActivity {
         }
     }
 
-    private void loadFragment2(Fragment fragment) {
-        FragmentManager fragmentManager = getSupportFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.boxContainer, fragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-    }
     private void loadFragment(Fragment fragment) {
         FragmentManager fragmentManager = getSupportFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.fragment_container, fragment);
+        fragmentTransaction.replace(R.id.linearContainer, fragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
     }

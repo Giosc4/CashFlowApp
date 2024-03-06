@@ -55,7 +55,7 @@ public class NewAccountFragment extends Fragment {
                     if (getActivity() != null) {
                         HomeFragment homeFragment = new HomeFragment(accounts);
                         FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.fragment_container, homeFragment);
+                        transaction.replace(R.id.linearContainer, homeFragment);
                         transaction.commit();
                     }
                 }

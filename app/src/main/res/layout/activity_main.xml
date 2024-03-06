@@ -11,7 +11,7 @@
     <RelativeLayout
         android:id="@+id/relativeLayout"
         android:layout_width="match_parent"
-        android:layout_height="100dp"
+        android:layout_height="80dp"
         android:background="@android:color/darker_gray"
         android:padding="10dp">
 
@@ -29,12 +29,14 @@
         <TextView
             android:id="@+id/appTitleTextView"
             android:layout_width="160dp"
-            android:layout_height="40dp"
+            android:layout_height="100dp"
             android:layout_alignParentTop="true"
             android:layout_marginStart="17dp"
-            android:layout_marginTop="25dp"
+            android:layout_marginTop="10dp"
+            android:layout_marginBottom="10dp"
             android:layout_toStartOf="@+id/btnHome"
             android:text="Cash Flow App"
+            android:textStyle="bold"
             android:textSize="22sp" />
 
         <Button
@@ -48,30 +50,30 @@
 
     </RelativeLayout>
 
-
-
-    <LinearLayout
-        android:id="@+id/boxContainer"
+    <ScrollView
+        android:id="@+id/boxLayout"
         android:layout_width="match_parent"
-        android:layout_height="300dp"
+        android:layout_height="0dp"
         android:layout_weight="1"
-        android:orientation="horizontal" />
+        android:padding="16dp">
 
-    <FrameLayout
-        android:id="@+id/fragment_container"
-        android:layout_width="match_parent"
-        android:layout_height="100dp"
-        android:layout_weight="1" />
+        <LinearLayout
+            android:id="@+id/linearContainer"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+        </LinearLayout>
+    </ScrollView>
 
     <TextView
-        android:id="@+id/myTextView"
+        android:id="@+id/credits"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:layout_margin="7dp"
         android:text="Cash Flow App - Giovanni Maria Savoca"
         android:textSize="15sp"
-        android:textStyle="bold" />
+        android:textStyle="bold"
+        android:layout_margin="7dp" />
 
 
 </LinearLayout>

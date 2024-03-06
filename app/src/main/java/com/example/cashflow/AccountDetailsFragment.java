@@ -73,7 +73,7 @@ public class AccountDetailsFragment extends Fragment {
                 HomeFragment homeFragment = new HomeFragment(jsonReadWrite.readAccountsFromJson(requireContext()));
                 FragmentManager fragmentManager = getParentFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.fragment_container, homeFragment);
+                fragmentTransaction.replace(R.id.linearContainer, homeFragment);
                 fragmentTransaction.addToBackStack(null);
                 fragmentTransaction.commit();
             }
@@ -160,7 +160,7 @@ public class AccountDetailsFragment extends Fragment {
                     FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                     fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
                     fragmentManager.beginTransaction()
-                            .replace(R.id.fragment_container, new HomeFragment(accounts))
+                            .replace(R.id.linearContainer, new HomeFragment(accounts))
                             .commit();
                 }
             } else {
@@ -226,7 +226,7 @@ public class AccountDetailsFragment extends Fragment {
                         EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), account);
                         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        fragmentTransaction.replace(R.id.fragment_container, editTransactionFragment);
+                        fragmentTransaction.replace(R.id.linearContainer, editTransactionFragment);
                         fragmentTransaction.addToBackStack(null);
                         fragmentTransaction.commit();
                     }

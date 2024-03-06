@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:gravity="center"
-        android:text="Templates"
+        android:text="Transazioni"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -19,5 +19,6 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:columnCount="2"
-        android:padding="16dp"></GridLayout>
+        android:padding="16dp">
+    </GridLayout>
 </LinearLayout>

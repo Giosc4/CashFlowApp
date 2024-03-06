@@ -61,7 +61,7 @@ public class StatisticsFragment extends Fragment {
             public void onClick(View v) {
                 Line_chart barChartFragment = new Line_chart(accounts);
                 requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, barChartFragment)
+                        .replace(R.id.linearContainer, barChartFragment)
                         .commit();
             }
         });
@@ -71,7 +71,7 @@ public class StatisticsFragment extends Fragment {
             public void onClick(View v) {
                 MapFragment mapFragment = new MapFragment(accounts);
                 requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, mapFragment)
+                        .replace(R.id.linearContainer, mapFragment)
                         .commit();
             }
         });
@@ -81,7 +81,7 @@ public class StatisticsFragment extends Fragment {
             public void onClick(View v) {
                 Income_expense incomeExpense = new Income_expense(true, accounts);
                 requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, incomeExpense)
+                        .replace(R.id.linearContainer, incomeExpense)
                         .commit();
             }
         });
@@ -91,7 +91,7 @@ public class StatisticsFragment extends Fragment {
             public void onClick(View v) {
                 Income_expense incomeExpense = new Income_expense(false, accounts);
                 requireActivity().getSupportFragmentManager().beginTransaction()
-                        .replace(R.id.fragment_container, incomeExpense)
+                        .replace(R.id.linearContainer, incomeExpense)
                         .commit();
             }
         });
