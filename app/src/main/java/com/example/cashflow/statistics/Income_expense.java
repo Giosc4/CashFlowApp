@@ -1,39 +1,27 @@
 package com.example.cashflow.statistics;
 
-import android.annotation.SuppressLint;
-import android.content.Context;
 import android.graphics.Color;
 import android.os.Bundle;
 
 import androidx.fragment.app.Fragment;
 
-import android.text.Editable;
-import android.text.TextWatcher;
-
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.ListView;
-import android.widget.MultiAutoCompleteTextView;
-import android.widget.Spinner;
 import android.widget.TextView;
 
 import com.example.cashflow.R;
+import com.example.cashflow.SQLiteDB;
 import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.dataClass.Category;
 import com.example.cashflow.dataClass.Transactions;
-import com.example.cashflow.dataClass.CategoriesEnum;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
 import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.LegendEntry;
 import com.github.mikephil.charting.data.BarData;
 import com.github.mikephil.charting.data.BarDataSet;
 import com.github.mikephil.charting.data.BarEntry;
@@ -42,8 +30,6 @@ import com.github.mikephil.charting.data.PieDataSet;
 import com.github.mikephil.charting.data.PieEntry;
 
 import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
 import java.util.List;
 
 public class Income_expense extends Fragment {
@@ -59,12 +45,15 @@ public class Income_expense extends Fragment {
     private PieChart pieChart;
     private BarChart barChart;
 
-    public Income_expense(Boolean isIncome, ArrayList<Account> accounts) {
+    private SQLiteDB sqLiteDB;
+
+    public Income_expense(Boolean isIncome, SQLiteDB sqLiteDB) {
         this.isIncome = isIncome;
-        this.accounts = accounts;
+        this.sqLiteDB = sqLiteDB;
+        this.accounts = sqLiteDB.getAllAccounts();
         selectedAccounts = new ArrayList<>();
     }
-
+/*
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_income_expense, container, false);
@@ -175,9 +164,8 @@ public class Income_expense extends Fragment {
 
     public List<PieEntry> getIncomeOrExpensePieData(ArrayList<Account> accounts) {
         List<PieEntry> entries = new ArrayList<>();
-        CategoriesEnum[] categories = CategoriesEnum.values();
-
-        for (CategoriesEnum category : categories) {
+        String[] categoriesList = sqLiteDB.getCategories();
+        for (Category categor : categoriesList) {
             float totalAmount = 0;
 
             for (Account account : accounts) {
@@ -198,17 +186,17 @@ public class Income_expense extends Fragment {
 
     public List<BarEntry> getIncomeOrExpenseBarData(ArrayList<Account> accounts) {
         List<BarEntry> entries = new ArrayList<>();
-        CategoriesEnum[] categories = CategoriesEnum.values();
 
-        for (int i = 0; i < categories.length; i++) {
+        ArrayList<Category> categories = sqLiteDB.getCategories();
+
+        for (int i = 0; i < categories.size(); i++) {
             float totalAmount = 0;
 
             for (Account account : accounts) {
-                for (Transactions transaction : account.getListTrans()) {
-                    if (transaction.isIncome() == isIncome && transaction.getCategory() == categories[i]) {
-                        totalAmount += (float) transaction.getAmountValue();
-                    }
-                }
+                totalAmount += account.getListTrans().stream()
+                        .filter(transaction -> transaction.isIncome() == isIncome && transaction.getCategory() == categories[i])
+                        .mapToDouble(Transactions::getAmountValue)
+                        .sum();
             }
 
             if (totalAmount > 0) {
@@ -259,6 +247,6 @@ public class Income_expense extends Fragment {
 
         return colors;
     }
-
+*/
 }
 

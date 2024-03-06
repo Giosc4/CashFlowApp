@@ -2,7 +2,6 @@ package com.example.cashflow;
 
 import static android.app.Activity.RESULT_OK;
 
-import android.app.Activity;
 import android.app.DatePickerDialog;
 import android.content.ContentValues;
 import android.content.DialogInterface;
@@ -37,7 +36,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.cashflow.dataClass.Account;
-import com.example.cashflow.dataClass.CategoriesEnum;
+import com.example.cashflow.dataClass.Category;
 import com.example.cashflow.dataClass.City;
 import com.example.cashflow.dataClass.Transactions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -48,7 +47,6 @@ import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
-import java.util.Locale;
 
 public class NewTransactionFragment extends Fragment {
 
@@ -65,7 +63,6 @@ public class NewTransactionFragment extends Fragment {
     private Uri cameraImageUri;
     private Button dateButton;
     private TextView locationEditText;
-    private JsonReadWrite jsonReadWrite;
     private ArrayList<Account> accounts;
     private ArrayList<String> categories;
     private ImageView cameraButton;
@@ -74,10 +71,11 @@ public class NewTransactionFragment extends Fragment {
     public static final int REQUEST_IMAGE_PICK = 123;
     private City cityPosition;
     private OCRManager ocrManager;
+    private SQLiteDB sqLiteDB;
 
 
-    public NewTransactionFragment(ArrayList<Account> accounts, City cityPosition) {
-        this.accounts = accounts;
+    public NewTransactionFragment(SQLiteDB sqLiteDB, City cityPosition) {
+        this.accounts = sqLiteDB.getAllAccounts();
         this.cityPosition = cityPosition;
 
     }
@@ -207,9 +205,10 @@ public class NewTransactionFragment extends Fragment {
         });
 
         // Spinner CATEGORIES
-        categories = new ArrayList<>();
-        for (CategoriesEnum category : CategoriesEnum.values()) {
-            categories.add(category.name());
+        ArrayList<String> categories = new ArrayList<>();
+        ArrayList<Category> categoryObjects = sqLiteDB.getAllCategories(); // Assumendo che getAllCategories() restituisca una lista di oggetti Categoria dal DB
+        for (Category category : categoryObjects) {
+            categories.add(category.getName());
         }
 
         ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categories);
@@ -425,18 +424,25 @@ public class NewTransactionFragment extends Fragment {
             // Resto del codice per salvare la transazione
             Toast.makeText(getContext(), "Transazione salvata: " + amount + ", " + accountSelected + ", " + dataFormattata + ", " + location, Toast.LENGTH_LONG).show();
 
-            Transactions newTrans = new Transactions(income, amount, selectedDate, cityPosition, CategoriesEnum.valueOf(selectedCategory));
-            jsonReadWrite = new JsonReadWrite();
 
-            for (Account account : accounts) {
-                if (account.getName().equals(accountSelected)) {
-                    account.getListTrans().add(newTrans);
-                    account.updateBalance();
-                    System.out.println("New Transaction: " + newTrans.toString());
-                    jsonReadWrite.setList(accounts, requireContext());
-                    break;
-                }
+            int cityId = cityPosition != null ? cityPosition.getId() : -1; // Assumi -1 o un altro valore di default se cityPosition è null
+            int categoryId = sqLiteDB.getCategoryIdByName(selectedCategory);
+
+            int accountId = sqLiteDB.getIdByAccountName(accountSelected);
+
+            Transactions newTrans = new Transactions(income, amount, selectedDate, cityId, categoryId, accountId);
+            long transactionId = sqLiteDB.addTransaction(newTrans);
+
+            if (transactionId != -1) {
+                // La transazione è stata salvata con successo
+                // Aggiorna il saldo dell'account selezionato, assumendo che sqLiteDB abbia un metodo per farlo
+                sqLiteDB.updateAccountBalance(accountSelected, income ? amount : -amount);
+                Toast.makeText(getContext(), "Transazione salvata", Toast.LENGTH_LONG).show();
+            } else {
+                // Errore nel salvataggio della transazione
+                Toast.makeText(getContext(), "Errore nel salvare la transazione", Toast.LENGTH_SHORT).show();
             }
+
             if (getActivity() != null) {
                 getActivity().getSupportFragmentManager().popBackStack();
                 LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);

@@ -19,7 +19,6 @@ import java.util.ArrayList;
 
 public class NewAccountFragment extends Fragment {
 
-    private JsonReadWrite jsonReadWrite;
     private EditText edtName;
     private ArrayList<Account> accounts;
 
@@ -32,7 +31,6 @@ public class NewAccountFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_new_account, container, false);
 
-        jsonReadWrite = new JsonReadWrite();
 
         edtName = view.findViewById(R.id.edtName);
         Button btnCreateAccount = view.findViewById(R.id.btnCreateAccount);
@@ -45,22 +43,26 @@ public class NewAccountFragment extends Fragment {
                 if (name.isEmpty()) {
                     Toast.makeText(getActivity(), "Inserisci il nome dell'account", Toast.LENGTH_SHORT).show();
                 } else {
-                    accounts.add(new Account(name));
-                    try {
-                        jsonReadWrite.setList(accounts, requireContext());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    Toast.makeText(getActivity(), "Conto creato!", Toast.LENGTH_SHORT).show();
-                    if (getActivity() != null) {
-                        HomeFragment homeFragment = new HomeFragment(accounts);
-                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.fragment_container, homeFragment);
-                        transaction.commit();
+                    // Utilizza SQLiteDB per salvare il nuovo account.
+                    SQLiteDB db = new SQLiteDB(getActivity());
+                    boolean success = db.createAccount(name, 0); // Assumendo che l'equilibrio iniziale sia 0.
+
+                    if (success) {
+                        Toast.makeText(getActivity(), "Conto creato!", Toast.LENGTH_SHORT).show();
+                        // Aggiorna l'UI o effettua il passaggio al Fragment desiderato qui.
+                        if (getActivity() != null) {
+                            HomeFragment homeFragment = new HomeFragment(accounts);
+                            FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
+                            transaction.replace(R.id.fragment_container, homeFragment);
+                            transaction.commit();
+                        }
+                    } else {
+                        Toast.makeText(getActivity(), "Errore nella creazione del conto", Toast.LENGTH_SHORT).show();
                     }
                 }
             }
         });
+
         return view;
     }
 }

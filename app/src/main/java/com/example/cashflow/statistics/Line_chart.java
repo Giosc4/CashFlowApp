@@ -30,6 +30,7 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
 import java.util.Locale;
+/*
 
 public class Line_chart extends Fragment {
 
@@ -47,7 +48,6 @@ public class Line_chart extends Fragment {
     private LineChart lineChart;
 
     private ArrayList<Account> accounts;
-
     public Line_chart(ArrayList<Account> accounts) {
         this.accounts = accounts;
     }
@@ -243,3 +243,4 @@ public class Line_chart extends Fragment {
         return dateFormat.format(date.getTime());
     }
 }
+*/

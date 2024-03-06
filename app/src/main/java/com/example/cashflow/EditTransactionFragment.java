@@ -35,7 +35,7 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 
 import com.example.cashflow.dataClass.Account;
-import com.example.cashflow.dataClass.CategoriesEnum;
+import com.example.cashflow.dataClass.Category;
 import com.example.cashflow.dataClass.City;
 import com.example.cashflow.dataClass.Transactions;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
@@ -79,19 +79,18 @@ public class EditTransactionFragment extends Fragment {
     private Account accountOriginal;
     private ArrayList<String> categories;
 
-    //GET FROM JSON
-
-    private JsonReadWrite jsonReadWrite;
     private ArrayList<Account> accounts;
 
     //CHANGE ACCCOUNT TRANS
     private int originalTransactionIndex;
     private int originalAccountIndex;
 
-    public EditTransactionFragment(Transactions transaction, Account account) {
+    private SQLiteDB sqLiteDB;
+
+    public EditTransactionFragment(Transactions transaction, SQLiteDB sqLiteDB) {
         this.transactionOriginal = transaction;
-        this.accountOriginal = account;
-        jsonReadWrite = new JsonReadWrite();
+        this.sqLiteDB = sqLiteDB;
+        this.accountOriginal = sqLiteDB.getAllAccounts().get(transaction.getAccountId());
 
     }
 
@@ -131,7 +130,10 @@ public class EditTransactionFragment extends Fragment {
         selectedTimeTextView.setText(selectedDateString);
 
 
-        locationEditText.setText(transactionOriginal.getCity().printOnApp());
+        City transactionCity = sqLiteDB.getCityById(transactionOriginal.getCityId());
+        if (transactionCity != null) {
+            locationEditText.setText(transactionCity.getNameCity());
+        }
 
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -198,11 +200,17 @@ public class EditTransactionFragment extends Fragment {
         });
 
         // Spinner CATEGORIES
+        ArrayList<Category> categoriesList = sqLiteDB.getAllCategories();
         categories = new ArrayList<>();
-        for (CategoriesEnum category : CategoriesEnum.values()) {
-            categories.add(category.name());
+        for (Category category : categoriesList) {
+            categories.add(category.getName());
         }
-        this.originalTransactionIndex = categories.indexOf(transactionOriginal.getCategory().name());
+// Assumendo che tu abbia un metodo in Transactions per ottenere l'ID della categoria
+        Category transactionCategory = sqLiteDB.getCategoryById(transactionOriginal.getCategoryId());
+        if (transactionCategory != null) {
+            this.originalTransactionIndex = categories.indexOf(transactionCategory.getName());
+        }
+
 
 
         ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categories);
@@ -222,7 +230,7 @@ public class EditTransactionFragment extends Fragment {
             }
         });
 
-        accounts = jsonReadWrite.readAccountsFromJson(requireContext());
+        accounts = sqLiteDB.getAllAccounts();
 
         //SPINNER ACCOUNTS
         ArrayList<String> accountNames = new ArrayList<>();
@@ -403,58 +411,34 @@ public class EditTransactionFragment extends Fragment {
 
     private void deleteTransaction() {
         // Rimuovi la transazione originale dall'account originale
-        accountOriginal.removeTransaction(transactionOriginal);
+        sqLiteDB.deleteTransaction(transactionOriginal.getId());
         accounts.set(originalAccountIndex, accountOriginal);
 
-        try {
-            // Esegui il salvataggio dell'account originale nel file JSON dopo la rimozione della transazione
-            jsonReadWrite.setList(accounts, requireContext());
-
-            if (getActivity() != null) {
-                getActivity().getSupportFragmentManager().popBackStack();
-                LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
-                mainLayout.setVisibility(View.VISIBLE);
-            }
-
-            Toast.makeText(getContext(), "Transazione Eliminata", Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Errore durante il salvataggio delle modifiche", Toast.LENGTH_LONG).show();
+        if (getActivity() != null) {
+            getActivity().getSupportFragmentManager().popBackStack();
+            LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
+            mainLayout.setVisibility(View.VISIBLE);
         }
+
+        Toast.makeText(getContext(), "Transazione Eliminata", Toast.LENGTH_LONG).show();
     }
 
     private void updateTransaction() {
         boolean newIncome = incomeButton.isSelected();
         double newAmount = Double.parseDouble(numberEditText.getText().toString());
-        String nuovacitta = locationEditText.getText().toString();
-        //transactionOriginal.getCity().getNameCity())
-        City newCity = new City(locationEditText.getText().toString(), 0, 0);
-        CategoriesEnum newCategory = CategoriesEnum.values()[categorySpinner.getSelectedItemPosition()];
-        int newAccountIndex = accountSpinner.getSelectedItemPosition();
+        String newCityName = locationEditText.getText().toString();
+        City newCity = sqLiteDB.getCityByName(newCityName); // Assumendo che tu abbia questo metodo, altrimenti aggiungi la città se non esiste
+        int categoryId = ((Category) categorySpinner.getSelectedItem()).getId();
         Calendar newDate = calendar;
 
-        Transactions newTrans = new Transactions(newIncome, newAmount, newDate, newCity, newCategory);
-        if (newAccountIndex != originalAccountIndex) {
-            accountOriginal.removeTransaction(transactionOriginal);
-            accounts.get(newAccountIndex).addTransaction(newTrans);
-        } else {
-            accountOriginal.editTransaction(transactionOriginal, newTrans);
-        }
-        try {
-            // Esegui il salvataggio dei dati qui, dopo aver apportato tutte le modifiche
-            accounts.set(originalAccountIndex, accountOriginal);
-            jsonReadWrite.setList(accounts, requireContext());
+        // Crea un nuovo oggetto Transactions (o aggiorna quello esistente, a seconda della tua implementazione)
+        Transactions newTrans = new Transactions(transactionOriginal.getId(), newIncome, newAmount, newDate, newCity.getId(), categoryId, accountOriginal.getId());
 
-            if (getActivity() != null) {
-                getActivity().getSupportFragmentManager().popBackStack();
-                LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
-                mainLayout.setVisibility(View.VISIBLE);
-            }
-            Toast.makeText(getContext(), "Transazione aggiornata", Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Errore durante il salvataggio delle modifiche", Toast.LENGTH_LONG).show();
-        }
+        // Aggiorna la transazione nel database
+        sqLiteDB.updateTransaction(newTrans);
+
+        Toast.makeText(getContext(), "Transazione aggiornata", Toast.LENGTH_LONG).show();
+
 
     }
 

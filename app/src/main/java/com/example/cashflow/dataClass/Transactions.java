@@ -1,94 +1,123 @@
 package com.example.cashflow.dataClass;
 
-import com.example.cashflow.dataClass.CategoriesEnum;
-
 import java.util.Calendar;
 import java.text.SimpleDateFormat;
 import java.util.Locale;
 
 
 public class Transactions {
-    private Boolean income;
+    private int id;
+    private boolean income; // True for income, false for expense
     private double amount;
     private Calendar date;
-    private City city;
-    private CategoriesEnum category;
+    private int cityId;
+    private int categoryId;
+    private int accountId;
 
-    public Transactions() {
-        this.income = false;
-        this.amount = 00.01;
-        this.date = Calendar.getInstance();
-        this.city = new City();
-
-        this.category = CategoriesEnum.FoodAndDrinks;
-    }
-
-    public Transactions(Boolean income, double amount, Calendar date, City city, CategoriesEnum category) {
+    public Transactions(boolean income, double amount, Calendar date, int cityId, int categoryId, int accountId) {
         this.income = income;
         this.amount = amount;
         this.date = date;
-        this.city = city;
-        this.category = category;
+        this.cityId = cityId;
+        this.categoryId = categoryId;
+        this.accountId = accountId;
     }
 
-    public CategoriesEnum getCategory() {
-        return category;
+    public Transactions(int id, boolean income, double amount, Calendar date, int cityId, int categoryId, int accountId) {
+        this.id = id;
+        this.income = income;
+        this.amount = amount;
+        this.date = date;
+        this.cityId = cityId;
+        this.categoryId = categoryId;
+        this.accountId = accountId;
     }
 
-    public Boolean isIncome() {
+    // Getter and Setter Methods
+    public int getId() {
+        return id;
+    }
+
+    public void setId(int id) {
+        this.id = id;
+    }
+
+    public boolean isIncome() {
         return income;
     }
 
-    public double getAmount() {
-        if (isIncome()) {
-            return amount;
-        } else {
-            return -amount;
-        }
+    public void setIncome(boolean income) {
+        this.income = income;
     }
 
-    public double getAmountValue() {
+    public double getAmount() {
         return amount;
+    }
+
+    public void setAmount(double amount) {
+        this.amount = amount;
     }
 
     public Calendar getDate() {
         return date;
     }
 
-    public City getCity() {
-        return this.city;
+    public void setDate(Calendar date) {
+        this.date = date;
     }
 
+    public int getCityId() {
+        return cityId;
+    }
+
+    public void setCityId(int cityId) {
+        this.cityId = cityId;
+    }
+
+    public int getCategoryId() {
+        return categoryId;
+    }
+
+    public void setCategoryId(int categoryId) {
+        this.categoryId = categoryId;
+    }
+
+    public int getAccountId() {
+        return accountId;
+    }
+
+    public void setAccountId(int accountId) {
+        this.accountId = accountId;
+    }
 
     @Override
     public String toString() {
-        String cityString = (city != null) ? city.toString() : "Nessuna città";
+        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
         return "Transactions{" +
-                "isIncome=" + isIncome() +
+                "id=" + id +
+                ", income=" + income +
                 ", amount=" + amount +
-                ", date=" + date +
-                ", city=" + cityString +
-                ", category=" + category +
+                ", date=" + dateFormat.format(date.getTime()) +
+                ", cityId=" + cityId +
+                ", categoryId=" + categoryId +
+                ", accountId=" + accountId +
                 '}';
     }
 
-
-    public String printOnApp() {
+    public String printOnApp(){
         SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-        String formattedDate = dateFormat.format(date.getTime());
+        return "Transactions{" +
+                "id=" + id +
+                ", income=" + (income ? "Income" : "Expense") +
+                ", amount=" + amount +
+                ", date=" + dateFormat.format(date.getTime()) +
+                ", cityId=" + cityId +
+                ", categoryId=" + categoryId +
+                ", accountId=" + accountId +
+                '}';
+    }
 
-        String cityString = (city != null) ? city.getNameCity() : "Città sconosciuta";
-
-        if (income) {
-            return "INCOME " + "Amount: " + amount + "\n" +
-                    "Date: " + formattedDate + "\n" +
-                    "City: " + cityString + "\n" +
-                    "Category: " + category.name();
-        } else {
-            return "EXPENSE " + "Amount: " + amount + "\n" +
-                    "Date: " + formattedDate + "\n" +
-                    "City: " + cityString + "\n" +
-                    "Category: " + category.name();
-        }
+    public double getAmountValue() {
+        return amount;
     }
 }

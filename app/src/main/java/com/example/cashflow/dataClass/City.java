@@ -1,19 +1,28 @@
 package com.example.cashflow.dataClass;
 
 public class City {
+    private int id;
 
     private String nameCity;
     private double latitude;
     private double longitude;
 
     public City() {
+
         this.nameCity = "Bologna";
         this.latitude = 44.50;
         this.longitude = 11;
     }
 
-    public City(String nameCity, float latitude, float longitude) {
-        this.nameCity = nameCity;
+    public City(String cityName, double latitude, double longitude) {
+        this.nameCity = cityName;
+        this.latitude = latitude;
+        this.longitude = longitude;
+    }
+
+    public City(int id, String cityName, double latitude, double longitude) {
+        this.id = id;
+        this.nameCity = cityName;
         this.latitude = latitude;
         this.longitude = longitude;
     }
@@ -41,6 +50,11 @@ public class City {
     public void setLongitude(double longitude) {
         this.longitude = longitude;
     }
+
+    public int getId() {
+        return id;
+    }
+
 
     @Override
     public String toString() {

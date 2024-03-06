@@ -26,10 +26,15 @@ public class HomeFragment extends Fragment {
     ArrayList<Account> accounts;
     private String subtotalText = "";
     TextView myTextView;
-
+    private SQLiteDB sqLiteDB;
     Posizione posizione;
     City city;
 
+
+    public HomeFragment(SQLiteDB sqLiteDB) {
+        this.sqLiteDB = sqLiteDB;
+        this.accounts = sqLiteDB.getAllAccounts();
+    }
 
     public HomeFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
@@ -79,7 +84,7 @@ public class HomeFragment extends Fragment {
             button.setOnClickListener(new View.OnClickListener() {
                 @Override
                 public void onClick(View v) {
-                    AccountDetailsFragment accountDetailsFragment = new AccountDetailsFragment(account);
+                    AccountDetailsFragment accountDetailsFragment = new AccountDetailsFragment(sqLiteDB, account);
                     FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                     FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                     fragmentTransaction.replace(R.id.fragment_container, accountDetailsFragment);
@@ -151,7 +156,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void openTransactionFragment() {
-        NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts, city);
+        NewTransactionFragment transactionFragment = new NewTransactionFragment(sqLiteDB, city);
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, transactionFragment);
@@ -159,13 +164,15 @@ public class HomeFragment extends Fragment {
         fragmentTransaction.commit();
     }
 
+
     private void openStatisticsFragment() {
-        StatisticsFragment statisticsFragment = new StatisticsFragment(accounts);
+        /*
+        StatisticsFragment statisticsFragment = new StatisticsFragment(sqLiteDB);
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, statisticsFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-    }
+    */ }
 
 }

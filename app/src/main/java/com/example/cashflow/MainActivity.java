@@ -15,8 +15,10 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.cashflow.dataClass.Account;
 
-import java.io.IOException;
+import java.text.SimpleDateFormat;
+
 import java.util.ArrayList;
+import java.util.Calendar;
 
 import android.Manifest;
 import android.widget.Toast;
@@ -24,7 +26,9 @@ import android.widget.Toast;
 public class MainActivity extends AppCompatActivity {
     private Button btnHome;
     private ArrayList<Account> accounts;
-    JsonReadWrite jsonReadWrite;
+
+    private SQLiteDB sqLiteDB;
+    //JsonReadWrite jsonReadWrite;
     private static final int PERMISSION_REQUEST_CODE = 1;
 
     @Override
@@ -32,21 +36,23 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
 
-        // Inizializza il JsonReadWrite
-        jsonReadWrite = new JsonReadWrite();
-        accounts = jsonReadWrite.readAccountsFromJson(MainActivity.this);
+
+        sqLiteDB = new SQLiteDB(this);
+
+        accounts = sqLiteDB.getAllAccounts();
+
         //accounts = null;
         System.out.println(accounts);
         if (accounts == null) {
             // Le righe di codice devono essere eseguite solo all'installazione dell'app.
-            Test test = new Test();
-            accounts = test.getList();
-            jsonReadWrite = new JsonReadWrite(test.getList());
-        }
-        try {
-            jsonReadWrite.setList(accounts, this);
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+            sqLiteDB.createAccount("Cash", 0);
+            sqLiteDB.createAccount("Bank", 0);
+
+            sqLiteDB.createCategory("Salary", "stipendio");
+
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
+            String date = sdf.format(Calendar.getInstance().getTime());
+            sqLiteDB.createTransaction(1, 100, date, null, 1, 1);
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -54,15 +60,14 @@ public class MainActivity extends AppCompatActivity {
             requestPermissions(new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, PERMISSION_REQUEST_CODE);
         }
 
-
         btnHome = findViewById(R.id.btnHome);
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this)));
+                loadFragment(new HomeFragment(sqLiteDB));
             }
         });
-        loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this)));
+        loadFragment(new HomeFragment(sqLiteDB));
 
     }
 
@@ -72,7 +77,7 @@ public class MainActivity extends AppCompatActivity {
 
         if (requestCode == PERMISSION_REQUEST_CODE) {
             if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this)));
+                loadFragment(new HomeFragment(accounts));
             } else {
                 System.out.println("Location permission is required to fetch the location");
             }

@@ -1,17 +1,14 @@
+/*
 package com.example.cashflow.statistics;
 
 import android.os.Bundle;
-import android.os.Handler;
-import android.util.JsonReader;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.TextView;
 
 import androidx.fragment.app.Fragment;
 
 import com.example.cashflow.BuildConfig;
-import com.example.cashflow.JsonReadWrite;
 import com.example.cashflow.R;
 import com.example.cashflow.dataClass.*;
 
@@ -117,3 +114,4 @@ public class MapFragment extends Fragment {
         return markersList;
     }
 }
+*/

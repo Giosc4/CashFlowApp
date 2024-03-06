@@ -23,12 +23,14 @@ import com.example.cashflow.dataClass.Account;
 import com.example.cashflow.dataClass.Transactions;
 
 import java.io.IOException;
+import java.text.ParseException;
 import java.util.ArrayList;
 
 public class AccountDetailsFragment extends Fragment {
 
     private Account account;
-    private JsonReadWrite jsonReadWrite;
+
+    private SQLiteDB sqLiteDB;
 
     // Views
     private EditText nameEditText;
@@ -37,9 +39,9 @@ public class AccountDetailsFragment extends Fragment {
     private Button deleteButton;
     private Button saveButton;
 
-    public AccountDetailsFragment(Account account) {
+    public AccountDetailsFragment(SQLiteDB sqLiteDB, Account account) {
+        this.sqLiteDB = sqLiteDB;
         this.account = account;
-        jsonReadWrite = new JsonReadWrite();
     }
 
     @Nullable
@@ -61,7 +63,12 @@ public class AccountDetailsFragment extends Fragment {
 
 
         // Set up RecyclerView with transactions
-        TransactionListAdapter adapter = new TransactionListAdapter(account.getListTrans());
+        TransactionListAdapter adapter = null;
+        try {
+            adapter = new TransactionListAdapter(sqLiteDB.getAllTransactions());
+        } catch (ParseException e) {
+            throw new RuntimeException(e);
+        }
         LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
         transactionsRecyclerView.setLayoutManager(layoutManager);
         transactionsRecyclerView.setAdapter(adapter);
@@ -70,7 +77,7 @@ public class AccountDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 changeName();
-                HomeFragment homeFragment = new HomeFragment(jsonReadWrite.readAccountsFromJson(requireContext()));
+                HomeFragment homeFragment = new HomeFragment(sqLiteDB);
                 FragmentManager fragmentManager = getParentFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.replace(R.id.fragment_container, homeFragment);
@@ -92,23 +99,18 @@ public class AccountDetailsFragment extends Fragment {
 
     private void changeName() {
         String newName = nameEditText.getText().toString();
-        String oldName = account.getName();
 
-        try {
-            ArrayList<Account> accounts = jsonReadWrite.readAccountsFromJson(requireContext());
-            int index = findAccountIndex(accounts, oldName);
+        if (!newName.isEmpty()) {
+            account.setName(newName);
+            int updateResult = sqLiteDB.updateAccount(account);
 
-            if (index != -1 && !doesAccountExist(accounts, newName)) {
-                account.setName(newName);
-                accounts.set(index, account);
-                jsonReadWrite.setList(accounts, requireContext());
-
+            if (updateResult > 0) {
                 Toast.makeText(getContext(), "Account aggiornato: " + newName, Toast.LENGTH_LONG).show();
             } else {
-                Toast.makeText(getContext(), "Errore aggiornamto account.", Toast.LENGTH_LONG).show();
+                Toast.makeText(getContext(), "Errore aggiornamento account.", Toast.LENGTH_LONG).show();
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } else {
+            Toast.makeText(getContext(), "Il nome dell'account non può essere vuoto.", Toast.LENGTH_LONG).show();
         }
     }
 
@@ -145,29 +147,17 @@ public class AccountDetailsFragment extends Fragment {
 
     // Method to delete the account
     private void deleteAccount() {
-        String accountToDelete = account.getName();
+        // Nessuna necessità di ricercare l'account perché già lo hai come variabile di istanza
+        sqLiteDB.deleteAccount(account.getId());
 
-        try {
-            ArrayList<Account> accounts = jsonReadWrite.readAccountsFromJson(requireContext());
-            int index = findAccountIndex(accounts, accountToDelete);
-
-            if (index != -1) {
-                accounts.remove(index);
-                jsonReadWrite.setList(accounts, requireContext());
-
-                Toast.makeText(getContext(), "Account eliminato: " + accountToDelete, Toast.LENGTH_LONG).show();
-                if (getActivity() != null && isAdded()) {
-                    FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-                    fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-                    fragmentManager.beginTransaction()
-                            .replace(R.id.fragment_container, new HomeFragment(accounts))
-                            .commit();
-                }
-            } else {
-                Toast.makeText(getContext(), "Errore per eliminare l'account.", Toast.LENGTH_LONG).show();
-            }
-        } catch (IOException e) {
-            e.printStackTrace();
+        Toast.makeText(getContext(), "Account eliminato: " + account.getName(), Toast.LENGTH_LONG).show();
+        if (getActivity() != null && isAdded()) {
+            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+            fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+            HomeFragment homeFragment = new HomeFragment(sqLiteDB); // Aggiorna per usare SQLiteDB
+            fragmentManager.beginTransaction()
+                    .replace(R.id.fragment_container, homeFragment)
+                    .commit();
         }
     }
 
@@ -223,7 +213,7 @@ public class AccountDetailsFragment extends Fragment {
                 detailButton.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), account);
+                        EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), sqLiteDB);
                         FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
                         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                         fragmentTransaction.replace(R.id.fragment_container, editTransactionFragment);
