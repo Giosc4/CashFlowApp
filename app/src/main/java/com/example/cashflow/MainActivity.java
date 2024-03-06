@@ -1,6 +1,7 @@
 package com.example.cashflow;
 
 import android.content.pm.PackageManager;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.widget.HorizontalScrollView;
 import android.view.View;
@@ -37,9 +38,6 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
 
 
-        addBoxFragment(new box_template_fragment(), "box_template_fragment");
-        addBoxFragment(new box_transaction_fragment(), "box_transaction_fragment");
-        addBoxFragment(new box_budget_fragment(), "box_budget_fragment");
 
 
         // Inizializza il JsonReadWrite
@@ -64,6 +62,8 @@ public class MainActivity extends AppCompatActivity {
 
 
         btnHome = findViewById(R.id.btnHome);
+        btnHome.setBackgroundColor(Color.parseColor("#37a63e"));
+
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -71,6 +71,9 @@ public class MainActivity extends AppCompatActivity {
             }
         });
         loadFragment(new HomeFragment(jsonReadWrite.readAccountsFromJson(MainActivity.this)));
+        addBoxFragment(new box_template_fragment(), "box_template_fragment");
+        addBoxFragment(new box_transaction_fragment(), "box_transaction_fragment");
+        addBoxFragment(new box_budget_fragment(), "box_budget_fragment");
     }
 
     private void addBoxFragment(Fragment fragment, String tag) {

@@ -105,7 +105,7 @@
         android:layout_gravity="center"
         android:layout_margin="10dp"
         android:hint="Luogo"
-        android:padding="16dp"
+        android:padding="10dp"
         android:textSize="20dp" />
 
     <!-- Pulsante "DONE" -->

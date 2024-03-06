@@ -57,7 +57,7 @@ public class box_transaction_fragment extends Fragment {
 
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.box_fragment_template, container, false);
+        return inflater.inflate(R.layout.box_fragment_transaction, container, false);
     }
 
     @Override

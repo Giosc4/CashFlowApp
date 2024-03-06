@@ -1,5 +1,6 @@
 package com.example.cashflow;
 
+import android.graphics.Color;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,7 +27,10 @@ public class HomeFragment extends Fragment {
     ArrayList<Account> accounts;
     private String subtotalText = "";
     TextView myTextView;
-
+    Button btnAddAccount;
+    Button btnAddTransaction;
+    Button btnStatistics;
+    Button btnAddBudget;
     Posizione posizione;
     City city;
 
@@ -43,7 +47,15 @@ public class HomeFragment extends Fragment {
 
         GridLayout gridLayout = view.findViewById(R.id.gridLayout);
         myTextView = view.findViewById(R.id.myTextView);
+        btnAddAccount = view.findViewById(R.id.btnAddAccount);
+        btnAddTransaction = view.findViewById(R.id.btnAddTransaction);
+        btnStatistics = view.findViewById(R.id.btnStatistics);
+        btnAddBudget = view.findViewById(R.id.btnAddBudget);
 
+        btnAddAccount.setBackgroundColor(Color.parseColor("#37a63e"));
+        btnAddTransaction.setBackgroundColor(Color.parseColor("#37a63e"));
+        btnStatistics.setBackgroundColor(Color.parseColor("#37a63e"));
+        btnAddBudget.setBackgroundColor(Color.parseColor("#37a63e"));
 
         this.posizione = new Posizione(requireContext());
 
@@ -91,30 +103,35 @@ public class HomeFragment extends Fragment {
             gridLayout.addView(button);
         }
 
-        Button btnAddAccount = view.findViewById(R.id.btnAddAccount);
         btnAddAccount.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Handle click on "Nuovo Conto" button
-                openNewAccountFragment();
+                openFragment(new NewAccountFragment(accounts));
             }
         });
 
-        Button btnAddTransaction = view.findViewById(R.id.btnAddTransaction);
         btnAddTransaction.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Handle click on "Aggiungi Transazione" button
-                openTransactionFragment();
+                openFragment(new NewTransactionFragment(accounts, city));
             }
         });
 
-        Button btnStatistics = view.findViewById(R.id.btnStatistics);
         btnStatistics.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 // Handle click on "Statistiche" button
-                openStatisticsFragment();
+                openFragment(new StatisticsFragment(accounts));
+            }
+        });
+
+        btnAddBudget.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Handle click on "Nuovo Budget" button
+                openFragment(new NewBudgetFragment());
             }
         });
 
@@ -125,7 +142,6 @@ public class HomeFragment extends Fragment {
     public void onResume() {
         super.onResume();
 
-        // Recalculate subtotal and update TextView
         subtotalText = getSubtotal();
         myTextView.setText("Totale: " + subtotalText);
         System.out.println("Subtotal: " + subtotalText);
@@ -141,31 +157,14 @@ public class HomeFragment extends Fragment {
     }
 
 
-    private void openNewAccountFragment() {
-        NewAccountFragment newAccountFragment = new NewAccountFragment(accounts);
-        FragmentManager fragmentManager = getParentFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.linearContainer, newAccountFragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
+    private void openFragment(Fragment fragment) {
+            FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
+            FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
+            fragmentTransaction.replace(R.id.linearContainer, fragment);
+            fragmentTransaction.addToBackStack(null);
+            fragmentTransaction.commit();
     }
 
-    private void openTransactionFragment() {
-        NewTransactionFragment transactionFragment = new NewTransactionFragment(accounts, city);
-        FragmentManager fragmentManager = getParentFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.linearContainer, transactionFragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-    }
 
-    private void openStatisticsFragment() {
-        StatisticsFragment statisticsFragment = new StatisticsFragment(accounts);
-        FragmentManager fragmentManager = getParentFragmentManager();
-        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-        fragmentTransaction.replace(R.id.linearContainer, statisticsFragment);
-        fragmentTransaction.addToBackStack(null);
-        fragmentTransaction.commit();
-    }
 
 }
