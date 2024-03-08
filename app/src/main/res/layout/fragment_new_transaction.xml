@@ -72,23 +72,89 @@
     </LinearLayout>
 
 
-    <Spinner
-        android:id="@+id/accountSpinner"
+    <LinearLayout
+        android:id="@+id/accountLayout2"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Scegli un conto"
-        android:paddingTop="16dp"
-        android:paddingBottom="16dp" />
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
 
-    <!-- Pulsante "Chose date and time" -->
+        <Spinner
+            android:id="@+id/accountSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Scegli un conto"
+            android:padding="16dp"
+            android:text="Account" />
 
+        <Button
+            android:id="@+id/girocontoButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Giroconto" />
+
+    </LinearLayout>
+    <FrameLayout
+        android:id="@+id/fragment_container"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:visibility="gone"
+        />
+
+    <CheckBox
+        android:id="@+id/ripetizioneCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginTop="16dp"
+        android:padding="20dp"
+        android:text="RIPETIZIONE?"
+        android:textSize="16sp"
+        android:textStyle="bold" />
+
+    <LinearLayout
+        android:id="@+id/accountLayout3"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_margin="10dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:visibility="gone">
+
+        <Spinner
+            android:id="@+id/timeSpinner"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:hint="Scegli la ripetizione"
+            android:padding="16dp" />
+
+        <Button
+            android:id="@+id/dateEndRepButton"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
+            android:text="Seleziona Data Fine" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/endTimeTextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_marginBottom="20dp"
+        android:text="Data selezionata: "
+        android:visibility="gone" />
 
     <Button
         android:id="@+id/dateButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
-        android:text="Seleziona Data" />
+        android:layout_marginTop="20dp"
+        android:text="Seleziona Data Transazione" />
 
     <TextView
         android:id="@+id/selectedTimeTextView"
@@ -107,6 +173,26 @@
         android:hint="Luogo"
         android:padding="10dp"
         android:textSize="20dp" />
+
+    <CheckBox
+        android:id="@+id/templateCheckBox"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:layout_margin="16dp"
+        android:padding="16dp"
+        android:text="E' un template?"
+        android:textSize="18sp"
+        android:textStyle="bold" />
+
+    <EditText
+        android:id="@+id/setNameTemplate"
+        android:layout_width="310dp"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center_horizontal"
+        android:hint="Aggiungi un nome al Template!"
+        android:paddingBottom="16dp"
+        android:visibility="gone" />
 
     <!-- Pulsante "DONE" -->
     <Button

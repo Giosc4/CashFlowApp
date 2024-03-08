@@ -3,13 +3,11 @@ package com.example.cashflow;
 import android.content.pm.PackageManager;
 import android.graphics.Color;
 import android.os.Bundle;
-import android.widget.HorizontalScrollView;
 import android.view.View;
 import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
@@ -41,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
         addBoxFragment(new box_template_fragment(), "box_template_fragment");
         addBoxFragment(new box_transaction_fragment(), "box_transaction_fragment");
         addBoxFragment(new box_budget_fragment(), "box_budget_fragment");
+        addBoxFragment(new box_list_debito_fragment(), "box_list_debito_fragment");
+        addBoxFragment(new box_list_credito_fragment(), "box_list_credito_fragment");
 
         // Inizializza il JsonReadWrite
         jsonReadWrite = new JsonReadWrite();

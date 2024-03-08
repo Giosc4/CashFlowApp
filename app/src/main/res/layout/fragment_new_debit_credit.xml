@@ -1,0 +1,101 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:padding="16dp"
+    android:orientation="vertical">
+
+    <!-- Layout orizzontale per i pulsanti "New Debito" e "New Credito" -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="10dp">
+
+        <!-- Pulsante per aggiungere un nuovo debito -->
+        <Button
+            android:id="@+id/buttonNewDebit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="New Debito" />
+
+        <!-- Pulsante per aggiungere un nuovo credito -->
+        <Button
+            android:id="@+id/buttonNewCredit"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="New Credito" />
+
+    </LinearLayout>
+
+    <!-- EditText per il nome del debito/credito -->
+    <EditText
+        android:id="@+id/editTextName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Nome debito/credito"
+        android:layout_margin="10dp"/>
+
+    <!-- EditText per l'importo -->
+    <EditText
+        android:id="@+id/editTextAmount"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Importo"
+        android:layout_margin="10dp"/>
+
+    <Spinner
+        android:id="@+id/accountSpinner"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Scegli un conto"
+        android:layout_margin="10dp"
+        android:padding="16dp"/>
+
+
+    <!-- Layout orizzontale per i pulsanti Data inizio e Data fine -->
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_margin="10dp">
+
+        <!-- Pulsante per selezionare la data di inizio -->
+        <Button
+            android:id="@+id/buttonStartDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Data inizio" />
+
+        <!-- Pulsante per selezionare la data di fine -->
+        <Button
+            android:id="@+id/buttonEndDate"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="Data fine" />
+
+    </LinearLayout>
+
+    <!-- EditText per il contatto -->
+    <EditText
+        android:id="@+id/editTextContact"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Contatto"
+        android:layout_margin="10dp"/>
+
+    <!-- EditText per le note/descrizione -->
+    <EditText
+        android:id="@+id/editTextDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Note/descrizione"
+        android:layout_margin="10dp"/>
+
+
+
+</LinearLayout>

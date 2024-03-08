@@ -31,6 +31,7 @@ public class HomeFragment extends Fragment {
     Button btnAddTransaction;
     Button btnStatistics;
     Button btnAddBudget;
+    Button btnAddDebitCredit;
     Posizione posizione;
     City city;
 
@@ -51,11 +52,13 @@ public class HomeFragment extends Fragment {
         btnAddTransaction = view.findViewById(R.id.btnAddTransaction);
         btnStatistics = view.findViewById(R.id.btnStatistics);
         btnAddBudget = view.findViewById(R.id.btnAddBudget);
+        btnAddDebitCredit = view.findViewById(R.id.btnAddDebitCredit);
 
         btnAddAccount.setBackgroundColor(Color.parseColor("#37a63e"));
         btnAddTransaction.setBackgroundColor(Color.parseColor("#37a63e"));
         btnStatistics.setBackgroundColor(Color.parseColor("#37a63e"));
         btnAddBudget.setBackgroundColor(Color.parseColor("#37a63e"));
+        btnAddDebitCredit.setBackgroundColor(Color.parseColor("#37a63e"));
 
         this.posizione = new Posizione(requireContext());
 
@@ -132,6 +135,14 @@ public class HomeFragment extends Fragment {
             public void onClick(View v) {
                 // Handle click on "Nuovo Budget" button
                 openFragment(new NewBudgetFragment());
+            }
+        });
+
+        btnAddDebitCredit.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Handle click on "Nuovo Debito/Credito" button
+                openFragment(new NewDebitCreditFragment(accounts));
             }
         });
 

@@ -22,8 +22,11 @@ import android.view.ViewGroup;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
+import android.widget.CheckBox;
+import android.widget.CompoundButton;
 import android.widget.DatePicker;
 import android.widget.EditText;
+import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.Spinner;
@@ -36,6 +39,7 @@ import androidx.annotation.Nullable;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
+import androidx.fragment.app.FragmentTransaction;
 
 import com.example.cashflow.dataClass.Account;
 import com.example.cashflow.dataClass.CategoriesEnum;
@@ -62,7 +66,15 @@ public class NewTransactionFragment extends Fragment {
     private EditText numberEditText;
     private Spinner accountSpinner;
     private Calendar selectedDate;
-
+    private Spinner timeSpinner;
+    private Button dateEndRepButton;
+    private LinearLayout accountLayout3;
+    private TextView endTimeTextView;
+    private CheckBox ripetizioneCheckBox;
+    private CheckBox templateCheckBox;
+    private EditText setNameTemplate;
+    private Button girocontoButton;
+    private FrameLayout fragment_container;
     private Uri cameraImageUri;
     private Button dateButton;
     private TextView locationEditText;
@@ -102,6 +114,16 @@ public class NewTransactionFragment extends Fragment {
 
         selectedTimeTextView = view.findViewById(R.id.selectedTimeTextView);
 
+        timeSpinner = view.findViewById(R.id.timeSpinner);
+        dateEndRepButton = view.findViewById(R.id.dateEndRepButton);
+        accountLayout3 = view.findViewById(R.id.accountLayout3);
+        endTimeTextView = view.findViewById(R.id.endTimeTextView);
+        ripetizioneCheckBox = view.findViewById(R.id.ripetizioneCheckBox);
+        templateCheckBox = view.findViewById(R.id.templateCheckBox);
+        setNameTemplate = view.findViewById(R.id.setNameTemplate);
+        girocontoButton = view.findViewById(R.id.girocontoButton);
+        fragment_container = view.findViewById(R.id.fragment_container);
+
         dateButton = view.findViewById(R.id.dateButton);
         deleteButton = view.findViewById(R.id.deleteButton);
         deleteButton.setVisibility(View.INVISIBLE);
@@ -121,10 +143,60 @@ public class NewTransactionFragment extends Fragment {
         }
 
 
+        ripetizioneCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    accountLayout3.setVisibility(View.VISIBLE);
+                    endTimeTextView.setVisibility(View.VISIBLE);
+                    selectedTimeTextView.setVisibility(View.VISIBLE);
+                } else {
+                    accountLayout3.setVisibility(View.GONE);
+                    endTimeTextView.setVisibility(View.GONE);
+                    selectedTimeTextView.setVisibility(View.GONE);
+                }
+            }
+        });
+
+        String[] repeatOptions = {"Ogni giorno", "Ogni settimana", "Ogni mese", "Ogni anno"};
+        ArrayAdapter<String> timeAdapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, repeatOptions);
+        timeAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        timeSpinner.setAdapter(timeAdapter);
+
+        dateEndRepButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                showDatePickerDialog(endTimeTextView);
+            }
+        });
+
+        girocontoButton.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+                // Verifica se il fragment del giroconto è già aperto
+                Fragment existingFragment = requireActivity().getSupportFragmentManager().findFragmentById(R.id.fragment_container);
+                if (existingFragment instanceof GirocontoFragment) {
+                    // Chiudi il fragment del giroconto senza salvare e nascondi il fragment_container
+                    requireActivity().getSupportFragmentManager().popBackStack();
+                    fragment_container.setVisibility(View.GONE);
+                } else {
+                    // Apri il fragment del giroconto
+                    GirocontoFragment girocontoFragment = new GirocontoFragment(accounts);
+                    fragment_container.setVisibility(View.VISIBLE);
+                    FragmentTransaction transaction = requireActivity().getSupportFragmentManager().beginTransaction();
+                    transaction.replace(R.id.fragment_container, girocontoFragment);
+                    transaction.addToBackStack(null);
+                    transaction.commit();
+                }
+            }
+
+        });
+
+
         dateButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                showDatePickerDialog();
+                showDatePickerDialog(selectedTimeTextView);
             }
         });
         numberEditText.setFilters(new InputFilter[]{
@@ -242,6 +314,18 @@ public class NewTransactionFragment extends Fragment {
 
         });
 
+        templateCheckBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                if (isChecked) {
+                    setNameTemplate.setVisibility(View.VISIBLE);
+                } else {
+                    setNameTemplate.setVisibility(View.GONE);
+                }
+            }
+        });
+
+
         // Add OnClickListener for the "DONE" button
         doneButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -254,6 +338,7 @@ public class NewTransactionFragment extends Fragment {
                 }
             }
         });
+
         // Imposta un listener per il pulsante della fotocamera
         cameraButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -480,7 +565,7 @@ public class NewTransactionFragment extends Fragment {
         }
     }
 
-    private void showDatePickerDialog() {
+    private void showDatePickerDialog(TextView textView) {
         Calendar calendar = Calendar.getInstance();
         int year = calendar.get(Calendar.YEAR);
         int month = calendar.get(Calendar.MONTH);
@@ -495,13 +580,11 @@ public class NewTransactionFragment extends Fragment {
                 selectedDate.set(Calendar.DAY_OF_MONTH, dayOfMonth);
 
                 String selectedDateString = year + "-" + (monthOfYear + 1) + "-" + dayOfMonth;
-                selectedTimeTextView.setText(selectedDateString);
+                textView.setText(selectedDateString);
             }
         }, year, month, dayOfMonth);
 
         // Mostra il dialog per la selezione della data
         datePickerDialog.show();
     }
-
-
 }
