@@ -1,489 +1,416 @@
-package com.example.cashflow;
+package com.example.cashflow
 
-import static android.app.Activity.RESULT_OK;
+import android.Manifest
+import android.app.Activity
+import android.app.DatePickerDialog
+import android.content.ContentValues
+import android.content.Intent
+import android.content.pm.PackageManager
+import android.graphics.Color
+import android.net.Uri
+import android.os.Bundle
+import android.provider.MediaStore
+import android.text.InputFilter
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
+import android.widget.ImageView
+import android.widget.LinearLayout
+import android.widget.Spinner
+import android.widget.TextView
+import android.widget.Toast
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import androidx.fragment.app.Fragment
+import com.example.cashflow.OCRManager.OCRListener
+import com.example.cashflow.dataClass.Account
+import com.example.cashflow.dataClass.CategoriesEnum
+import com.example.cashflow.dataClass.City
+import com.example.cashflow.dataClass.Transactions
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import com.theartofdev.edmodo.cropper.CropImage
+import com.theartofdev.edmodo.cropper.CropImageView
+import java.io.IOException
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
-import android.Manifest;
-import android.app.DatePickerDialog;
-import android.content.ContentValues;
-import android.content.DialogInterface;
-import android.content.Intent;
-import android.content.pm.PackageManager;
-import android.graphics.Color;
-import android.net.Uri;
-import android.os.Bundle;
-import android.provider.MediaStore;
-import android.text.InputFilter;
-import android.text.Spanned;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.EditText;
-import android.widget.ImageView;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
-import android.widget.TextView;
-import android.widget.Toast;
-
-import androidx.annotation.Nullable;
-import androidx.core.app.ActivityCompat;
-import androidx.core.content.ContextCompat;
-import androidx.fragment.app.Fragment;
-
-import com.example.cashflow.dataClass.Account;
-import com.example.cashflow.dataClass.CategoriesEnum;
-import com.example.cashflow.dataClass.City;
-import com.example.cashflow.dataClass.Transactions;
-import com.google.android.material.dialog.MaterialAlertDialogBuilder;
-import com.theartofdev.edmodo.cropper.CropImage;
-import com.theartofdev.edmodo.cropper.CropImageView;
-
-import java.io.IOException;
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Locale;
-
-public class EditTransactionFragment extends Fragment {
-
-    private Button expenseButton;
-    private Button incomeButton;
-    private Spinner categorySpinner;
-    private EditText numberEditText;
-
-    private ImageView cameraButton;
-
-    private OCRManager ocrManager;
-    private Uri cameraImageUri;
-    private static final int PERMISSION_CAMERA = 1;
-    public static final int REQUEST_IMAGE_PICK = 123;
-
-    private Spinner accountSpinner;
-
-    private Button dateButton;
-
-    private TextView selectedTimeTextView;
-
-    private Calendar calendar;
-
-    private TextView locationEditText;
-    private Button doneButton;
-    private Button deleteButton;
-
-    //CONSTRUCTOR
-    private Transactions transactionOriginal;
-    private Account accountOriginal;
-    private ArrayList<String> categories;
+class EditTransactionFragment(//CONSTRUCTOR
+    private val transactionOriginal: Transactions, private val accountOriginal: Account
+) : Fragment() {
+    private var expenseButton: Button? = null
+    private var incomeButton: Button? = null
+    private var categorySpinner: Spinner? = null
+    private var numberEditText: EditText? = null
+    private var cameraButton: ImageView? = null
+    private var ocrManager: OCRManager? = null
+    private var cameraImageUri: Uri? = null
+    private var accountSpinner: Spinner? = null
+    private var dateButton: Button? = null
+    private var selectedTimeTextView: TextView? = null
+    private var calendar: Calendar? = null
+    private var locationEditText: TextView? = null
+    private var doneButton: Button? = null
+    private var deleteButton: Button? = null
+    private var categories: ArrayList<String>? = null
 
     //GET FROM JSON
-
-    private JsonReadWrite jsonReadWrite;
-    private ArrayList<Account> accounts;
+    private val jsonReadWrite: JsonReadWrite
+    private var accounts: ArrayList<Account>? = null
 
     //CHANGE ACCCOUNT TRANS
-    private int originalTransactionIndex;
-    private int originalAccountIndex;
+    private var originalTransactionIndex = 0
+    private var originalAccountIndex = 0
 
-    public EditTransactionFragment(Transactions transaction, Account account) {
-        this.transactionOriginal = transaction;
-        this.accountOriginal = account;
-        jsonReadWrite = new JsonReadWrite();
-
+    init {
+        jsonReadWrite = JsonReadWrite()
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_new_transaction, container, false);
-
-        expenseButton = view.findViewById(R.id.expenseButton);
-        incomeButton = view.findViewById(R.id.incomeButton);
-        categorySpinner = view.findViewById(R.id.categorySpinner);
-        numberEditText = view.findViewById(R.id.numberEditText);
-        accountSpinner = view.findViewById(R.id.accountSpinner);
-        selectedTimeTextView = view.findViewById(R.id.selectedTimeTextView);
-        locationEditText = view.findViewById(R.id.locationEditText);
-        doneButton = view.findViewById(R.id.doneButton);
-        deleteButton = view.findViewById(R.id.deleteButton);
-        dateButton = view.findViewById(R.id.dateButton);
-        calendar = transactionOriginal.getDate();
-        cameraButton = view.findViewById(R.id.cameraButton);
-
-        ocrManager = new OCRManager(requireContext());
-
-        String str = "";
-        if (transactionOriginal.getAmount() < 0) {
-            str = String.valueOf(transactionOriginal.getAmount());
-            str = str.replace("-", "");
-            setExpense();
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_new_transaction, container, false)
+        expenseButton = view.findViewById(R.id.expenseButton)
+        incomeButton = view.findViewById(R.id.incomeButton)
+        categorySpinner = view.findViewById(R.id.categorySpinner)
+        numberEditText = view.findViewById(R.id.numberEditText)
+        accountSpinner = view.findViewById(R.id.accountSpinner)
+        selectedTimeTextView = view.findViewById(R.id.selectedTimeTextView)
+        locationEditText = view.findViewById(R.id.locationEditText)
+        doneButton = view.findViewById(R.id.doneButton)
+        deleteButton = view.findViewById(R.id.deleteButton)
+        dateButton = view.findViewById(R.id.dateButton)
+        calendar = transactionOriginal.date
+        cameraButton = view.findViewById(R.id.cameraButton)
+        ocrManager = OCRManager(requireContext())
+        var str = ""
+        if (transactionOriginal.amount < 0) {
+            str = transactionOriginal.amount.toString()
+            str = str.replace("-", "")
+            setExpense()
         } else {
-            str = String.valueOf(transactionOriginal.getAmount());
-            setIncome();
+            str = transactionOriginal.amount.toString()
+            setIncome()
         }
+        numberEditText?.setText(str)
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        val selectedDateString = dateFormat.format(transactionOriginal.date.time)
+        selectedTimeTextView?.setText(selectedDateString)
+        locationEditText?.setText(transactionOriginal.city.printOnApp())
+        dateButton?.setOnClickListener(View.OnClickListener { showDatePickerDialog() })
+        numberEditText?.setFilters(arrayOf(
+            InputFilter { source, start, end, dest, dstart, dend -> // Check if the input contains a decimal point
+                var hasDecimalSeparator = dest.toString().contains(".")
 
-        numberEditText.setText(str);
-
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-        String selectedDateString = dateFormat.format(transactionOriginal.getDate().getTime());
-        selectedTimeTextView.setText(selectedDateString);
-
-
-        locationEditText.setText(transactionOriginal.getCity().printOnApp());
-
-        dateButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDatePickerDialog();
-            }
-        });
-
-        numberEditText.setFilters(new InputFilter[]{
-                new InputFilter() {
-                    public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-                        // Check if the input contains a decimal point
-                        boolean hasDecimalSeparator = dest.toString().contains(".");
-
-                        // Get the current number of decimal places
-                        int decimalPlaces = 0;
-                        if (hasDecimalSeparator) {
-                            String[] split = dest.toString().split("\\.");
-                            if (split.length > 1) {
-                                decimalPlaces = split[1].length();
-                            }
-                        }
-
-                        // Check if the input is a valid decimal number
-                        for (int i = start; i < end; i++) {
-                            char inputChar = source.charAt(i);
-
-                            // Allow digits and a decimal point
-                            if (!Character.isDigit(inputChar) && inputChar != '.') {
-                                return "";
-                            }
-
-                            // Allow only two decimal places
-                            if (hasDecimalSeparator && decimalPlaces >= 2) {
-                                return "";
-                            }
-
-                            // Increment the decimal places count if a decimal point is encountered
-                            if (inputChar == '.') {
-                                hasDecimalSeparator = true;
-                            } else if (hasDecimalSeparator) {
-                                decimalPlaces++;
-                            }
-                        }
-
-                        return null;
+                // Get the current number of decimal places
+                var decimalPlaces = 0
+                if (hasDecimalSeparator) {
+                    val split =
+                        dest.toString().split("\\.".toRegex()).dropLastWhile { it.isEmpty() }
+                            .toTypedArray()
+                    if (split.size > 1) {
+                        decimalPlaces = split[1].length
                     }
                 }
-        });
 
-        expenseButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                setExpense();
-            }
-        });
+                // Check if the input is a valid decimal number
+                for (i in start until end) {
+                    val inputChar = source[i]
 
-        incomeButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
-                setIncome();
+                    // Allow digits and a decimal point
+                    if (!Character.isDigit(inputChar) && inputChar != '.') {
+                        return@InputFilter ""
+                    }
+
+                    // Allow only two decimal places
+                    if (hasDecimalSeparator && decimalPlaces >= 2) {
+                        return@InputFilter ""
+                    }
+
+                    // Increment the decimal places count if a decimal point is encountered
+                    if (inputChar == '.') {
+                        hasDecimalSeparator = true
+                    } else if (hasDecimalSeparator) {
+                        decimalPlaces++
+                    }
+                }
+                null
             }
-        });
+        ))
+        expenseButton?.setOnClickListener(View.OnClickListener { setExpense() })
+        incomeButton?.setOnClickListener(View.OnClickListener { // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
+            setIncome()
+        })
 
         // Spinner CATEGORIES
-        categories = new ArrayList<>();
-        for (CategoriesEnum category : CategoriesEnum.values()) {
-            categories.add(category.name());
+        categories = ArrayList()
+        for (category in CategoriesEnum.entries) {
+            categories!!.add(category.name)
         }
-        this.originalTransactionIndex = categories.indexOf(transactionOriginal.getCategory().name());
-
-
-        ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categories);
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        categorySpinner.setAdapter(categoryAdapter);
-        categorySpinner.setSelection(originalTransactionIndex);
-
-        categorySpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedCategory = parent.getItemAtPosition(position).toString();
+        originalTransactionIndex = categories!!.indexOf(transactionOriginal.category.name)
+        val categoryAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories!!)
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        categorySpinner?.setAdapter(categoryAdapter)
+        categorySpinner?.setSelection(originalTransactionIndex)
+        categorySpinner?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View,
+                position: Int,
+                id: Long
+            ) {
+                val selectedCategory = parent.getItemAtPosition(position).toString()
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
                 // Codice da eseguire quando non viene selezionato nessun elemento
             }
-        });
-
-        accounts = jsonReadWrite.readAccountsFromJson(requireContext());
+        })
+        accounts = jsonReadWrite.readAccountsFromJson(requireContext())
 
         //SPINNER ACCOUNTS
-        ArrayList<String> accountNames = new ArrayList<>();
-        for (Account account : accounts) {
-            accountNames.add(account.getName());
+        val accountNames = ArrayList<String>()
+        for (account in (accounts as java.util.ArrayList<Account>?)!!) {
+            accountNames.add(account.name)
         }
-        this.originalAccountIndex = accountNames.indexOf(accountOriginal.getName() + "");
-
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, accountNames);
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        accountSpinner.setAdapter(dataAdapter);
-        accountSpinner.setSelection(originalAccountIndex);
-
-        accountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedAccount = parent.getItemAtPosition(position).toString();
+        originalAccountIndex = accountNames.indexOf(accountOriginal.name + "")
+        val dataAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, accountNames)
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        accountSpinner?.setAdapter(dataAdapter)
+        accountSpinner?.setSelection(originalAccountIndex)
+        accountSpinner?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View,
+                position: Int,
+                id: Long
+            ) {
+                val selectedAccount = parent.getItemAtPosition(position).toString()
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> parent) {
+            override fun onNothingSelected(parent: AdapterView<*>?) {
                 // Codice da eseguire quando non viene selezionato nessun elemento
             }
-        });
-
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                deleteTransaction();
-            }
-        });
-
-
-        doneButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                updateTransaction();
-            }
-        });
-
-        cameraButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-
-                // Crea un dialog per scegliere tra Fotocamera e Galleria
-                MaterialAlertDialogBuilder builder = new MaterialAlertDialogBuilder(requireContext());
-                builder.setTitle("Scegli la fonte dell'immagine");
-                builder.setItems(new CharSequence[]{"Fotocamera", "Galleria"}, new DialogInterface.OnClickListener() {
-                    @Override
-                    public void onClick(DialogInterface dialog, int which) {
-                        if (which == 0) { // Fotocamera
-                            // Controlla se il permesso della fotocamera è già stato concesso
-                            if (ContextCompat.checkSelfPermission(requireContext(), android.Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
-                                // Se il permesso non è stato concesso, richiedilo
-                                ActivityCompat.requestPermissions(requireActivity(), new String[]{Manifest.permission.CAMERA}, PERMISSION_CAMERA);
-                            } else {
-                                // Il permesso è già stato concesso, procedi con l'apertura della fotocamera
-                                openCamera();
-                            }
-                        } else if (which == 1) { // Galleria
-                            openGallery();
-                        }
+        })
+        deleteButton?.setOnClickListener(View.OnClickListener { deleteTransaction() })
+        doneButton?.setOnClickListener(View.OnClickListener { updateTransaction() })
+        cameraButton?.setOnClickListener(View.OnClickListener { // Crea un dialog per scegliere tra Fotocamera e Galleria
+            val builder = MaterialAlertDialogBuilder(requireContext())
+            builder.setTitle("Scegli la fonte dell'immagine")
+            builder.setItems(arrayOf<CharSequence>("Fotocamera", "Galleria")) { dialog, which ->
+                if (which == 0) { // Fotocamera
+                    // Controlla se il permesso della fotocamera è già stato concesso
+                    if (ContextCompat.checkSelfPermission(
+                            requireContext(),
+                            Manifest.permission.CAMERA
+                        ) != PackageManager.PERMISSION_GRANTED
+                    ) {
+                        // Se il permesso non è stato concesso, richiedilo
+                        ActivityCompat.requestPermissions(
+                            requireActivity(),
+                            arrayOf(Manifest.permission.CAMERA),
+                            PERMISSION_CAMERA
+                        )
+                    } else {
+                        // Il permesso è già stato concesso, procedi con l'apertura della fotocamera
+                        openCamera()
                     }
-                });
-                builder.show();
+                } else if (which == 1) { // Galleria
+                    openGallery()
+                }
             }
-        });
-        return view;
+            builder.show()
+        })
+        return view
     }
 
-
-    private void openCamera() {
+    private fun openCamera() {
         // Creare un file temporaneo per salvare l'immagine catturata dalla fotocamera
-        ContentValues values = new ContentValues();
-        values.put(MediaStore.Images.Media.TITLE, "Cashflow");
-        values.put(MediaStore.Images.Media.DESCRIPTION, "Cashflow image");
-        cameraImageUri = requireContext().getContentResolver().insert(MediaStore.Images.Media.EXTERNAL_CONTENT_URI, values);
-
-        Intent takePictureIntent = new Intent(MediaStore.ACTION_IMAGE_CAPTURE);
-        if (takePictureIntent.resolveActivity(requireActivity().getPackageManager()) != null) {
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri); // Salva l'immagine nella galleria
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_PICK);
+        val values = ContentValues()
+        values.put(MediaStore.Images.Media.TITLE, "Cashflow")
+        values.put(MediaStore.Images.Media.DESCRIPTION, "Cashflow image")
+        cameraImageUri = requireContext().contentResolver.insert(
+            MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
+            values
+        )
+        val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
+        if (takePictureIntent.resolveActivity(requireActivity().packageManager) != null) {
+            takePictureIntent.putExtra(
+                MediaStore.EXTRA_OUTPUT,
+                cameraImageUri
+            ) // Salva l'immagine nella galleria
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_PICK)
         }
     }
 
-    private void openGallery() {
-        Intent galleryIntent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
-        startActivityForResult(galleryIntent, REQUEST_IMAGE_PICK);
+    private fun openGallery() {
+        val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
+        startActivityForResult(galleryIntent, REQUEST_IMAGE_PICK)
     }
 
-// ... Other code ...
-
-    @Override
-    public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-
-        if (requestCode == REQUEST_IMAGE_PICK && resultCode == RESULT_OK) {
-            Uri imageUri = (cameraImageUri != null) ? cameraImageUri : data.getData();
+    // ... Other code ...
+    override fun onActivityResult(requestCode: Int, resultCode: Int, data: Intent?) {
+        super.onActivityResult(requestCode, resultCode, data)
+        if (requestCode == REQUEST_IMAGE_PICK && resultCode == Activity.RESULT_OK) {
+            val imageUri = if (cameraImageUri != null) cameraImageUri else data!!.data
             if (imageUri != null) {
                 CropImage.activity(imageUri)
-                        .setGuidelines(CropImageView.Guidelines.ON)
-                        .start(requireActivity());
+                    .setGuidelines(CropImageView.Guidelines.ON)
+                    .start(requireActivity())
             }
         }
-
         if (requestCode == CropImage.CROP_IMAGE_ACTIVITY_REQUEST_CODE) {
-            CropImage.ActivityResult result = CropImage.getActivityResult(data);
-            if (resultCode == RESULT_OK && result != null) {
-                Uri croppedImageUri = result.getUri();
-                processCroppedImage(croppedImageUri);
+            val result = CropImage.getActivityResult(data)
+            if (resultCode == Activity.RESULT_OK && result != null) {
+                val croppedImageUri = result.uri
+                processCroppedImage(croppedImageUri)
             } else if (resultCode == CropImage.CROP_IMAGE_ACTIVITY_RESULT_ERROR_CODE) {
-                Exception error = result.getError();
-                Toast.makeText(requireContext(), "Crop error: " + error.getMessage(), Toast.LENGTH_SHORT).show();
+                val error = result!!.error
+                Toast.makeText(requireContext(), "Crop error: " + error.message, Toast.LENGTH_SHORT)
+                    .show()
             }
         }
     }
 
-    private void processCroppedImage(Uri croppedImageUri) {
-        ocrManager.processImage(croppedImageUri, new OCRManager.OCRListener() {
-            @Override
-            public void onTextRecognized(final String value) {
+    private fun processCroppedImage(croppedImageUri: Uri) {
+        ocrManager!!.processImage(croppedImageUri, object : OCRListener {
+            override fun onTextRecognized(value: String?) {
                 // Esegui sulla UI thread
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Log.d("OCRManager", "Updating UI with OCR result");
-                            // Imposta direttamente il testo riconosciuto
-                            numberEditText.setText(value);
-                        }
-                    });
+                if (activity != null) {
+                    requireActivity().runOnUiThread {
+                        Log.d("OCRManager", "Updating UI with OCR result")
+                        // Imposta direttamente il testo riconosciuto
+                        numberEditText!!.setText(value)
+                    }
                 }
-                Log.d("OCRManager", "Text Recognized: " + value);
-                numberEditText.setText(value);
+                Log.d("OCRManager", "Text Recognized: $value")
+                numberEditText!!.setText(value)
             }
 
-            @Override
-            public void onTextNotRecognized(final String error) {
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            Toast.makeText(getContext(), error, Toast.LENGTH_SHORT).show();
-                        }
-                    });
+            override fun onTextNotRecognized(error: String?) {
+                if (activity != null) {
+                    requireActivity().runOnUiThread {
+                        Toast.makeText(context, error, Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
 
-            @Override
-            public void onFailure(final Exception e) {
-                if (getActivity() != null) {
-                    getActivity().runOnUiThread(new Runnable() {
-                        @Override
-                        public void run() {
-                            e.printStackTrace();
-                            Toast.makeText(getContext(), "Errore OCR", Toast.LENGTH_SHORT).show();
-                        }
-                    });
+            override fun onFailure(e: Exception?) {
+                if (activity != null) {
+                    requireActivity().runOnUiThread {
+                        e!!.printStackTrace()
+                        Toast.makeText(context, "Errore OCR", Toast.LENGTH_SHORT).show()
+                    }
                 }
             }
-        });
+        })
     }
 
-
-    private void setExpense() {
+    private fun setExpense() {
         // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
-        expenseButton.setSelected(true);
-        expenseButton.setBackgroundColor(Color.parseColor("#00cc44")); // Verde quando selezionato
-        incomeButton.setSelected(false);
-        incomeButton.setBackgroundColor(Color.parseColor("#e06666")); // rosso quando non selezionato
+        expenseButton!!.setSelected(true)
+        expenseButton!!.setBackgroundColor(Color.parseColor("#00cc44")) // Verde quando selezionato
+        incomeButton!!.setSelected(false)
+        incomeButton!!.setBackgroundColor(Color.parseColor("#e06666")) // rosso quando non selezionato
     }
 
-    private void setIncome() {
-        incomeButton.setSelected(true);
-        incomeButton.setBackgroundColor(Color.parseColor("#00cc44")); // Verde quando selezionato
-        expenseButton.setSelected(false);
-        expenseButton.setBackgroundColor(Color.parseColor("#e06666")); // rosso quando non selezionato
+    private fun setIncome() {
+        incomeButton!!.setSelected(true)
+        incomeButton!!.setBackgroundColor(Color.parseColor("#00cc44")) // Verde quando selezionato
+        expenseButton!!.setSelected(false)
+        expenseButton!!.setBackgroundColor(Color.parseColor("#e06666")) // rosso quando non selezionato
     }
 
-    private void deleteTransaction() {
+    private fun deleteTransaction() {
         // Rimuovi la transazione originale dall'account originale
-        accountOriginal.removeTransaction(transactionOriginal);
-        accounts.set(originalAccountIndex, accountOriginal);
-
+        accountOriginal.removeTransaction(transactionOriginal)
+        accounts!![originalAccountIndex] = accountOriginal
         try {
             // Esegui il salvataggio dell'account originale nel file JSON dopo la rimozione della transazione
-            jsonReadWrite.setList(accounts, requireContext());
-
-            if (getActivity() != null) {
-                getActivity().getSupportFragmentManager().popBackStack();
-                LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
-                mainLayout.setVisibility(View.VISIBLE);
+            jsonReadWrite.setList(accounts, requireContext())
+            if (activity != null) {
+                requireActivity().supportFragmentManager.popBackStack()
+                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.mainLayout)
+                mainLayout.visibility = View.VISIBLE
             }
-
-            Toast.makeText(getContext(), "Transazione Eliminata", Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Errore durante il salvataggio delle modifiche", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Transazione Eliminata", Toast.LENGTH_LONG).show()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Toast.makeText(
+                context,
+                "Errore durante il salvataggio delle modifiche",
+                Toast.LENGTH_LONG
+            ).show()
         }
     }
 
-    private void updateTransaction() {
-        boolean newIncome = incomeButton.isSelected();
-        double newAmount = Double.parseDouble(numberEditText.getText().toString());
-        String nuovacitta = locationEditText.getText().toString();
+    private fun updateTransaction() {
+        val newIncome = incomeButton!!.isSelected
+        val newAmount = numberEditText!!.getText().toString().toDouble()
+        val nuovacitta = locationEditText!!.getText().toString()
         //transactionOriginal.getCity().getNameCity())
-        City newCity = new City(locationEditText.getText().toString(), 0, 0);
-        CategoriesEnum newCategory = CategoriesEnum.values()[categorySpinner.getSelectedItemPosition()];
-        int newAccountIndex = accountSpinner.getSelectedItemPosition();
-        Calendar newDate = calendar;
-
-        Transactions newTrans = new Transactions(newIncome, newAmount, newDate, newCity, newCategory);
+        val newCity = City(locationEditText!!.getText().toString(), 0f, 0f)
+        val newCategory = CategoriesEnum.entries[categorySpinner!!.selectedItemPosition]
+        val newAccountIndex = accountSpinner!!.selectedItemPosition
+        val newDate = calendar
+        val newTrans = Transactions(newIncome, newAmount, newDate, newCity, newCategory)
         if (newAccountIndex != originalAccountIndex) {
-            accountOriginal.removeTransaction(transactionOriginal);
-            accounts.get(newAccountIndex).addTransaction(newTrans);
+            accountOriginal.removeTransaction(transactionOriginal)
+            accounts!![newAccountIndex].addTransaction(newTrans)
         } else {
-            accountOriginal.editTransaction(transactionOriginal, newTrans);
+            accountOriginal.editTransaction(transactionOriginal, newTrans)
         }
         try {
             // Esegui il salvataggio dei dati qui, dopo aver apportato tutte le modifiche
-            accounts.set(originalAccountIndex, accountOriginal);
-            jsonReadWrite.setList(accounts, requireContext());
-
-            if (getActivity() != null) {
-                getActivity().getSupportFragmentManager().popBackStack();
-                LinearLayout mainLayout = getActivity().findViewById(R.id.mainLayout);
-                mainLayout.setVisibility(View.VISIBLE);
+            accounts!![originalAccountIndex] = accountOriginal
+            jsonReadWrite.setList(accounts, requireContext())
+            if (activity != null) {
+                requireActivity().supportFragmentManager.popBackStack()
+                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.mainLayout)
+                mainLayout.visibility = View.VISIBLE
             }
-            Toast.makeText(getContext(), "Transazione aggiornata", Toast.LENGTH_LONG).show();
-        } catch (IOException e) {
-            e.printStackTrace();
-            Toast.makeText(getContext(), "Errore durante il salvataggio delle modifiche", Toast.LENGTH_LONG).show();
+            Toast.makeText(context, "Transazione aggiornata", Toast.LENGTH_LONG).show()
+        } catch (e: IOException) {
+            e.printStackTrace()
+            Toast.makeText(
+                context,
+                "Errore durante il salvataggio delle modifiche",
+                Toast.LENGTH_LONG
+            ).show()
         }
-
     }
 
     //scelta della data
-    private void showDatePickerDialog() {
-        Calendar newCalendar = Calendar.getInstance();
-        int year = newCalendar.get(Calendar.YEAR);
-        int month = newCalendar.get(Calendar.MONTH);
-        int dayOfMonth = newCalendar.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int monthOfYear, int dayOfMonth) {
-                newCalendar.set(Calendar.YEAR, year);
-                newCalendar.set(Calendar.MONTH, monthOfYear);
-                newCalendar.set(Calendar.DAY_OF_MONTH, dayOfMonth);
-
-                calendar = newCalendar;
-
-                SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-                String selectedDateString = dateFormat.format(calendar.getTime());
-                System.out.println(selectedDateString + " selectedDateString");
-                selectedTimeTextView.setText(selectedDateString);
-            }
-        }, year, month, dayOfMonth);
-
-        datePickerDialog.show();
+    private fun showDatePickerDialog() {
+        val newCalendar = Calendar.getInstance()
+        val year = newCalendar[Calendar.YEAR]
+        val month = newCalendar[Calendar.MONTH]
+        val dayOfMonth = newCalendar[Calendar.DAY_OF_MONTH]
+        val datePickerDialog =
+            DatePickerDialog(requireContext(), { view, year, monthOfYear, dayOfMonth ->
+                newCalendar[Calendar.YEAR] = year
+                newCalendar[Calendar.MONTH] = monthOfYear
+                newCalendar[Calendar.DAY_OF_MONTH] = dayOfMonth
+                calendar = newCalendar
+                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                val selectedDateString = dateFormat.format(calendar!!.time)
+                println("$selectedDateString selectedDateString")
+                selectedTimeTextView!!.text = selectedDateString
+            }, year, month, dayOfMonth)
+        datePickerDialog.show()
     }
 
-
+    companion object {
+        private const val PERMISSION_CAMERA = 1
+        const val REQUEST_IMAGE_PICK = 123
+    }
 }

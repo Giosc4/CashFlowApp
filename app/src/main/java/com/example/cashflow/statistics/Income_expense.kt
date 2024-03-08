@@ -1,264 +1,198 @@
-package com.example.cashflow.statistics;
+package com.example.cashflow.statistics
 
-import android.annotation.SuppressLint;
-import android.content.Context;
-import android.graphics.Color;
-import android.os.Bundle;
+import android.graphics.Color
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.CheckBox
+import android.widget.CompoundButton
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.cashflow.R
+import com.example.cashflow.dataClass.Account
+import com.example.cashflow.dataClass.CategoriesEnum
+import com.github.mikephil.charting.charts.BarChart
+import com.github.mikephil.charting.charts.PieChart
+import com.github.mikephil.charting.components.Legend
+import com.github.mikephil.charting.data.BarData
+import com.github.mikephil.charting.data.BarDataSet
+import com.github.mikephil.charting.data.BarEntry
+import com.github.mikephil.charting.data.PieData
+import com.github.mikephil.charting.data.PieDataSet
+import com.github.mikephil.charting.data.PieEntry
 
-import androidx.fragment.app.Fragment;
+class Income_expense(private val isIncome: Boolean, private val accounts: ArrayList<Account>) :
+    Fragment() {
+    private var title: TextView? = null
+    private var accountsCheckBox: CheckBox? = null
+    private var accountsRecyclerView: RecyclerView? = null
+    private var accountsAdapter: AccountsAdapter? = null
+    private val selectedAccounts: ArrayList<Account>
+    private var pieChart: PieChart? = null
+    private var barChart: BarChart? = null
 
-import android.text.Editable;
-import android.text.TextWatcher;
-
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.CheckBox;
-import android.widget.CompoundButton;
-import android.widget.ListView;
-import android.widget.MultiAutoCompleteTextView;
-import android.widget.Spinner;
-import android.widget.TextView;
-
-import com.example.cashflow.R;
-import com.example.cashflow.dataClass.Account;
-import com.example.cashflow.dataClass.Transactions;
-import com.example.cashflow.dataClass.CategoriesEnum;
-import com.github.mikephil.charting.charts.BarChart;
-import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.components.LegendEntry;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
-
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-
-public class Income_expense extends Fragment {
-    private final Boolean isIncome;
-    private ArrayList<Account> accounts;
-
-    private TextView title;
-    private CheckBox accountsCheckBox;
-    private RecyclerView accountsRecyclerView;
-    private AccountsAdapter accountsAdapter;
-
-    private ArrayList<Account> selectedAccounts;
-    private PieChart pieChart;
-    private BarChart barChart;
-
-    public Income_expense(Boolean isIncome, ArrayList<Account> accounts) {
-        this.isIncome = isIncome;
-        this.accounts = accounts;
-        selectedAccounts = new ArrayList<>();
+    init {
+        selectedAccounts = ArrayList()
     }
 
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_income_expense, container, false);
-
-        accountsCheckBox = view.findViewById(R.id.accountsCheckBox);
-        accountsRecyclerView = view.findViewById(R.id.accountsRecyclerView);
-        pieChart = view.findViewById(R.id.pieChart);
-        barChart = view.findViewById(R.id.barChart);
-        title = view.findViewById(R.id.title);
-
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_income_expense, container, false)
+        accountsCheckBox = view.findViewById(R.id.accountsCheckBox)
+        accountsRecyclerView = view.findViewById(R.id.accountsRecyclerView)
+        pieChart = view.findViewById(R.id.pieChart)
+        barChart = view.findViewById(R.id.barChart)
+        title = view.findViewById(R.id.title)
         if (isIncome) {
-            title.setText("INCOME");
+            title?.setText("INCOME")
         } else {
-            title.setText("EXPENSE");
+            title?.setText("EXPENSE")
         }
-
-        accountsCheckBox.setOnCheckedChangeListener((buttonView, isChecked) -> {
+        accountsCheckBox?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView: CompoundButton?, isChecked: Boolean ->
             // Controlla lo stato del checkbox e aggiorna l'adapter di conseguenza
-            for (int i = 0; i < accountsAdapter.getItemCount(); i++) {
-                accountsAdapter.setSelected(i, isChecked);
+            for (i in 0 until accountsAdapter!!.itemCount) {
+                accountsAdapter!!.setSelected(i, isChecked)
             }
 
             // Aggiorna i grafici
-            updateSelectedAccounts();
-            initPieChart(selectedAccounts);
-            initBarChart(selectedAccounts);
-        });
+            updateSelectedAccounts()
+            initPieChart(selectedAccounts)
+            initBarChart(selectedAccounts)
+        })
 
         // Popola l'array di nomi degli account
-        ArrayList<String> accountNames = new ArrayList<>();
-        for (Account account : accounts) {
-            accountNames.add(account.getName());
+        val accountNames = ArrayList<String>()
+        for (account in accounts) {
+            accountNames.add(account.name)
         }
 
         // Inizializza l'adapter personalizzato per il RecyclerView
-        accountsAdapter = new AccountsAdapter(accountNames);
-        accountsRecyclerView.setAdapter(accountsAdapter);
+        accountsAdapter = AccountsAdapter(accountNames)
+        accountsRecyclerView?.setAdapter(accountsAdapter)
 
         // Imposta un layout manager per il RecyclerView
-        accountsRecyclerView.setLayoutManager(new LinearLayoutManager(getContext()));
-
-        accountsAdapter.setOnItemClickListener(position -> {
+        accountsRecyclerView?.setLayoutManager(LinearLayoutManager(context))
+        accountsAdapter!!.setOnItemClickListener { position: Int ->
             // Aggiorna i grafici quando viene selezionato un elemento nel RecyclerView
-            updateSelectedAccounts();
-            initPieChart(selectedAccounts);
-            initBarChart(selectedAccounts);
-        });
-
-        if (selectedAccounts.isEmpty()) {
-            accountsCheckBox.setChecked(true);
-            initPieChart(accounts);
-            initBarChart(accounts);
+            updateSelectedAccounts()
+            initPieChart(selectedAccounts)
+            initBarChart(selectedAccounts)
         }
-
-        return view;
+        if (selectedAccounts.isEmpty()) {
+            accountsCheckBox?.setChecked(true)
+            initPieChart(accounts)
+            initBarChart(accounts)
+        }
+        return view
     }
 
-
-    private void updateSelectedAccounts() {
-        selectedAccounts.clear();
-        for (int i = 0; i < accountsAdapter.getItemCount(); i++) {
-            if (accountsAdapter.isSelected(i)) {
-                selectedAccounts.add(accounts.get(i));
+    private fun updateSelectedAccounts() {
+        selectedAccounts.clear()
+        for (i in 0 until accountsAdapter!!.itemCount) {
+            if (accountsAdapter!!.isSelected(i)) {
+                selectedAccounts.add(accounts[i])
             }
         }
-
     }
 
-    private void initPieChart(ArrayList<Account> selectedAccounts) {
-        pieChart.getDescription().setEnabled(false);
-        pieChart.setDrawHoleEnabled(true);
-        pieChart.setHoleColor(android.R.color.transparent);
-        pieChart.setTransparentCircleRadius(50f);
-        pieChart.setRotationEnabled(true);
-        pieChart.setExtraTopOffset(30f);
-        pieChart.setUsePercentValues(true);
-
-        PieDataSet pieDataSet = new PieDataSet(getIncomeOrExpensePieData(selectedAccounts), "");
-        pieDataSet.setColors(getCategoryColors());
-        pieDataSet.setDrawValues(false);
+    private fun initPieChart(selectedAccounts: ArrayList<Account>) {
+        pieChart!!.description.isEnabled = false
+        pieChart!!.isDrawHoleEnabled = true
+        pieChart!!.setHoleColor(android.R.color.transparent)
+        pieChart!!.transparentCircleRadius = 50f
+        pieChart!!.isRotationEnabled = true
+        pieChart!!.extraTopOffset = 30f
+        pieChart!!.setUsePercentValues(true)
+        val pieDataSet = PieDataSet(getIncomeOrExpensePieData(selectedAccounts), "")
+        pieDataSet.setColors(*categoryColors)
+        pieDataSet.setDrawValues(false)
 
         // Configura la legenda
-        Legend legend = pieChart.getLegend();
-        legend.setVerticalAlignment(Legend.LegendVerticalAlignment.TOP);
-        legend.setHorizontalAlignment(Legend.LegendHorizontalAlignment.CENTER);
-        legend.setOrientation(Legend.LegendOrientation.HORIZONTAL);
-        legend.setWordWrapEnabled(true);
-
-        PieData pieData = new PieData(pieDataSet);
-        pieChart.setData(pieData);
+        val legend = pieChart!!.legend
+        legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP
+        legend.horizontalAlignment = Legend.LegendHorizontalAlignment.CENTER
+        legend.orientation = Legend.LegendOrientation.HORIZONTAL
+        legend.isWordWrapEnabled = true
+        val pieData = PieData(pieDataSet)
+        pieChart!!.setData(pieData)
     }
-
 
     // Inizializza il grafico a barre
-    private void initBarChart(ArrayList<Account> selectedAccounts) {
-        barChart.getDescription().setEnabled(false);
-        barChart.setDrawBarShadow(false);
-        barChart.setDrawValueAboveBar(true);
-        barChart.getLegend().setEnabled(false);
-
-        BarDataSet barDataSet = new BarDataSet(getIncomeOrExpenseBarData(selectedAccounts), "");
-        int[] colors = getCategoryColors();
-        barDataSet.setColors(colors);
-
-        BarData barData = new BarData(barDataSet);
-        barChart.setData(barData);
+    private fun initBarChart(selectedAccounts: ArrayList<Account>) {
+        barChart!!.description.isEnabled = false
+        barChart!!.setDrawBarShadow(false)
+        barChart!!.setDrawValueAboveBar(true)
+        barChart!!.legend.isEnabled = false
+        val barDataSet = BarDataSet(getIncomeOrExpenseBarData(selectedAccounts), "")
+        val colors = categoryColors
+        barDataSet.setColors(*colors)
+        val barData = BarData(barDataSet)
+        barChart!!.setData(barData)
     }
 
-    public List<PieEntry> getIncomeOrExpensePieData(ArrayList<Account> accounts) {
-        List<PieEntry> entries = new ArrayList<>();
-        CategoriesEnum[] categories = CategoriesEnum.values();
-
-        for (CategoriesEnum category : categories) {
-            float totalAmount = 0;
-
-            for (Account account : accounts) {
-                for (Transactions transaction : account.getListTrans()) {
-                    if (transaction.isIncome() == isIncome && transaction.getCategory() == category) {
-                        totalAmount += (float) transaction.getAmountValue();
+    fun getIncomeOrExpensePieData(accounts: ArrayList<Account>): List<PieEntry> {
+        val entries: MutableList<PieEntry> = ArrayList()
+        val categories = CategoriesEnum.entries.toTypedArray()
+        for (category in categories) {
+            var totalAmount = 0f
+            for (account in accounts) {
+                for (transaction in account.listTrans) {
+                    if (transaction.isIncome === isIncome && transaction.category == category) {
+                        totalAmount += transaction.amountValue.toFloat()
                     }
                 }
             }
-
             if (totalAmount > 0) {
-                entries.add(new PieEntry(totalAmount, category.name()));
+                entries.add(PieEntry(totalAmount, category.name))
             }
         }
-
-        return entries;
+        return entries
     }
 
-    public List<BarEntry> getIncomeOrExpenseBarData(ArrayList<Account> accounts) {
-        List<BarEntry> entries = new ArrayList<>();
-        CategoriesEnum[] categories = CategoriesEnum.values();
-
-        for (int i = 0; i < categories.length; i++) {
-            float totalAmount = 0;
-
-            for (Account account : accounts) {
-                for (Transactions transaction : account.getListTrans()) {
-                    if (transaction.isIncome() == isIncome && transaction.getCategory() == categories[i]) {
-                        totalAmount += (float) transaction.getAmountValue();
+    fun getIncomeOrExpenseBarData(accounts: ArrayList<Account>): List<BarEntry> {
+        val entries: MutableList<BarEntry> = ArrayList()
+        val categories = CategoriesEnum.entries.toTypedArray()
+        for (i in categories.indices) {
+            var totalAmount = 0f
+            for (account in accounts) {
+                for (transaction in account.listTrans) {
+                    if (transaction.isIncome === isIncome && transaction.category == categories[i]) {
+                        totalAmount += transaction.amountValue.toFloat()
                     }
                 }
             }
-
             if (totalAmount > 0) {
-                entries.add(new BarEntry(i, totalAmount, categories[i].name()));
+                entries.add(BarEntry(i.toFloat(), totalAmount, categories[i].name))
             }
         }
-
-        return entries;
+        return entries
     }
 
+    private val categoryColors: IntArray
+        private get() {
+            val categories = CategoriesEnum.entries.toTypedArray()
+            val colors = IntArray(categories.size)
 
-    private int[] getCategoryColors() {
-        CategoriesEnum[] categories = CategoriesEnum.values();
-        int[] colors = new int[categories.length];
-
-        // Assegna un colore univoco a ciascuna categoria
-        for (int i = 0; i < categories.length; i++) {
-            switch (categories[i]) {
-                case FoodAndDrinks:
-                    colors[i] = Color.BLUE;
-                    break;
-                case Shopping:
-                    colors[i] = Color.GREEN;
-                    break;
-                case House:
-                    colors[i] = Color.RED;
-                    break;
-                case Transport:
-                    colors[i] = Color.YELLOW;
-                    break;
-                case LifeAndEntertainment:
-                    colors[i] = Color.MAGENTA;
-                    break;
-                case CommunicationAndPC:
-                    colors[i] = Color.CYAN;
-                    break;
-                case Salary:
-                    colors[i] = Color.LTGRAY;
-                    break;
-                case Gifts:
-                    colors[i] = Color.DKGRAY;
-                    break;
-                case Other:
-                    colors[i] = Color.BLACK;
-                    break;
+            // Assegna un colore univoco a ciascuna categoria
+            for (i in categories.indices) {
+                when (categories[i]) {
+                    CategoriesEnum.FoodAndDrinks -> colors[i] = Color.BLUE
+                    CategoriesEnum.Shopping -> colors[i] = Color.GREEN
+                    CategoriesEnum.House -> colors[i] = Color.RED
+                    CategoriesEnum.Transport -> colors[i] = Color.YELLOW
+                    CategoriesEnum.LifeAndEntertainment -> colors[i] = Color.MAGENTA
+                    CategoriesEnum.CommunicationAndPC -> colors[i] = Color.CYAN
+                    CategoriesEnum.Salary -> colors[i] = Color.LTGRAY
+                    CategoriesEnum.Gifts -> colors[i] = Color.DKGRAY
+                    CategoriesEnum.Other -> colors[i] = Color.BLACK
+                }
             }
+            return colors
         }
-
-        return colors;
-    }
-
 }
-

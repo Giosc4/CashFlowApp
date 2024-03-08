@@ -1,236 +1,194 @@
-package com.example.cashflow;
+package com.example.cashflow
 
-import android.content.DialogInterface;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.TextView
+import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
+import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
+import androidx.recyclerview.widget.LinearLayoutManager
+import androidx.recyclerview.widget.RecyclerView
+import com.example.cashflow.dataClass.Account
+import com.example.cashflow.dataClass.Transactions
+import java.io.IOException
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.appcompat.app.AlertDialog;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentManager;
-import androidx.fragment.app.FragmentTransaction;
-import androidx.recyclerview.widget.LinearLayoutManager;
-import androidx.recyclerview.widget.RecyclerView;
-
-import com.example.cashflow.dataClass.Account;
-import com.example.cashflow.dataClass.Transactions;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
-public class AccountDetailsFragment extends Fragment {
-
-    private Account account;
-    private JsonReadWrite jsonReadWrite;
+class AccountDetailsFragment(private val account: Account) : Fragment() {
+    private val jsonReadWrite: JsonReadWrite
 
     // Views
-    private EditText nameEditText;
-    private TextView balanceTextView;
-    private RecyclerView transactionsRecyclerView;
-    private Button deleteButton;
-    private Button saveButton;
+    private var nameEditText: EditText? = null
+    private var balanceTextView: TextView? = null
+    private var transactionsRecyclerView: RecyclerView? = null
+    private var deleteButton: Button? = null
+    private var saveButton: Button? = null
 
-    public AccountDetailsFragment(Account account) {
-        this.account = account;
-        jsonReadWrite = new JsonReadWrite();
+    init {
+        jsonReadWrite = JsonReadWrite()
     }
 
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_account_details, container, false);
-
-
-        nameEditText = view.findViewById(R.id.nameEditText);
-        balanceTextView = view.findViewById(R.id.balanceTextView);
-        transactionsRecyclerView = view.findViewById(R.id.transactionsRecyclerView);
-        saveButton = view.findViewById(R.id.saveButton);
-        deleteButton = view.findViewById(R.id.deleteButton);
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_account_details, container, false)
+        nameEditText = view.findViewById(R.id.nameEditText)
+        balanceTextView = view.findViewById(R.id.balanceTextView)
+        transactionsRecyclerView = view.findViewById(R.id.transactionsRecyclerView)
+        saveButton = view.findViewById(R.id.saveButton)
+        deleteButton = view.findViewById(R.id.deleteButton)
 
 
         // Set account details
-        nameEditText.setText(account.getName());
-        balanceTextView.setText("Balance Account: " + String.valueOf(account.getBalance()));
+        nameEditText?.setText(account.name)
+        balanceTextView?.setText("Balance Account: " + account.getBalance().toString())
 
 
         // Set up RecyclerView with transactions
-        TransactionListAdapter adapter = new TransactionListAdapter(account.getListTrans());
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        transactionsRecyclerView.setLayoutManager(layoutManager);
-        transactionsRecyclerView.setAdapter(adapter);
-
-        saveButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                changeName();
-                HomeFragment homeFragment = new HomeFragment(jsonReadWrite.readAccountsFromJson(requireContext()));
-                FragmentManager fragmentManager = getParentFragmentManager();
-                FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                fragmentTransaction.replace(R.id.linearContainer, homeFragment);
-                fragmentTransaction.addToBackStack(null);
-                fragmentTransaction.commit();
-            }
-        });
-
-
-        deleteButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                showDeleteConfirmationDialog();
-            }
-        });
-
-        return view;
+        val adapter = TransactionListAdapter(account.listTrans)
+        val layoutManager = LinearLayoutManager(context)
+        transactionsRecyclerView?.setLayoutManager(layoutManager)
+        transactionsRecyclerView?.setAdapter(adapter)
+        saveButton?.setOnClickListener(View.OnClickListener {
+            changeName()
+            val homeFragment = HomeFragment(jsonReadWrite.readAccountsFromJson(requireContext()))
+            val fragmentManager = getParentFragmentManager()
+            val fragmentTransaction = fragmentManager.beginTransaction()
+            fragmentTransaction.replace(R.id.linearContainer, homeFragment)
+            fragmentTransaction.addToBackStack(null)
+            fragmentTransaction.commit()
+        })
+        deleteButton?.setOnClickListener(View.OnClickListener { showDeleteConfirmationDialog() })
+        return view
     }
 
-    private void changeName() {
-        String newName = nameEditText.getText().toString();
-        String oldName = account.getName();
-
+    private fun changeName() {
+        val newName = nameEditText!!.getText().toString()
+        val oldName = account.name
         try {
-            ArrayList<Account> accounts = jsonReadWrite.readAccountsFromJson(requireContext());
-            int index = findAccountIndex(accounts, oldName);
-
+            val accounts = jsonReadWrite.readAccountsFromJson(requireContext())
+            val index = findAccountIndex(accounts, oldName)
             if (index != -1 && !doesAccountExist(accounts, newName)) {
-                account.setName(newName);
-                accounts.set(index, account);
-                jsonReadWrite.setList(accounts, requireContext());
-
-                Toast.makeText(getContext(), "Account aggiornato: " + newName, Toast.LENGTH_LONG).show();
+                account.name = newName
+                accounts[index] = account
+                jsonReadWrite.setList(accounts, requireContext())
+                Toast.makeText(context, "Account aggiornato: $newName", Toast.LENGTH_LONG).show()
             } else {
-                Toast.makeText(getContext(), "Errore aggiornamto account.", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Errore aggiornamto account.", Toast.LENGTH_LONG).show()
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
     }
 
-    private boolean doesAccountExist(ArrayList<Account> accounts, String name) {
-        for (Account account : accounts) {
-            if (account.getName().equals(name)) {
-                return true;
+    private fun doesAccountExist(accounts: ArrayList<Account>, name: String): Boolean {
+        for (account in accounts) {
+            if (account.name == name) {
+                return true
             }
         }
-        return false;
+        return false
     }
 
-    private int findAccountIndex(ArrayList<Account> accounts, String oldName) {
-        for (int i = 0; i < accounts.size(); i++) {
-            if (accounts.get(i).getName().equals(oldName)) {
-                return i;
+    private fun findAccountIndex(accounts: ArrayList<Account>, oldName: String): Int {
+        for (i in accounts.indices) {
+            if (accounts[i].name == oldName) {
+                return i
             }
         }
-        return -1;
+        return -1
     }
 
     // Method to show a delete confirmation dialog
-    private void showDeleteConfirmationDialog() {
-        new AlertDialog.Builder(getContext())
-                .setTitle("Delete Account")
-                .setMessage("Are you sure you want to delete this account?")
-                .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int whichButton) {
-                        deleteAccount();
-                    }
-                })
-                .setNegativeButton(android.R.string.no, null).show();
+    private fun showDeleteConfirmationDialog() {
+        AlertDialog.Builder(requireContext())
+            .setTitle("Delete Account")
+            .setMessage("Are you sure you want to delete this account?")
+            .setPositiveButton(android.R.string.yes) { dialog, whichButton -> deleteAccount() }
+            .setNegativeButton(android.R.string.no, null).show()
     }
 
     // Method to delete the account
-    private void deleteAccount() {
-        String accountToDelete = account.getName();
-
+    private fun deleteAccount() {
+        val accountToDelete = account.name
         try {
-            ArrayList<Account> accounts = jsonReadWrite.readAccountsFromJson(requireContext());
-            int index = findAccountIndex(accounts, accountToDelete);
-
+            val accounts = jsonReadWrite.readAccountsFromJson(requireContext())
+            val index = findAccountIndex(accounts, accountToDelete)
             if (index != -1) {
-                accounts.remove(index);
-                jsonReadWrite.setList(accounts, requireContext());
-
-                Toast.makeText(getContext(), "Account eliminato: " + accountToDelete, Toast.LENGTH_LONG).show();
-                if (getActivity() != null && isAdded()) {
-                    FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-                    fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
+                accounts.removeAt(index)
+                jsonReadWrite.setList(accounts, requireContext())
+                Toast.makeText(context, "Account eliminato: $accountToDelete", Toast.LENGTH_LONG)
+                    .show()
+                if (activity != null && isAdded) {
+                    val fragmentManager = requireActivity().supportFragmentManager
+                    fragmentManager.popBackStackImmediate(
+                        null,
+                        FragmentManager.POP_BACK_STACK_INCLUSIVE
+                    )
                     fragmentManager.beginTransaction()
-                            .replace(R.id.linearContainer, new HomeFragment(accounts))
-                            .commit();
+                        .replace(R.id.linearContainer, HomeFragment(accounts))
+                        .commit()
                 }
             } else {
-                Toast.makeText(getContext(), "Errore per eliminare l'account.", Toast.LENGTH_LONG).show();
+                Toast.makeText(context, "Errore per eliminare l'account.", Toast.LENGTH_LONG).show()
             }
-        } catch (IOException e) {
-            e.printStackTrace();
+        } catch (e: IOException) {
+            e.printStackTrace()
         }
     }
 
-
     // Custom RecyclerView.Adapter for displaying transactions with a "Detail" button
-    private class TransactionListAdapter extends RecyclerView.Adapter<TransactionListAdapter.ViewHolder> {
-        private ArrayList<Transactions> transactions;
-
-        TransactionListAdapter(ArrayList<Transactions> transactions) {
-            this.transactions = transactions;
-            notifyDataSetChanged();
+    private inner class TransactionListAdapter internal constructor(private val transactions: ArrayList<Transactions>) :
+        RecyclerView.Adapter<TransactionListAdapter.ViewHolder>() {
+        init {
+            notifyDataSetChanged()
         }
 
-        @NonNull
-        @Override
-        public ViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-            View itemView = LayoutInflater.from(parent.getContext()).inflate(R.layout.list_transaction, parent, false);
-            return new ViewHolder(itemView);
+        override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
+            val itemView = LayoutInflater.from(parent.context)
+                .inflate(R.layout.list_transaction, parent, false)
+            return ViewHolder(itemView)
         }
 
-        @Override
-        public void onBindViewHolder(@NonNull ViewHolder holder, int position) {
-            Transactions transaction = transactions.get(position);
-            System.out.println(transaction.printOnApp());
-            holder.transactionDetailTextView.setText(transaction.printOnApp());
+        override fun onBindViewHolder(holder: ViewHolder, position: Int) {
+            val transaction = transactions[position]
+            println(transaction.printOnApp())
+            holder.transactionDetailTextView.text = transaction.printOnApp()
         }
 
-        @Override
-        public int getItemCount() {
-            return transactions.size();
+        override fun getItemCount(): Int {
+            return transactions.size
         }
 
-        class ViewHolder extends RecyclerView.ViewHolder {
-            TextView transactionDetailTextView;
-            Button detailButton;
+        internal inner class ViewHolder(itemView: View) : RecyclerView.ViewHolder(itemView) {
+            var transactionDetailTextView: TextView
+            var detailButton: Button
 
-            ViewHolder(View itemView) {
-                super(itemView);
-                transactionDetailTextView = itemView.findViewById(R.id.transactionDetailTextView);
-                detailButton = itemView.findViewById(R.id.detailButton);
-
-                transactionDetailTextView.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View view) {
-//                        EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), account);
+            init {
+                transactionDetailTextView = itemView.findViewById(R.id.transactionDetailTextView)
+                detailButton = itemView.findViewById(R.id.detailButton)
+                transactionDetailTextView.setOnClickListener {
+                    //                        EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), account);
 //                        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
 //                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
 //                        fragmentTransaction.replace(R.id.fragment_container, editTransactionFragment);
 //                        fragmentTransaction.addToBackStack(null);
 //                        fragmentTransaction.commit();
-                    }
-                });
-                detailButton.setOnClickListener(new View.OnClickListener() {
-                    @Override
-                    public void onClick(View v) {
-                        EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), account);
-                        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-                        fragmentTransaction.replace(R.id.linearContainer, editTransactionFragment);
-                        fragmentTransaction.addToBackStack(null);
-                        fragmentTransaction.commit();
-                    }
-                });
+                }
+                detailButton.setOnClickListener {
+                    val editTransactionFragment =
+                        EditTransactionFragment(transactions[getAdapterPosition()], account)
+                    val fragmentManager = requireActivity().supportFragmentManager
+                    val fragmentTransaction = fragmentManager.beginTransaction()
+                    fragmentTransaction.replace(R.id.linearContainer, editTransactionFragment)
+                    fragmentTransaction.addToBackStack(null)
+                    fragmentTransaction.commit()
+                }
             }
         }
     }

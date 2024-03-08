@@ -1,119 +1,100 @@
-package com.example.cashflow.statistics;
+package com.example.cashflow.statistics
 
-import android.os.Bundle;
-import android.os.Handler;
-import android.util.JsonReader;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.TextView;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import com.example.cashflow.BuildConfig
+import com.example.cashflow.R
+import com.example.cashflow.dataClass.Account
+import org.osmdroid.api.IGeoPoint
+import org.osmdroid.config.Configuration
+import org.osmdroid.tileprovider.tilesource.TileSourceFactory
+import org.osmdroid.util.BoundingBox
+import org.osmdroid.util.GeoPoint
+import org.osmdroid.views.MapView
+import org.osmdroid.views.overlay.Marker
 
-import androidx.fragment.app.Fragment;
-
-import com.example.cashflow.BuildConfig;
-import com.example.cashflow.JsonReadWrite;
-import com.example.cashflow.R;
-import com.example.cashflow.dataClass.*;
-
-
-import org.osmdroid.api.IGeoPoint;
-import org.osmdroid.config.Configuration;
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory;
-import org.osmdroid.util.BoundingBox;
-import org.osmdroid.util.GeoPoint;
-import org.osmdroid.views.MapView;
-import org.osmdroid.views.overlay.Marker;
-
-import java.util.ArrayList;
-
-public class MapFragment extends Fragment {
-
-    private MapView mapView;
-    private ArrayList<Account> accounts;
-
-
-    public MapFragment(ArrayList<Account> accounts) {
-
-        this.accounts = accounts;
-    }
-
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
+class MapFragment(private val accounts: ArrayList<Account>) : Fragment() {
+    private var mapView: MapView? = null
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Imposta il percorso della cache prima di utilizzare la mappa
-        Configuration.getInstance().setUserAgentValue(BuildConfig.APPLICATION_ID);
+        Configuration.getInstance().userAgentValue = BuildConfig.APPLICATION_ID
 
         // Carica il layout del fragment, assicurati che sia stato aggiornato per osmdroid
-        View view = inflater.inflate(R.layout.fragment_map, container, false);
-        mapView = view.findViewById(R.id.map);
-        mapView.setTileSource(TileSourceFactory.MAPNIK);
-
-        mapView.setBuiltInZoomControls(true);
-        mapView.setMultiTouchControls(true);
-
-        addMarkers();
-
-        return view;
+        val view = inflater.inflate(R.layout.fragment_map, container, false)
+        mapView = view.findViewById(R.id.map)
+        mapView?.setTileSource(TileSourceFactory.MAPNIK)
+        mapView?.setBuiltInZoomControls(true)
+        mapView?.setMultiTouchControls(true)
+        addMarkers()
+        return view
     }
 
-    private void addMarkers() {
+    private fun addMarkers() {
         if (accounts.isEmpty()) {
-            return;
+            return
         }
-
-        double minLat = Double.MAX_VALUE;
-        double maxLat = Double.MIN_VALUE;
-        double minLon = Double.MAX_VALUE;
-        double maxLon = Double.MIN_VALUE;
-
-        ArrayList<Marker> markers = getCitiesFromAccounts(); // Assumendo che getCitiesFromAccounts ora restituisca ArrayList<Marker>
-
-        for (Marker marker : markers) {
-            GeoPoint position = marker.getPosition();
-
-            double lat = position.getLatitude();
-            double lon = position.getLongitude();
+        var minLat = Double.MAX_VALUE
+        var maxLat = Double.MIN_VALUE
+        var minLon = Double.MAX_VALUE
+        var maxLon = Double.MIN_VALUE
+        val markers =
+            citiesFromAccounts // Assumendo che getCitiesFromAccounts ora restituisca ArrayList<Marker>
+        for (marker in markers) {
+            val position = marker.position
+            val lat = position.latitude
+            val lon = position.longitude
 
             // Aggiorna i valori per il bounding box
-            if (lat < minLat) minLat = lat;
-            if (lat > maxLat) maxLat = lat;
-            if (lon < minLon) minLon = lon;
-            if (lon > maxLon) maxLon = lon;
-
-            mapView.getOverlays().add(marker);
+            if (lat < minLat) minLat = lat
+            if (lat > maxLat) maxLat = lat
+            if (lon < minLon) minLon = lon
+            if (lon > maxLon) maxLon = lon
+            mapView!!.overlays.add(marker)
         }
-
-        mapView.invalidate(); // Aggiorna la mappa con i nuovi marcatori
+        mapView!!.invalidate() // Aggiorna la mappa con i nuovi marcatori
 
         // Calcola il bounding box e adatta la mappa
         if (!markers.isEmpty()) {
-            IGeoPoint southWest = new GeoPoint(minLat, minLon);
-            IGeoPoint northEast = new GeoPoint(maxLat, maxLon);
-            BoundingBox boundingBox = new BoundingBox(northEast.getLatitude(), northEast.getLongitude(), southWest.getLatitude(), southWest.getLongitude());
-
-            mapView.zoomToBoundingBox(boundingBox, true); // Zoom immediato al bounding box
+            val southWest: IGeoPoint = GeoPoint(minLat, minLon)
+            val northEast: IGeoPoint = GeoPoint(maxLat, maxLon)
+            val boundingBox = BoundingBox(
+                northEast.latitude,
+                northEast.longitude,
+                southWest.latitude,
+                southWest.longitude
+            )
+            mapView!!.zoomToBoundingBox(boundingBox, true) // Zoom immediato al bounding box
         }
     }
 
-    public ArrayList<Marker> getCitiesFromAccounts() {
-        ArrayList<Marker> markersList = new ArrayList<>();
-
-        for (Account account : accounts) {
-            ArrayList<Transactions> transactions = account.getListTrans();
-            if (transactions != null) {
-                for (Transactions transaction : transactions) {
-                    String city = transaction.getCity().getNameCity();
-                    System.out.println("city " + city);
-                    if (city != null) {
-                        GeoPoint cityGeoPoint = new GeoPoint(transaction.getCity().getLatitude(), transaction.getCity().getLongitude());
-                        System.out.println("cityGeoPoint " + cityGeoPoint.toString());
-                        Marker marker = new Marker(mapView);
-                        marker.setPosition(cityGeoPoint);
-                        marker.setTitle(city);
-                        markersList.add(marker);
+    val citiesFromAccounts: ArrayList<Marker>
+        get() {
+            val markersList = ArrayList<Marker>()
+            for (account in accounts) {
+                val transactions = account.listTrans
+                if (transactions != null) {
+                    for (transaction in transactions) {
+                        val city = transaction.city.nameCity
+                        println("city $city")
+                        if (city != null) {
+                            val cityGeoPoint =
+                                GeoPoint(transaction.city.latitude, transaction.city.longitude)
+                            println("cityGeoPoint $cityGeoPoint")
+                            val marker = Marker(mapView)
+                            marker.setPosition(cityGeoPoint)
+                            marker.title = city
+                            markersList.add(marker)
+                        }
                     }
                 }
             }
+            return markersList
         }
-        return markersList;
-    }
 }

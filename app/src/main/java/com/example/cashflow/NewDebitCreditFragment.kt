@@ -1,189 +1,152 @@
-package com.example.cashflow;
+package com.example.cashflow
 
-import android.os.Bundle;
-import android.text.InputFilter;
-import android.text.Spanned;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Spinner;
-import android.widget.Toast;
+import android.os.Bundle
+import android.text.InputFilter
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.AdapterView
+import android.widget.ArrayAdapter
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Spinner
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import com.example.cashflow.dataClass.Account
 
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-
-import com.example.cashflow.R;
-import com.example.cashflow.dataClass.Account;
-
-import java.util.ArrayList;
-import java.util.Calendar;
-
-public class NewDebitCreditFragment extends Fragment {
-
-    private EditText editTextName;
-    private EditText editTextAmount;
-    private EditText editTextContact;
-    private EditText editTextDescription;
-    private Spinner accountSpinner;
-
-    private Button buttonStartDate;
-    private Button buttonEndDate;
-    private Button buttonNewDebit;
-    private Button buttonNewCredit;
-    private ArrayList<Account> accounts;
-
-    public NewDebitCreditFragment(ArrayList<Account> accounts) {
-        this.accounts = accounts;
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+class NewDebitCreditFragment(private val accounts: ArrayList<Account>) : Fragment() {
+    private var editTextName: EditText? = null
+    private var editTextAmount: EditText? = null
+    private var editTextContact: EditText? = null
+    private var editTextDescription: EditText? = null
+    private var accountSpinner: Spinner? = null
+    private var buttonStartDate: Button? = null
+    private var buttonEndDate: Button? = null
+    private var buttonNewDebit: Button? = null
+    private var buttonNewCredit: Button? = null
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         // Inflate the layout for this fragment
-        View view = inflater.inflate(R.layout.fragment_new_debit_credit, container, false);
+        val view = inflater.inflate(R.layout.fragment_new_debit_credit, container, false)
 
         // Initialize UI components
-        editTextName = view.findViewById(R.id.editTextName);
-        editTextAmount = view.findViewById(R.id.editTextAmount);
-        editTextContact = view.findViewById(R.id.editTextContact);
-        editTextDescription = view.findViewById(R.id.editTextDescription);
-        accountSpinner = view.findViewById(R.id.accountSpinner);
+        editTextName = view.findViewById(R.id.editTextName)
+        editTextAmount = view.findViewById(R.id.editTextAmount)
+        editTextContact = view.findViewById(R.id.editTextContact)
+        editTextDescription = view.findViewById(R.id.editTextDescription)
+        accountSpinner = view.findViewById(R.id.accountSpinner)
+        buttonStartDate = view.findViewById(R.id.buttonStartDate)
+        buttonEndDate = view.findViewById(R.id.buttonEndDate)
+        buttonNewDebit = view.findViewById(R.id.buttonNewDebit)
+        buttonNewCredit = view.findViewById(R.id.buttonNewCredit)
+        editTextAmount?.setFilters(arrayOf(
+            InputFilter { source, start, end, dest, dstart, dend -> // Check if the input contains a decimal point
+                var hasDecimalSeparator = dest.toString().contains(".")
 
-        buttonStartDate = view.findViewById(R.id.buttonStartDate);
-        buttonEndDate = view.findViewById(R.id.buttonEndDate);
-        buttonNewDebit = view.findViewById(R.id.buttonNewDebit);
-        buttonNewCredit = view.findViewById(R.id.buttonNewCredit);
-
-        editTextAmount.setFilters(new InputFilter[]{
-                new InputFilter() {
-                    public CharSequence filter(CharSequence source, int start, int end, Spanned dest, int dstart, int dend) {
-                        // Check if the input contains a decimal point
-                        boolean hasDecimalSeparator = dest.toString().contains(".");
-
-                        // Get the current number of decimal places
-                        int decimalPlaces = 0;
-                        if (hasDecimalSeparator) {
-                            String[] split = dest.toString().split("\\.");
-                            if (split.length > 1) {
-                                decimalPlaces = split[1].length();
-                            }
-                        }
-
-                        // Check if the input is a valid decimal number
-                        for (int i = start; i < end; i++) {
-                            char inputChar = source.charAt(i);
-
-                            // Allow digits and a decimal point
-                            if (!Character.isDigit(inputChar) && inputChar != '.') {
-                                return "";
-                            }
-
-                            // Allow only two decimal places
-                            if (hasDecimalSeparator && decimalPlaces >= 2) {
-                                return "";
-                            }
-
-                            // Increment the decimal places count if a decimal point is encountered
-                            if (inputChar == '.') {
-                                hasDecimalSeparator = true;
-                            } else if (hasDecimalSeparator) {
-                                decimalPlaces++;
-                            }
-                        }
-
-                        return null;
+                // Get the current number of decimal places
+                var decimalPlaces = 0
+                if (hasDecimalSeparator) {
+                    val split =
+                        dest.toString().split("\\.".toRegex()).dropLastWhile { it.isEmpty() }
+                            .toTypedArray()
+                    if (split.size > 1) {
+                        decimalPlaces = split[1].length
                     }
                 }
-        });
+
+                // Check if the input is a valid decimal number
+                for (i in start until end) {
+                    val inputChar = source[i]
+
+                    // Allow digits and a decimal point
+                    if (!Character.isDigit(inputChar) && inputChar != '.') {
+                        return@InputFilter ""
+                    }
+
+                    // Allow only two decimal places
+                    if (hasDecimalSeparator && decimalPlaces >= 2) {
+                        return@InputFilter ""
+                    }
+
+                    // Increment the decimal places count if a decimal point is encountered
+                    if (inputChar == '.') {
+                        hasDecimalSeparator = true
+                    } else if (hasDecimalSeparator) {
+                        decimalPlaces++
+                    }
+                }
+                null
+            }
+        ))
 
         //SPINNER ACCOUNTS
-        ArrayList<String> accountNames = new ArrayList<>();
-        for (Account account : accounts) {
-            accountNames.add(account.getName());
+        val accountNames = ArrayList<String>()
+        for (account in accounts) {
+            accountNames.add(account.name)
         }
-
-        ArrayAdapter<String> dataAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, accountNames);
-        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        accountSpinner.setAdapter(dataAdapter);
-
-        accountSpinner.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-                String selectedAccount = parent.getItemAtPosition(position).toString();
+        val dataAdapter =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, accountNames)
+        dataAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        accountSpinner?.setAdapter(dataAdapter)
+        accountSpinner?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View,
+                position: Int,
+                id: Long
+            ) {
+                val selectedAccount = parent.getItemAtPosition(position).toString()
                 /*
                 NON SUCCEDE NULLA PERCHè NEL METODO saveTransaction() VIENE SEELEZIONATO CON accountSpinner.getSelectedItem
                String accountSelected = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
                  */
             }
 
-            @Override
-            public void onNothingSelected(AdapterView<?> adapterView) {
+            override fun onNothingSelected(adapterView: AdapterView<*>?) {
                 // SE NULLA è SELEZIONATO ALLORA VIENE PRESO IL PRIMO ACCOUNT
             }
-
-        });
+        })
 
         // Set click listeners for date buttons
-        buttonStartDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Handle click for selecting start date
-                selectDate("Start Date");
-            }
-        });
-
-        buttonEndDate.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Handle click for selecting end date
-                selectDate("End Date");
-            }
-        });
+        buttonStartDate?.setOnClickListener(View.OnClickListener { // Handle click for selecting start date
+            selectDate("Start Date")
+        })
+        buttonEndDate?.setOnClickListener(View.OnClickListener { // Handle click for selecting end date
+            selectDate("End Date")
+        })
 
         // Set click listeners for new debit and credit buttons
-        buttonNewDebit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Handle click for adding new debit
-                addNewDebit();
-            }
-        });
-
-        buttonNewCredit.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                // Handle click for adding new credit
-                addNewCredit();
-            }
-        });
-
-        return view;
+        buttonNewDebit?.setOnClickListener(View.OnClickListener { // Handle click for adding new debit
+            addNewDebit()
+        })
+        buttonNewCredit?.setOnClickListener(View.OnClickListener { // Handle click for adding new credit
+            addNewCredit()
+        })
+        return view
     }
 
     // Method to open a calendar for selecting date
-    private void selectDate(String dateType) {
+    private fun selectDate(dateType: String) {
         // You can implement your logic here to open a calendar and select a date
         // For example, you can use DatePickerDialog
         // This is just a placeholder method
-        Toast.makeText(getContext(), "Select " + dateType + " from calendar", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Select $dateType from calendar", Toast.LENGTH_SHORT).show()
     }
 
     // Method to add new debit
-    private void addNewDebit() {
+    private fun addNewDebit() {
         // You can implement your logic here to add a new debit
         // This is just a placeholder method
-        Toast.makeText(getContext(), "Add new debit", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Add new debit", Toast.LENGTH_SHORT).show()
     }
 
     // Method to add new credit
-    private void addNewCredit() {
+    private fun addNewCredit() {
         // You can implement your logic here to add a new credit
         // This is just a placeholder method
-        Toast.makeText(getContext(), "Add new credit", Toast.LENGTH_SHORT).show();
+        Toast.makeText(context, "Add new credit", Toast.LENGTH_SHORT).show()
     }
 }

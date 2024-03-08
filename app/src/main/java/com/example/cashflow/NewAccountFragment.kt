@@ -1,66 +1,49 @@
-package com.example.cashflow;
+package com.example.cashflow
 
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.Toast;
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.EditText
+import android.widget.Toast
+import androidx.fragment.app.Fragment
+import com.example.cashflow.dataClass.Account
+import java.io.IOException
 
-import androidx.annotation.Nullable;
-import androidx.fragment.app.Fragment;
-import androidx.fragment.app.FragmentTransaction;
-
-import com.example.cashflow.dataClass.Account;
-
-import java.io.IOException;
-import java.util.ArrayList;
-
-public class NewAccountFragment extends Fragment {
-
-    private JsonReadWrite jsonReadWrite;
-    private EditText edtName;
-    private ArrayList<Account> accounts;
-
-    public NewAccountFragment(ArrayList<Account> accounts) {
-        this.accounts = accounts;
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_new_account, container, false);
-
-        jsonReadWrite = new JsonReadWrite();
-
-        edtName = view.findViewById(R.id.edtName);
-        Button btnCreateAccount = view.findViewById(R.id.btnCreateAccount);
-
-        btnCreateAccount.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                String name = edtName.getText().toString();
-
-                if (name.isEmpty()) {
-                    Toast.makeText(getActivity(), "Inserisci il nome dell'account", Toast.LENGTH_SHORT).show();
-                } else {
-                    accounts.add(new Account(name));
-                    try {
-                        jsonReadWrite.setList(accounts, requireContext());
-                    } catch (IOException e) {
-                        throw new RuntimeException(e);
-                    }
-                    Toast.makeText(getActivity(), "Conto creato!", Toast.LENGTH_SHORT).show();
-                    if (getActivity() != null) {
-                        HomeFragment homeFragment = new HomeFragment(accounts);
-                        FragmentTransaction transaction = getActivity().getSupportFragmentManager().beginTransaction();
-                        transaction.replace(R.id.linearContainer, homeFragment);
-                        transaction.commit();
-                    }
+class NewAccountFragment(private val accounts: ArrayList<Account>) : Fragment() {
+    private var jsonReadWrite: JsonReadWrite? = null
+    private var edtName: EditText? = null
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_new_account, container, false)
+        jsonReadWrite = JsonReadWrite()
+        edtName = view.findViewById(R.id.edtName)
+        val btnCreateAccount = view.findViewById<Button>(R.id.btnCreateAccount)
+        btnCreateAccount.setOnClickListener {
+            val name = edtName?.getText().toString()
+            if (name.isEmpty()) {
+                Toast.makeText(activity, "Inserisci il nome dell'account", Toast.LENGTH_SHORT)
+                    .show()
+            } else {
+                accounts.add(Account(name))
+                try {
+                    jsonReadWrite!!.setList(accounts, requireContext())
+                } catch (e: IOException) {
+                    throw RuntimeException(e)
+                }
+                Toast.makeText(activity, "Conto creato!", Toast.LENGTH_SHORT).show()
+                if (activity != null) {
+                    val homeFragment = HomeFragment(accounts)
+                    val transaction = requireActivity().supportFragmentManager.beginTransaction()
+                    transaction.replace(R.id.linearContainer, homeFragment)
+                    transaction.commit()
                 }
             }
-        });
-        return view;
+        }
+        return view
     }
 }

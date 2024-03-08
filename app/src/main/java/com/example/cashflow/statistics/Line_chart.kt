@@ -1,245 +1,187 @@
-package com.example.cashflow.statistics;
+package com.example.cashflow.statistics
 
-import android.annotation.SuppressLint;
-import android.app.DatePickerDialog;
-import android.graphics.Color;
-import android.graphics.Typeface;
-import android.os.Bundle;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.Button;
-import android.widget.DatePicker;
-import android.widget.TextView;
-import android.widget.Toast;
+import android.annotation.SuppressLint
+import android.app.DatePickerDialog
+import android.graphics.Color
+import android.graphics.Typeface
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import android.widget.Button
+import android.widget.TextView
+import androidx.fragment.app.Fragment
+import com.example.cashflow.R
+import com.example.cashflow.dataClass.Account
+import com.github.mikephil.charting.charts.LineChart
+import com.github.mikephil.charting.components.XAxis
+import com.github.mikephil.charting.components.YAxis
+import com.github.mikephil.charting.data.Entry
+import com.github.mikephil.charting.data.LineData
+import com.github.mikephil.charting.data.LineDataSet
+import com.github.mikephil.charting.formatter.ValueFormatter
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
-import androidx.fragment.app.Fragment;
-
-import com.example.cashflow.R;
-import com.example.cashflow.dataClass.Account;
-import com.example.cashflow.dataClass.Transactions;
-import com.github.mikephil.charting.charts.LineChart;
-import com.github.mikephil.charting.components.XAxis;
-import com.github.mikephil.charting.components.YAxis;
-import com.github.mikephil.charting.data.Entry;
-import com.github.mikephil.charting.data.LineData;
-import com.github.mikephil.charting.data.LineDataSet;
-import com.github.mikephil.charting.formatter.ValueFormatter;
-
-import java.text.SimpleDateFormat;
-import java.util.ArrayList;
-import java.util.Calendar;
-import java.util.Locale;
-
-public class Line_chart extends Fragment {
-
-    private Button openStartDatePickerButton;
-    private Button openEndDatePickerButton;
-    private Button generateChartButton;
-
-    private TextView startDateTextView;
-    private TextView endDateTextView;
-
-    private Calendar startDate;
-    private Calendar endDate;
-
-
-    private LineChart lineChart;
-
-    private ArrayList<Account> accounts;
-
-    public Line_chart(ArrayList<Account> accounts) {
-        this.accounts = accounts;
-    }
-
+class Line_chart(private val accounts: ArrayList<Account>) : Fragment() {
+    private var openStartDatePickerButton: Button? = null
+    private var openEndDatePickerButton: Button? = null
+    private var generateChartButton: Button? = null
+    private var startDateTextView: TextView? = null
+    private var endDateTextView: TextView? = null
+    private var startDate: Calendar? = null
+    private var endDate: Calendar? = null
+    private var lineChart: LineChart? = null
     @SuppressLint("MissingInflatedId")
-    @Override
-    public View onCreateView(LayoutInflater inflater, ViewGroup container, Bundle savedInstanceState) {
-        View view = inflater.inflate(R.layout.fragment_line_chart, container, false);
-        generateChartButton = view.findViewById(R.id.generateChartButton);
-        openStartDatePickerButton = view.findViewById(R.id.openStartDatePickerButton);
-        openEndDatePickerButton = view.findViewById(R.id.openEndDatePickerButton);
-        startDateTextView = view.findViewById(R.id.startDateTextView);
-        endDateTextView = view.findViewById(R.id.endDateTextView);
-
-        lineChart = view.findViewById(R.id.lineChart);
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
+        val view = inflater.inflate(R.layout.fragment_line_chart, container, false)
+        generateChartButton = view.findViewById(R.id.generateChartButton)
+        openStartDatePickerButton = view.findViewById(R.id.openStartDatePickerButton)
+        openEndDatePickerButton = view.findViewById(R.id.openEndDatePickerButton)
+        startDateTextView = view.findViewById(R.id.startDateTextView)
+        endDateTextView = view.findViewById(R.id.endDateTextView)
+        lineChart = view.findViewById(R.id.lineChart)
 
         // Calcola le date iniziali e finali
-        startDate = Calendar.getInstance();
-        startDate.add(Calendar.DAY_OF_MONTH, -6);
-        endDate = Calendar.getInstance();
-        endDate.add(Calendar.DAY_OF_MONTH, 1);
-
-        startDateTextView.setText(formatDateKey(startDate));
-        endDateTextView.setText(formatDateKey(endDate));
-
-        openStartDatePickerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openStartDatePicker();
-            }
-        });
-
-        openEndDatePickerButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                openEndDatePicker();
-            }
-        });
-
-        generateChartButton.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                createLineChart();
-            }
-        });
-
-        return view;
+        startDate = Calendar.getInstance()
+        startDate?.add(Calendar.DAY_OF_MONTH, -6)
+        endDate = Calendar.getInstance()
+        endDate?.add(Calendar.DAY_OF_MONTH, 1)
+        startDateTextView?.setText(formatDateKey(startDate))
+        endDateTextView?.setText(formatDateKey(endDate))
+        openStartDatePickerButton?.setOnClickListener(View.OnClickListener { openStartDatePicker() })
+        openEndDatePickerButton?.setOnClickListener(View.OnClickListener { openEndDatePicker() })
+        generateChartButton?.setOnClickListener(View.OnClickListener { createLineChart() })
+        return view
     }
 
-    private void openStartDatePicker() {
-        int year = startDate.get(Calendar.YEAR);
-        int month = startDate.get(Calendar.MONTH);
-        int day = startDate.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                Calendar selectedDate = Calendar.getInstance();
-                selectedDate.set(year, month, dayOfMonth);
-
-                if (selectedDate.before(endDate)) {
-                    startDate.set(year, month, dayOfMonth);
-                    // Imposta la data selezionata nel TextView
-                    startDateTextView.setText(formatDateKey(startDate));
-                }
+    private fun openStartDatePicker() {
+        val year = startDate!![Calendar.YEAR]
+        val month = startDate!![Calendar.MONTH]
+        val day = startDate!![Calendar.DAY_OF_MONTH]
+        val datePickerDialog = DatePickerDialog(requireContext(), { view, year, month, dayOfMonth ->
+            val selectedDate = Calendar.getInstance()
+            selectedDate[year, month] = dayOfMonth
+            if (selectedDate.before(endDate)) {
+                startDate!![year, month] = dayOfMonth
+                // Imposta la data selezionata nel TextView
+                startDateTextView!!.text = formatDateKey(startDate)
             }
-        }, year, month, day);
-
-        datePickerDialog.show();
+        }, year, month, day)
+        datePickerDialog.show()
     }
 
-    private void openEndDatePicker() {
-        int year = endDate.get(Calendar.YEAR);
-        int month = endDate.get(Calendar.MONTH);
-        int day = endDate.get(Calendar.DAY_OF_MONTH);
-
-        DatePickerDialog datePickerDialog = new DatePickerDialog(requireContext(), new DatePickerDialog.OnDateSetListener() {
-            @Override
-            public void onDateSet(DatePicker view, int year, int month, int dayOfMonth) {
-                Calendar selectedDate = Calendar.getInstance();
-                selectedDate.set(year, month, dayOfMonth);
-
-                if (selectedDate.after(startDate)) {
-                    endDate.set(year, month, dayOfMonth);
-                    // Imposta la data selezionata nel TextView
-                    endDateTextView.setText(formatDateKey(endDate));
-                }
+    private fun openEndDatePicker() {
+        val year = endDate!![Calendar.YEAR]
+        val month = endDate!![Calendar.MONTH]
+        val day = endDate!![Calendar.DAY_OF_MONTH]
+        val datePickerDialog = DatePickerDialog(requireContext(), { view, year, month, dayOfMonth ->
+            val selectedDate = Calendar.getInstance()
+            selectedDate[year, month] = dayOfMonth
+            if (selectedDate.after(startDate)) {
+                endDate!![year, month] = dayOfMonth
+                // Imposta la data selezionata nel TextView
+                endDateTextView!!.text = formatDateKey(endDate)
             }
-        }, year, month, day);
-
-        datePickerDialog.show();
+        }, year, month, day)
+        datePickerDialog.show()
     }
 
-
-    private void createLineChart() {
-        ArrayList<Entry> entries = generateDataEntries(startDate, endDate);
+    private fun createLineChart() {
+        val entries = generateDataEntries(startDate, endDate)
 
         // Crea un elenco di etichette delle date per l'asse X
-        ArrayList<String> dateLabels = new ArrayList<>();
-        for (Calendar date = (Calendar) startDate.clone(); date.compareTo(endDate) <= 0; date.add(Calendar.DAY_OF_MONTH, 1)) {
-            dateLabels.add(formatDateKeyWithoutYear(date));
+        val dateLabels = ArrayList<String>()
+        val date = startDate!!.clone() as Calendar
+        while (date.compareTo(endDate) <= 0) {
+            dateLabels.add(formatDateKeyWithoutYear(date))
+            date.add(Calendar.DAY_OF_MONTH, 1)
         }
-
-        LineDataSet dataSet = new LineDataSet(entries, "Daily Total");
-        dataSet.setAxisDependency(YAxis.AxisDependency.LEFT);
-        dataSet.setColor(Color.parseColor("#00796B"));
-        dataSet.setValueTextSize(12f);
-        dataSet.setLineWidth(2f);
-        dataSet.setValueTypeface(Typeface.DEFAULT_BOLD);
-
-        LineData lineData = new LineData(dataSet);
-
-        XAxis xAxis = lineChart.getXAxis();
-        xAxis.setPosition(XAxis.XAxisPosition.BOTTOM);
+        val dataSet = LineDataSet(entries, "Daily Total")
+        dataSet.axisDependency = YAxis.AxisDependency.LEFT
+        dataSet.setColor(Color.parseColor("#00796B"))
+        dataSet.valueTextSize = 12f
+        dataSet.setLineWidth(2f)
+        dataSet.valueTypeface = Typeface.DEFAULT_BOLD
+        val lineData = LineData(dataSet)
+        val xAxis = lineChart!!.xAxis
+        xAxis.position = XAxis.XAxisPosition.BOTTOM
 
         // Configura il formatter per le etichette dell'asse X
-        xAxis.setValueFormatter(new ValueFormatter() {
-            @Override
-            public String getFormattedValue(float value) {
-                int index = (int) value;
-                if (index >= 0 && index < dateLabels.size()) {
-                    return dateLabels.get(index);
+        xAxis.valueFormatter = object : ValueFormatter() {
+            override fun getFormattedValue(value: Float): String {
+                val index = value.toInt()
+                return if (index >= 0 && index < dateLabels.size) {
+                    dateLabels[index]
                 } else {
-                    return "";
+                    ""
                 }
             }
-        });
-
-        YAxis yAxis = lineChart.getAxisLeft();
-        yAxis.setGranularity(1f);
-
-        lineChart.setData(lineData);
-        lineChart.getLegend().setEnabled(false);
-        lineChart.invalidate();
+        }
+        val yAxis = lineChart!!.axisLeft
+        yAxis.setGranularity(1f)
+        lineChart!!.setData(lineData)
+        lineChart!!.legend.isEnabled = false
+        lineChart!!.invalidate()
     }
 
-    private ArrayList<Entry> generateDataEntries(Calendar startDate, Calendar endDate) {
-        ArrayList<Entry> entries = new ArrayList<>();
+    private fun generateDataEntries(startDate: Calendar?, endDate: Calendar?): ArrayList<Entry> {
+        val entries = ArrayList<Entry>()
 
         // Inizializza il saldo iniziale con 0
-        double initialBalance = 0;
+        var initialBalance = 0.0
 
         // Copia la data di inizio in una variabile temporanea per usarla durante l'iterazione
-        Calendar currentDate = (Calendar) startDate.clone();
+        val currentDate = startDate!!.clone() as Calendar
 
         // Itera su tutte le date da startDate a endDate
         while (currentDate.compareTo(endDate) <= 0) {
             // Inizializza la data corrente
-            String dayKey = formatDateKeyWithoutYear(currentDate);
+            val dayKey = formatDateKeyWithoutYear(currentDate)
 
             // Calcola il totale delle transazioni per questa data
-            double dailyTotal = 0;
-
-            for (Account account : accounts) {
-                for (Transactions transaction : account.getListTrans()) {
-                    Calendar transactionDate = transaction.getDate();
+            var dailyTotal = 0.0
+            for (account in accounts) {
+                for (transaction in account.listTrans) {
+                    val transactionDate = transaction.date
                     if (isSameDay(transactionDate, currentDate)) {
-                        dailyTotal += transaction.getAmount();
+                        dailyTotal += transaction.amount
                     }
                 }
             }
 
             // Calcola il saldo per questa data come saldo iniziale + totale delle transazioni
-            double dailyBalance = initialBalance + dailyTotal;
+            val dailyBalance = initialBalance + dailyTotal
 
             // Aggiungi il saldo al grafico
-            entries.add(new Entry(entries.size() + 1, (float) dailyBalance));
+            entries.add(Entry((entries.size + 1).toFloat(), dailyBalance.toFloat()))
 
             // Aggiorna il saldo iniziale per il prossimo giorno
-            initialBalance = dailyBalance;
+            initialBalance = dailyBalance
 
             // Vai alla data successiva
-            currentDate.add(Calendar.DAY_OF_MONTH, 1);
+            currentDate.add(Calendar.DAY_OF_MONTH, 1)
         }
-
-        return entries;
+        return entries
     }
 
     // Funzione per verificare se due date sono dello stesso giorno
-    private boolean isSameDay(Calendar date1, Calendar date2) {
-        return date1.get(Calendar.YEAR) == date2.get(Calendar.YEAR) &&
-                date1.get(Calendar.MONTH) == date2.get(Calendar.MONTH) &&
-                date1.get(Calendar.DAY_OF_MONTH) == date2.get(Calendar.DAY_OF_MONTH);
+    private fun isSameDay(date1: Calendar, date2: Calendar): Boolean {
+        return date1[Calendar.YEAR] == date2[Calendar.YEAR] && date1[Calendar.MONTH] == date2[Calendar.MONTH] && date1[Calendar.DAY_OF_MONTH] == date2[Calendar.DAY_OF_MONTH]
     }
 
-    private String formatDateKey(Calendar date) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM-yyyy", Locale.US);
-        return dateFormat.format(date.getTime());
+    private fun formatDateKey(date: Calendar?): String {
+        val dateFormat = SimpleDateFormat("dd-MM-yyyy", Locale.US)
+        return dateFormat.format(date!!.time)
     }
 
-    private String formatDateKeyWithoutYear(Calendar date) {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("dd-MM", Locale.US);
-        return dateFormat.format(date.getTime());
+    private fun formatDateKeyWithoutYear(date: Calendar): String {
+        val dateFormat = SimpleDateFormat("dd-MM", Locale.US)
+        return dateFormat.format(date.time)
     }
 }

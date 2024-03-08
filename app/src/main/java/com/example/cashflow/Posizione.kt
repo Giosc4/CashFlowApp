@@ -1,63 +1,57 @@
-package com.example.cashflow;
+package com.example.cashflow
 
-import android.Manifest;
-import android.content.Context;
-import android.content.pm.PackageManager;
-import android.location.Address;
-import android.location.Geocoder;
-import android.location.Location;
+import android.Manifest
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Geocoder
+import android.location.Location
+import androidx.core.app.ActivityCompat
+import com.example.cashflow.dataClass.City
+import com.google.android.gms.location.FusedLocationProviderClient
+import com.google.android.gms.location.LocationServices
+import java.io.IOException
+import java.util.Locale
 
-import androidx.core.app.ActivityCompat;
+class Posizione(private val context: Context) {
+    private val fusedLocationProviderClient: FusedLocationProviderClient
 
-import com.example.cashflow.dataClass.City;
-import com.google.android.gms.location.FusedLocationProviderClient;
-import com.google.android.gms.location.LocationServices;
-
-import java.io.IOException;
-import java.util.List;
-import java.util.Locale;
-
-public class Posizione {
-    private final FusedLocationProviderClient fusedLocationProviderClient;
-    private final Context context;
-
-    public Posizione(Context context) {
-        this.context = context;
-        this.fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context);
+    init {
+        fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
     }
 
-    public void requestDeviceLocation(final DeviceLocationCallback callback) {
-        if (ActivityCompat.checkSelfPermission(context, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
-            callback.onLocationFetchFailed(new Exception("Permission not granted"));
-            return;
+    fun requestDeviceLocation(callback: DeviceLocationCallback) {
+        if (ActivityCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            callback.onLocationFetchFailed(Exception("Permission not granted"))
+            return
         }
-
-        fusedLocationProviderClient.getLastLocation()
-                .addOnSuccessListener(location -> {
-                    if (location == null) {
-                        callback.onLocationFetchFailed(new Exception("Location is null"));
-                        return;
+        fusedLocationProviderClient.lastLocation
+            .addOnSuccessListener { location: Location? ->
+                if (location == null) {
+                    callback.onLocationFetchFailed(Exception("Location is null"))
+                    return@addOnSuccessListener
+                }
+                val latitude = location.latitude.toFloat()
+                val longitude = location.longitude.toFloat()
+                val geocoder = Geocoder(context, Locale.getDefault())
+                try {
+                    val addresses =
+                        geocoder.getFromLocation(latitude.toDouble(), longitude.toDouble(), 1)
+                    if (addresses != null && !addresses.isEmpty()) {
+                        val cityName = addresses[0].locality
+                        callback.onLocationFetched(City(cityName, latitude, longitude))
                     }
-
-                    float latitude = (float) location.getLatitude();
-                    float longitude = (float) location.getLongitude();
-                    Geocoder geocoder = new Geocoder(context, Locale.getDefault());
-
-                    try {
-                        List<Address> addresses = geocoder.getFromLocation(latitude, longitude, 1);
-                        if (addresses != null && !addresses.isEmpty()) {
-                            String cityName = addresses.get(0).getLocality();
-                            callback.onLocationFetched(new City(cityName, latitude, longitude));
-                        }
-                    } catch (IOException e) {
-                        callback.onLocationFetchFailed(e);
-                    }
-                });
+                } catch (e: IOException) {
+                    callback.onLocationFetchFailed(e)
+                }
+            }
     }
 
-    public interface DeviceLocationCallback {
-        void onLocationFetched(City city);
-
-        void onLocationFetchFailed(Exception e);
+    interface DeviceLocationCallback {
+        fun onLocationFetched(city: City?)
+        fun onLocationFetchFailed(e: Exception?)
     }
 }
