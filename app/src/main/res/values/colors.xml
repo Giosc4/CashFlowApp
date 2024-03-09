@@ -2,7 +2,14 @@
 <resources>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
-    <color name="blue_light_background">#36ad47</color>
+    <color name="green_light_background">#7ad95f</color>
+    <color name="green_light_dark_background">#37A63E</color>
+
+    <color name="dark_status_bar_color">#182626</color>
+    <color name="dark_green_bar_color">#182626</color>
+
     <color name="buttonColor">#37A63E</color>
+
+    <color name="toolbar_background_hamburger">@color/white</color>
 
 </resources>

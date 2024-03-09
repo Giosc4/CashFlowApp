@@ -1,14 +1,21 @@
 package com.example.cashflow
 
 import android.Manifest
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.graphics.Color
 import android.os.Bundle
+import android.view.Menu
+import android.view.MenuItem
 import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
+import android.widget.ImageButton
+import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.appcompat.widget.Toolbar
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.cashflow.box.box_budget_fragment
@@ -19,6 +26,7 @@ import com.example.cashflow.box.box_transaction_fragment
 import com.example.cashflow.dataClass.Account
 import java.io.IOException
 
+
 class MainActivity : AppCompatActivity() {
     private var btnHome: Button? = null
     private var accounts: ArrayList<Account>? = null
@@ -26,6 +34,29 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        val myToolbar = findViewById<Toolbar>(R.id.my_toolbar)
+        setSupportActionBar(myToolbar)
+
+        // Rimuovi il titolo predefinito per evitare sovrapposizioni
+        supportActionBar?.setDisplayShowTitleEnabled(false)
+
+        val hamburgerMenu: ImageButton = findViewById(R.id.menu_hamburger)
+        hamburgerMenu.setOnClickListener {
+            // Gestisci qui l'apertura del tuo menu o drawer
+        }
+
+        val btnHome: ImageView = findViewById(R.id.logo)
+        btnHome.setOnClickListener {
+            loadFragment(
+                HomeFragment(
+                    jsonReadWrite!!.readAccountsFromJson(
+                        this@MainActivity
+                    )
+                )
+            )
+        }
+
         addBoxFragment(box_template_fragment(), "box_template_fragment")
         addBoxFragment(box_transaction_fragment(), "box_transaction_fragment")
         addBoxFragment(box_budget_fragment(), "box_budget_fragment")
@@ -57,17 +88,11 @@ class MainActivity : AppCompatActivity() {
                 PERMISSION_REQUEST_CODE
             )
         }
-        btnHome = findViewById(R.id.btnHome)
-        btnHome?.setBackgroundColor(Color.parseColor("#37a63e"))
-        btnHome?.setOnClickListener(View.OnClickListener {
-            loadFragment(
-                HomeFragment(
-                    jsonReadWrite!!.readAccountsFromJson(
-                        this@MainActivity
-                    )
-                )
-            )
-        })
+//        btnHome = findViewById(R.id.btnHome)
+//        btnHome?.setBackgroundColor(Color.parseColor("#37a63e"))
+//        btnHome?.setOnClickListener(View.OnClickListener {
+//
+//        })
         loadFragment(HomeFragment(jsonReadWrite!!.readAccountsFromJson(this@MainActivity)))
     }
 
