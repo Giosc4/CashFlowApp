@@ -1,5 +1,6 @@
 package com.example.cashflow
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -56,12 +57,9 @@ class AccountDetailsFragment(private val account: Account) : Fragment() {
         transactionsRecyclerView?.setAdapter(adapter)
         saveButton?.setOnClickListener(View.OnClickListener {
             changeName()
-            val homeFragment = HomeFragment(jsonReadWrite.readAccountsFromJson(requireContext()))
-            val fragmentManager = getParentFragmentManager()
-            val fragmentTransaction = fragmentManager.beginTransaction()
-            fragmentTransaction.replace(R.id.linearContainer, homeFragment)
-            fragmentTransaction.addToBackStack(null)
-            fragmentTransaction.commit()
+            val intent = Intent(requireContext(), MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
         })
         deleteButton?.setOnClickListener(View.OnClickListener { showDeleteConfirmationDialog() })
         return view
@@ -130,9 +128,9 @@ class AccountDetailsFragment(private val account: Account) : Fragment() {
                         null,
                         FragmentManager.POP_BACK_STACK_INCLUSIVE
                     )
-                    fragmentManager.beginTransaction()
-                        .replace(R.id.linearContainer, HomeFragment(accounts))
-                        .commit()
+                    val intent = Intent(requireContext(), MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
                 }
             } else {
                 Toast.makeText(context, "Errore per eliminare l'account.", Toast.LENGTH_LONG).show()

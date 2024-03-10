@@ -11,5 +11,6 @@
     <color name="buttonColor">#37A63E</color>
 
     <color name="toolbar_background_hamburger">@color/white</color>
+    <color name="colorNavigationViewItemSelected">#182626</color>
 
-</resources>
+    </resources>

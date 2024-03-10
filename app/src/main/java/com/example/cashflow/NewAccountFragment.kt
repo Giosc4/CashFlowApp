@@ -1,5 +1,6 @@
 package com.example.cashflow
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -37,10 +38,9 @@ class NewAccountFragment(private val accounts: ArrayList<Account>) : Fragment() 
                 }
                 Toast.makeText(activity, "Conto creato!", Toast.LENGTH_SHORT).show()
                 if (activity != null) {
-                    val homeFragment = HomeFragment(accounts)
-                    val transaction = requireActivity().supportFragmentManager.beginTransaction()
-                    transaction.replace(R.id.linearContainer, homeFragment)
-                    transaction.commit()
+                    val intent = Intent(requireContext(), MainActivity::class.java)
+                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                    startActivity(intent)
                 }
             }
         }

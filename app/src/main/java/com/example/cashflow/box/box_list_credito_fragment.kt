@@ -47,7 +47,7 @@ class box_list_credito_fragment : Fragment() {
             for (j in transactions[i].indices) {
                 val textView = TextView(context)
                 textView.text = transactions[i][j]
-                textView.setPadding(10, 10, 10, 10)
+//                textView.setPadding(10, 10, 10, 10)
                 textView.setGravity(Gravity.CENTER)
                 val params = GridLayout.LayoutParams()
                 params.rowSpec = GridLayout.spec(i)

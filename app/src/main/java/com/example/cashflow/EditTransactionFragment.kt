@@ -339,7 +339,7 @@ class EditTransactionFragment(//CONSTRUCTOR
             jsonReadWrite.setList(accounts, requireContext())
             if (activity != null) {
                 requireActivity().supportFragmentManager.popBackStack()
-                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.mainLayout)
+                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.drawer_layout)
                 mainLayout.visibility = View.VISIBLE
             }
             Toast.makeText(context, "Transazione Eliminata", Toast.LENGTH_LONG).show()
@@ -375,7 +375,7 @@ class EditTransactionFragment(//CONSTRUCTOR
             jsonReadWrite.setList(accounts, requireContext())
             if (activity != null) {
                 requireActivity().supportFragmentManager.popBackStack()
-                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.mainLayout)
+                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.drawer_layout)
                 mainLayout.visibility = View.VISIBLE
             }
             Toast.makeText(context, "Transazione aggiornata", Toast.LENGTH_LONG).show()

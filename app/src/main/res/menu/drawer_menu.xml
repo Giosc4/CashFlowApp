@@ -1,0 +1,46 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android">
+    <item
+        android:id="@+id/nav_home"
+        android:icon="@drawable/cashflowapp_logo_bordo"
+        android:title="Home" />
+
+    <item
+        android:id="@+id/group_new"
+        android:title="NUOVO">
+        <menu>
+            <item
+                android:id="@+id/new_conto"
+                android:title="Nuovo conto" />
+            <item
+                android:id="@+id/new_transaction"
+                android:title="Nuova Transazione" />
+            <item
+                android:id="@+id/new_budget"
+                android:title="Nuovo Budget" />
+            <item
+                android:id="@+id/new_debit_credit"
+                android:title="Nuovo Debito o Credito" />
+        </menu>
+    </item>
+
+
+    <item
+        android:id="@+id/group_statistics"
+        android:title="STATISTICHE">
+        <menu>
+            <item
+                android:id="@+id/line_chart"
+                android:title="Grafico temporale" />
+            <item
+                android:id="@+id/maps"
+                android:title="Mappe" />
+            <item
+                android:id="@+id/income_chart"
+                android:title="Grafico sulle entrate" />
+            <item
+                android:id="@+id/expense_chart"
+                android:title="Grafico sulle uscrite" />
+        </menu>
+    </item>
+
+</menu>

@@ -465,15 +465,16 @@ class NewTransactionFragment(
             val numberText = if (numberEditText!!.getText() != null) numberEditText!!.getText()
                 .toString() else ""
 
-
-            // Verifica se almeno uno dei pulsanti della spesa o entrata è stato premuto e quello della data
+// Estrai il testo dall'EditText e imposta un valore di default se null
+val rawNumberText = numberEditText?.text?.toString() ?: ""
+// Verifica se almeno uno dei pulsanti della spesa o entrata è stato premuto
             if (!income && !expense) {
-                // Nessun pulsante selezionato, mostra un messaggio di avviso o gestisci l'errore
                 Toast.makeText(context, "Inserisci Spesa o Entrata", Toast.LENGTH_SHORT).show()
                 return  // Esce dal metodo senza salvare la transazione
             }
-            if (numberText.isEmpty() || numberText == "0" || numberText == "0.0") {
-                // L'utente non ha inserito un valore numerico, mostra un messaggio di errore
+
+// Controlla se il testo è vuoto o rappresenta zero in formati diversi
+            if (rawNumberText.isEmpty() || rawNumberText == "0" || rawNumberText == "0.00") {
                 Toast.makeText(context, "Aggiungi un prezzo", Toast.LENGTH_SHORT).show()
                 return  // Esce dal metodo senza salvare la transazione
             }
@@ -528,7 +529,7 @@ class NewTransactionFragment(
             }
             if (activity != null) {
                 requireActivity().supportFragmentManager.popBackStack()
-                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.mainLayout)
+                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.drawer_layout)
                 mainLayout.visibility = View.VISIBLE
             }
         } else {

@@ -1,11 +1,13 @@
 <resources>
     <string name="app_name">CashFlow</string>
 
-    <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
 
     <string name="item1">Item 1</string>
     <string name="item2">Item 2</string>
+
+    <string name="total_template">Total: </string>
+    <string name="no_accounts">0 Conti</string>
 
     <string name="home">Home</string>
 </resources>
