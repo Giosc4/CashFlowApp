@@ -106,6 +106,141 @@ class readSQL(private val db: SQLiteDatabase?) {
         return null
     }
 
+    fun getExpenseTransactionsByAccount(accountId: Int): ArrayList<Transactions> {
+        val expenseTransactionsList = ArrayList<Transactions>()
+        // Assicurati che il database non sia nullo prima di eseguire la query
+        db?.let { database ->
+            val cursor = database.query(
+                TABLE_TRANSACTIONS,
+                arrayOf(
+                    COLUMN_ID,
+                    COLUMN_INCOME,
+                    COLUMN_AMOUNT,
+                    COLUMN_DATE,
+                    COLUMN_CITY_ID,
+                    COLUMN_CATEGORY_ID,
+                    COLUMN_ACCOUNT_ID
+                ),
+                "$COLUMN_ACCOUNT_ID = ? AND $COLUMN_INCOME = ?", // Seleziona solo le transazioni di spesa per l'account specificato
+                arrayOf(
+                    accountId.toString(),
+                    "0"
+                ), // '0' sta per falso, ovvero seleziona solo le transazioni di spesa
+                null, null, null
+            )
+
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+            while (cursor.moveToNext()) {
+                val idIndex = cursor.getColumnIndex(COLUMN_ID)
+                val incomeIndex = cursor.getColumnIndex(COLUMN_INCOME)
+                val amountIndex = cursor.getColumnIndex(COLUMN_AMOUNT)
+                val dateIndex = cursor.getColumnIndex(COLUMN_DATE)
+                val cityIdIndex = cursor.getColumnIndex(COLUMN_CITY_ID)
+                val categoryIdIndex = cursor.getColumnIndex(COLUMN_CATEGORY_ID)
+                val accountIdIndex = cursor.getColumnIndex(COLUMN_ACCOUNT_ID)
+
+                if (idIndex != -1 && incomeIndex != -1 && amountIndex != -1 && dateIndex != -1 && cityIdIndex != -1 && categoryIdIndex != -1 && accountIdIndex != -1) {
+                    val id = cursor.getInt(idIndex)
+                    val income =
+                        cursor.getInt(incomeIndex) == 0 // Qui verifichiamo che income sia falso
+                    val amount = cursor.getDouble(amountIndex)
+                    val dateString = cursor.getString(dateIndex)
+                    val date = Calendar.getInstance()
+                    sdf.parse(dateString)?.let {
+                        date.time = it
+                    }
+                    val cityId = cursor.getInt(cityIdIndex)
+                    val categoryId = cursor.getInt(categoryIdIndex)
+                    val accountId = cursor.getInt(accountIdIndex)
+
+                    expenseTransactionsList.add(
+                        Transactions(
+                            id,
+                            income,
+                            amount,
+                            date,
+                            cityId,
+                            categoryId,
+                            accountId
+                        )
+                    )
+                }
+            }
+
+            cursor.close()
+        }
+
+        return expenseTransactionsList
+    }
+
+    fun getIncomeTransactionsByAccount(accountId: Int): ArrayList<Transactions> {
+        val incomeTransactionsList = ArrayList<Transactions>()
+        // Assicurati che il database non sia nullo prima di eseguire la query
+        db?.let { database ->
+            val cursor = database.query(
+                TABLE_TRANSACTIONS,
+                arrayOf(
+                    COLUMN_ID,
+                    COLUMN_INCOME,
+                    COLUMN_AMOUNT,
+                    COLUMN_DATE,
+                    COLUMN_CITY_ID,
+                    COLUMN_CATEGORY_ID,
+                    COLUMN_ACCOUNT_ID
+                ),
+                "$COLUMN_ACCOUNT_ID = ? AND $COLUMN_INCOME = ?", // Seleziona solo le transazioni di entrata per l'account specificato
+                arrayOf(
+                    accountId.toString(),
+                    "1"
+                ), // '1' sta per vero, ovvero seleziona solo le transazioni di entrata
+                null, null, null
+            )
+
+            val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+            while (cursor.moveToNext()) {
+                val idIndex = cursor.getColumnIndex(COLUMN_ID)
+                val incomeIndex = cursor.getColumnIndex(COLUMN_INCOME)
+                val amountIndex = cursor.getColumnIndex(COLUMN_AMOUNT)
+                val dateIndex = cursor.getColumnIndex(COLUMN_DATE)
+                val cityIdIndex = cursor.getColumnIndex(COLUMN_CITY_ID)
+                val categoryIdIndex = cursor.getColumnIndex(COLUMN_CATEGORY_ID)
+                val accountIdIndex = cursor.getColumnIndex(COLUMN_ACCOUNT_ID)
+
+                if (idIndex != -1 && incomeIndex != -1 && amountIndex != -1 && dateIndex != -1 && cityIdIndex != -1 && categoryIdIndex != -1 && accountIdIndex != -1) {
+                    val id = cursor.getInt(idIndex)
+                    val income = cursor.getInt(incomeIndex) > 0
+                    val amount = cursor.getDouble(amountIndex)
+                    val dateString = cursor.getString(dateIndex)
+                    val date = Calendar.getInstance()
+                    sdf.parse(dateString)?.let {
+                        date.time = it
+                    }
+                    val cityId = cursor.getInt(cityIdIndex)
+                    val categoryId = cursor.getInt(categoryIdIndex)
+                    val accountId = cursor.getInt(accountIdIndex)
+
+                    incomeTransactionsList.add(
+                        Transactions(
+                            id,
+                            income,
+                            amount,
+                            date,
+                            cityId,
+                            categoryId,
+                            accountId
+                        )
+                    )
+                }
+            }
+
+            cursor.close()
+        }
+
+        return incomeTransactionsList
+    }
+
     fun getCategoryById(categoryId: Int): Category? {
         val cursor = db!!.query(
             TABLE_CATEGORY,
@@ -228,7 +363,6 @@ class readSQL(private val db: SQLiteDatabase?) {
         }
         return null
     }
-
 
 
     fun getCategories(): ArrayList<Category> {
@@ -411,7 +545,12 @@ class readSQL(private val db: SQLiteDatabase?) {
             -1 // or any default value
         }
     }
-    fun getTransactionsByAccountIdAndCategory(accountId: Int, categoryId: Int, income: Boolean): List<Transactions> {
+
+    fun getTransactionsByAccountIdAndCategory(
+        accountId: Int,
+        categoryId: Int,
+        income: Boolean
+    ): List<Transactions> {
         val transactionsList = ArrayList<Transactions>()
         val transactions = getTransactionsByAccountId(accountId)
         for (transaction in transactions) {

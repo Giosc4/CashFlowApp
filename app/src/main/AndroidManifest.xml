@@ -26,7 +26,7 @@
 
         <activity
             android:name="com.theartofdev.edmodo.cropper.CropImageActivity"
-            android:theme="@style/Base.Theme.CashFlow" />
+            android:theme="@style/Base.Theme.AppCompat" />
         <activity
             android:name=".MainActivity"
             android:exported="true"

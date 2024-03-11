@@ -1,6 +1,5 @@
 package com.example.cashflow
 
-import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -12,7 +11,6 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
-import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.dataClass.*
@@ -20,7 +18,7 @@ import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.readSQL
 import com.example.cashflow.db.writeSQL
 
-class AccountDetailsFragment : Fragment() {
+class AccountDetailsFragment(id: Int) : Fragment() {
     private var accountId: Int = -1
     private lateinit var db: SQLiteDB
     private lateinit var readSql: readSQL
@@ -49,14 +47,13 @@ class AccountDetailsFragment : Fragment() {
         saveButton = view.findViewById(R.id.saveButton)
         deleteButton = view.findViewById(R.id.deleteButton)
 
-        arguments?.getInt("ACCOUNT_ID")?.let {
-            accountId = it
-        }
         db = SQLiteDB(context)
         readSql = readSQL(db.writableDatabase)
         writeSql = writeSQL(db.writableDatabase)
 
-
+        arguments?.let {
+            accountId = it.getInt(ARG_ACCOUNT_ID)
+        }
         account = readSql.getAccountById(accountId)
         transactions = readSql.getTransactionsByAccountId(accountId)
 
@@ -80,7 +77,18 @@ class AccountDetailsFragment : Fragment() {
         deleteButton?.setOnClickListener(View.OnClickListener { showDeleteConfirmationDialog() })
         return view
     }
+    companion object {
+        private const val ARG_ACCOUNT_ID = "account_id"
 
+        fun newInstance(accountId: Int): AccountDetailsFragment {
+            val fragment = AccountDetailsFragment(accountId)
+            val args = Bundle().apply {
+                putInt(ARG_ACCOUNT_ID, accountId)
+            }
+            fragment.arguments = args
+            return fragment
+        }
+    }
     private fun changeName() {
         val newName = nameEditText!!.text.toString()
         if (newName.isNotEmpty()) {

@@ -21,9 +21,4 @@
         <item name="textFillColor">@color/white</item>
 
     </style>
-
-
-    <style name="AppTheme" parent="Base.Theme.CashFlow">
-    </style>
-
 </resources>

@@ -14,7 +14,6 @@ import com.example.cashflow.AccountDetailsFragment
 import com.example.cashflow.R
 import java.math.BigDecimal
 import com.example.cashflow.dataClass.*
-import com.example.cashflow.db.*
 
 class box_account_fragment(private var accounts: ArrayList<Account>?) : Fragment() {
 
@@ -59,12 +58,14 @@ class box_account_fragment(private var accounts: ArrayList<Account>?) : Fragment
                             setMargins(8, 8, 8, 8)
                         }
                         setOnClickListener {
-                            val accountDetailsFragment = AccountDetailsFragment()
-                            fragmentManager?.beginTransaction()?.apply {
-                                replace(R.id.linearContainer, accountDetailsFragment)
-                                addToBackStack(null)
-                                commit()
-                            }
+                            Log.d("AccountFragment", "Button clicked: " + account.name)
+                            val accountDetailsFragment =
+                                AccountDetailsFragment.newInstance(account.id)
+                            parentFragmentManager.beginTransaction()
+                                .replace(R.id.linearContainer, accountDetailsFragment)
+                                .addToBackStack(null) // Optional: Aggiunge la transazione al back stack
+                                .commit()
+
                         }
                     }
                     gridLayout.addView(button)
