@@ -5,7 +5,6 @@ import android.annotation.SuppressLint;
 import android.content.ContentValues;
 import android.content.Context;
 import android.database.Cursor;
-import android.database.DatabaseErrorHandler;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.util.Log;
@@ -22,51 +21,81 @@ import java.util.List;
 public class SQLiteDB extends SQLiteOpenHelper {
 
 
-    public static final String ACCOUNT_TABLE = "Account";
-    public static final String CITY_TABLE = "City";
-    public static final String TRANSACTIONS_TABLE = "Transactions";
-    public static final String CATEGORY_TABLE = "Category";
-    public static final String COLUMN_ID = "id";
-    public static final String COLUMN_NAME = "name";
-    public static final String COLUMN_BALANCE = "balance";
-    public static final String COLUMN_INCOME = "income";
-    public static final String COLUMN_AMOUNT = "amount";
-    public static final String COLUMN_LATITUDE = "latitude";
-    public static final String COLUMN_LONGITUDE = "longitude";
-    public static final String COLUMN_DATE = "date";
-    public static final String COLUMN_CITY_ID = "city_id";
-    public static final String COLUMN_CATEGORY_ID = "category_id";
-    public static final String COLUMN_ACCOUNT_ID = "account_id";
-    public static final String COLUMN_CITY_NAME = "city_name";
-    public static final String COLUMN_DESCRIPTION = "description";
-    public static final String COLUMN_START_DATE = "Data_Inizio";
-    public static final String COLUMN_END_DATE = "Data_Fine";
-    public static final String COLUMN_TEMPLATE_ID = "Template_ID";
-    public static final String COLUMN_REPETITION = "Ripetizione";
-    public static final String COLUMN_CONCESSION_DATE = "Data_Concessione";
-    public static final String COLUMN_EXTINCTION_DATE = "Data_Estinsione";
+    // Database Version and Name
+    private static final int DATABASE_VERSION = 1;
+    private static final String DATABASE_NAME = "cashflow.db";
+
+    // Table Names
+    private static final String TABLE_ACCOUNT = "Account";
+    private static final String TABLE_CITY = "City";
+    private static final String TABLE_TRANSACTIONS = "Transactions";
+    private static final String TABLE_CATEGORY = "Category";
+    private static final String TABLE_SAVING = "Risparmio";
+    private static final String TABLE_BUDGET = "Budget";
+    private static final String TABLE_PLANNING = "Pianificazione";
+    private static final String TABLE_TEMPLATE_TRANSACTIONS = "Template_Transazioni";
+    private static final String TABLE_DEBITO = "Debito";
+    private static final String TABLE_CREDITO = "Credito";
+
+    // Common column names
+    private static final String COLUMN_ID = "id";
+    private static final String COLUMN_NAME = "name";
+
+    // Account Table - column names
+    private static final String COLUMN_BALANCE = "balance";
+
+    // City Table - column names
+    private static final String COLUMN_CITY_NAME = "city_name";
+    private static final String COLUMN_LATITUDE = "latitude";
+    private static final String COLUMN_LONGITUDE = "longitude";
+
+    // Transactions Table - column names
+    private static final String COLUMN_INCOME = "income";
+    private static final String COLUMN_AMOUNT = "amount";
+    private static final String COLUMN_DATE = "date";
+    private static final String COLUMN_CITY_ID = "city_id";
+    private static final String COLUMN_CATEGORY_ID = "category_id";
+    private static final String COLUMN_ACCOUNT_ID = "account_id";
+
+    // Category Table - column names
+    private static final String COLUMN_DESCRIPTION = "description";
+
+    // Saving Table - column names
+    private static final String COLUMN_START_DATE = "Data_Inizio";
+    private static final String COLUMN_END_DATE = "Data_Fine";
+
+    // Budget Table - column names
+    // Note: Uses COLUMN_AMOUNT, COLUMN_NAME from Transactions
+
+    // Planning Table - column names
+    private static final String COLUMN_TEMPLATE_ID = "Template_ID";
+    private static final String COLUMN_REPETITION = "Ripetizione";
+
+    // Debito and Credito Tables - column names
+    private static final String COLUMN_CONCESSION_DATE = "Data_Concessione";
+    private static final String COLUMN_EXTINCTION_DATE = "Data_Estinsione";
 
     public static final String CREATE_TABLE_ACCOUNT =
-            "CREATE TABLE " + ACCOUNT_TABLE + " ( " +
+            "CREATE TABLE IF NOT EXISTS " + TABLE_ACCOUNT + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_NAME + " TEXT NOT NULL, " +
                     COLUMN_BALANCE + " REAL NOT NULL );";
 
     public static final String CREATE_TABLE_CITY =
-            "CREATE TABLE " + CITY_TABLE + " ( " +
+            "CREATE TABLE  IF NOT EXISTS " + TABLE_CITY + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_CITY_NAME + " TEXT NOT NULL, " +
                     COLUMN_LATITUDE + " REAL, " +
                     COLUMN_LONGITUDE + " REAL );";
 
     public static final String CREATE_TABLE_CATEGORY =
-            "CREATE TABLE " + CATEGORY_TABLE + " ( " +
+            "CREATE TABLE IF NOT EXISTS " + TABLE_CATEGORY + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_NAME + " TEXT NOT NULL, " +
                     COLUMN_DESCRIPTION + " TEXT );";
 
     public static final String CREATE_TABLE_TRANSACTION =
-            "CREATE TABLE " + TRANSACTIONS_TABLE + " ( " +
+            "CREATE TABLE IF NOT EXISTS " + TABLE_TRANSACTIONS + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_INCOME + " INTEGER NOT NULL, " + // SQLite non ha BOOLEAN, si usa INTEGER con 0 (false) e 1 (true)
                     COLUMN_AMOUNT + " REAL NOT NULL, " +
@@ -74,29 +103,29 @@ public class SQLiteDB extends SQLiteOpenHelper {
                     COLUMN_CITY_ID + " INTEGER, " +
                     COLUMN_CATEGORY_ID + " INTEGER NOT NULL, " +
                     COLUMN_ACCOUNT_ID + " INTEGER, " +
-                    "FOREIGN KEY (" + COLUMN_CITY_ID + ") REFERENCES " + CITY_TABLE + "(" + COLUMN_ID + "), " +
-                    "FOREIGN KEY (" + COLUMN_CATEGORY_ID + ") REFERENCES " + CATEGORY_TABLE + "(" + COLUMN_ID + "), " +
-                    "FOREIGN KEY (" + COLUMN_ACCOUNT_ID + ") REFERENCES " + ACCOUNT_TABLE + "(" + COLUMN_ID + ") );";
+                    "FOREIGN KEY (" + COLUMN_CITY_ID + ") REFERENCES " + TABLE_CITY + "(" + COLUMN_ID + "), " +
+                    "FOREIGN KEY (" + COLUMN_CATEGORY_ID + ") REFERENCES " + TABLE_CATEGORY + "(" + COLUMN_ID + "), " +
+                    "FOREIGN KEY (" + COLUMN_ACCOUNT_ID + ") REFERENCES " + TABLE_ACCOUNT + "(" + COLUMN_ID + ") );";
     // Modifica le variabili esistenti per utilizzare le nuove costanti
     public static final String CREATE_TABLE_SAVING =
-            "CREATE TABLE Risparmio ( " +
+            "CREATE TABLE IF NOT EXISTS " + TABLE_SAVING + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_AMOUNT + " REAL NOT NULL, " +
                     COLUMN_ACCOUNT_ID + " INTEGER, " +
                     COLUMN_START_DATE + " TEXT, " +
                     COLUMN_END_DATE + " TEXT, " +
-                    "FOREIGN KEY (" + COLUMN_ACCOUNT_ID + ") REFERENCES " + ACCOUNT_TABLE + "(" + COLUMN_ID + ") );";
+                    "FOREIGN KEY (" + COLUMN_ACCOUNT_ID + ") REFERENCES " + TABLE_ACCOUNT + "(" + COLUMN_ID + ") );";
 
     public static final String CREATE_TABLE_BUDGET =
-            "CREATE TABLE Budget ( " +
+            "CREATE TABLE IF NOT EXISTS " + TABLE_BUDGET + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_CATEGORY_ID + " INTEGER, " +
                     COLUMN_AMOUNT + " REAL NOT NULL, " +
                     COLUMN_NAME + " TEXT NOT NULL, " +
-                    "FOREIGN KEY (" + COLUMN_CATEGORY_ID + ") REFERENCES " + CATEGORY_TABLE + "(" + COLUMN_ID + ") );";
+                    "FOREIGN KEY (" + COLUMN_CATEGORY_ID + ") REFERENCES " + TABLE_CATEGORY + "(" + COLUMN_ID + ") );";
 
     public static final String CREATE_TABLE_PLANNING =
-            "CREATE TABLE Pianificazione ( " +
+            "CREATE TABLE IF NOT EXISTS " + TABLE_PLANNING + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_TEMPLATE_ID + " INTEGER, " +
                     COLUMN_REPETITION + " TEXT, " +
@@ -105,69 +134,89 @@ public class SQLiteDB extends SQLiteOpenHelper {
 
 
     public static final String CREATE_TABLE_TEMPLATE_TRANSACTIONS =
-            "CREATE TABLE Template_Transazioni ( " +
+            "CREATE TABLE IF NOT EXISTS " + TABLE_TEMPLATE_TRANSACTIONS + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_NAME + " TEXT NOT NULL );";
 
     public static final String CREATE_TABLE_DEBITO =
-            "CREATE TABLE Debito ( " +
+            "CREATE TABLE IF NOT EXISTS " + TABLE_DEBITO + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_AMOUNT + " REAL NOT NULL, " +
                     COLUMN_NAME + " TEXT NOT NULL, " +
                     COLUMN_CONCESSION_DATE + " TEXT, " +
                     COLUMN_EXTINCTION_DATE + " TEXT, " +
                     COLUMN_ACCOUNT_ID + " INTEGER, " +
-                    "FOREIGN KEY (" + COLUMN_ACCOUNT_ID + ") REFERENCES " + ACCOUNT_TABLE + "(" + COLUMN_ID + ") );";
+                    "FOREIGN KEY (" + COLUMN_ACCOUNT_ID + ") REFERENCES " + TABLE_ACCOUNT + "(" + COLUMN_ID + ") );";
 
     public static final String CREATE_TABLE_CREDITO =
-            "CREATE TABLE Credito ( " +
+            "CREATE TABLE IF NOT EXISTS " + TABLE_CREDITO + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                     COLUMN_AMOUNT + " REAL NOT NULL, " +
                     COLUMN_NAME + " TEXT NOT NULL, " +
                     COLUMN_CONCESSION_DATE + " TEXT, " +
                     COLUMN_EXTINCTION_DATE + " TEXT, " +
                     COLUMN_ACCOUNT_ID + " INTEGER, " +
-                    "FOREIGN KEY (" + COLUMN_ACCOUNT_ID + ") REFERENCES " + ACCOUNT_TABLE + "(" + COLUMN_ID + ") );";
+                    "FOREIGN KEY (" + COLUMN_ACCOUNT_ID + ") REFERENCES " + TABLE_ACCOUNT + "(" + COLUMN_ID + ") );";
 
 
-    SQLiteDatabase db;
-
+    // Standard constructor
     public SQLiteDB(Context context) {
-        super(context, "cashflow.db", null, 1);
+        super(context, DATABASE_NAME, null, DATABASE_VERSION);
+
+        Log.d("SQLiteDB", "Database created");
     }
 
     public void onCreate(SQLiteDatabase db) {
         db.execSQL(CREATE_TABLE_ACCOUNT);
-        db.execSQL(CATEGORY_TABLE);
         db.execSQL(CREATE_TABLE_CITY);
-        db.execSQL(CREATE_TABLE_TRANSACTION);
-        db.execSQL(CREATE_TABLE_SAVING);
-        db.execSQL(CREATE_TABLE_BUDGET);
-        db.execSQL(CREATE_TABLE_PLANNING);
         db.execSQL(CREATE_TABLE_TEMPLATE_TRANSACTIONS);
+        db.execSQL(CREATE_TABLE_CATEGORY);
         db.execSQL(CREATE_TABLE_DEBITO);
         db.execSQL(CREATE_TABLE_CREDITO);
+        db.execSQL(CREATE_TABLE_BUDGET);
+        db.execSQL(CREATE_TABLE_SAVING);
+        db.execSQL(CREATE_TABLE_TRANSACTION);
+        db.execSQL(CREATE_TABLE_PLANNING);
+
+    }
+
+    public void clearAllTableData(SQLiteDatabase db) {
+        db.execSQL("DELETE FROM " + TABLE_ACCOUNT);
+        db.execSQL("DELETE FROM " + TABLE_CITY);
+        db.execSQL("DELETE FROM " + TABLE_TRANSACTIONS);
+        db.execSQL("DELETE FROM " + TABLE_CATEGORY);
+        db.execSQL("DELETE FROM " + TABLE_SAVING);
+        db.execSQL("DELETE FROM " + TABLE_BUDGET);
+        db.execSQL("DELETE FROM " + TABLE_PLANNING);
+        db.execSQL("DELETE FROM " + TABLE_TEMPLATE_TRANSACTIONS);
+        db.execSQL("DELETE FROM " + TABLE_DEBITO);
+        db.execSQL("DELETE FROM " + TABLE_CREDITO);
 
     }
 
 
+    @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+        // Elimina tutte le tabelle esistenti
+        deleteAllTables(db);
 
+        // Ricrea il database
+        onCreate(db);
     }
 
-    public boolean createAccount(String account_name, double balance) {
-        SQLiteDatabase db = this.getWritableDatabase();
-        ContentValues cv = new ContentValues();
-        cv.put(COLUMN_NAME, account_name);
-        cv.put(COLUMN_BALANCE, balance);
-        long insert = db.insert(ACCOUNT_TABLE, null, cv);
-        if (insert == -1) {
-            Log.e("SQLiteDB", "Failed to insert row");
-            return false;
-        } else {
-            return true;
-        }
+    public void deleteAllTables(SQLiteDatabase db) {
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_ACCOUNT);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CITY);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TRANSACTIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORY);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SAVING);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_BUDGET);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_PLANNING);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_TEMPLATE_TRANSACTIONS);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_DEBITO);
+        db.execSQL("DROP TABLE IF EXISTS " + TABLE_CREDITO);
     }
+
 
     // Aggiorna un Account esistente
     public int updateAccount(Account account) {
@@ -178,14 +227,29 @@ public class SQLiteDB extends SQLiteOpenHelper {
         values.put(COLUMN_BALANCE, account.getBalance());
 
         // Aggiornamento dell'account basato sull'ID
-        return db.update(ACCOUNT_TABLE, values, COLUMN_ID + " = ?",
+        return db.update(TABLE_ACCOUNT, values, COLUMN_ID + " = ?",
                 new String[]{String.valueOf(account.getId())});
+    }
+
+
+    public boolean createAccount(String account_name, double balance) {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues cv = new ContentValues();
+        cv.put(COLUMN_NAME, account_name);
+        cv.put(COLUMN_BALANCE, balance);
+        long insert = db.insert(TABLE_ACCOUNT, null, cv);
+        if (insert == -1) {
+            Log.e("SQLiteDB", "Failed to insert row");
+            return false;
+        } else {
+            return true;
+        }
     }
 
     // Cancella un Account
     public void deleteAccount(int accountId) {
         SQLiteDatabase db = this.getWritableDatabase();
-        db.delete(ACCOUNT_TABLE, COLUMN_ID + " = ?",
+        db.delete(TABLE_ACCOUNT, COLUMN_ID + " = ?",
                 new String[]{String.valueOf(accountId)});
         db.close();
     }
@@ -193,7 +257,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
     public ArrayList<Account> getAllAccounts() {
         ArrayList<Account> accounts = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + ACCOUNT_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_ACCOUNT, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -223,7 +287,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
         cv.put(COLUMN_CITY_NAME, cityName);
         cv.put(COLUMN_LATITUDE, latitude);
         cv.put(COLUMN_LONGITUDE, longitude);
-        long insert = db.insert(CITY_TABLE, null, cv);
+        long insert = db.insert(TABLE_CITY, null, cv);
         if (insert == -1) {
             Log.e("SQLiteDB", "Failed to insert city");
             return false;
@@ -235,7 +299,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
     public List<City> getAllCities() {
         List<City> cities = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + CITY_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CITY, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -265,7 +329,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
         ContentValues cv = new ContentValues();
         cv.put(COLUMN_NAME, name);
         cv.put(COLUMN_DESCRIPTION, description);
-        long insert = db.insert(CATEGORY_TABLE, null, cv);
+        long insert = db.insert(TABLE_CATEGORY, null, cv);
         if (insert == -1) {
             Log.e("SQLiteDB", "Failed to insert category");
             return false;
@@ -277,7 +341,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
     public ArrayList<Category> getAllCategories() {
         ArrayList<Category> categories = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + CATEGORY_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CATEGORY, null);
 
         if (cursor.moveToFirst()) {
             do {
@@ -310,7 +374,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
         cv.put(COLUMN_CITY_ID, cityId);
         cv.put(COLUMN_CATEGORY_ID, categoryId);
         cv.put(COLUMN_ACCOUNT_ID, accountId);
-        long insert = db.insert(TRANSACTIONS_TABLE, null, cv);
+        long insert = db.insert(TABLE_TRANSACTIONS, null, cv);
         if (insert == -1) {
             Log.e("SQLiteDB", "Failed to insert transaction");
             return false;
@@ -322,7 +386,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
     public ArrayList<Transactions> getAllTransactions() throws ParseException {
         ArrayList<Transactions> transactions = new ArrayList<>();
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + TRANSACTIONS_TABLE, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_TRANSACTIONS, null);
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
 
         if (cursor.moveToFirst()) {
@@ -359,7 +423,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
 
     public City getCityById(int cityId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.rawQuery("SELECT * FROM " + CITY_TABLE + " WHERE " + COLUMN_ID + " = " + cityId, null);
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CITY + " WHERE " + COLUMN_ID + " = " + cityId, null);
         if (cursor.moveToFirst()) {
             int idIndex = cursor.getColumnIndex(COLUMN_ID);
             int cityNameIndex = cursor.getColumnIndex(COLUMN_CITY_NAME);
@@ -383,7 +447,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
     public City getCityByName(String newCityName) {
         SQLiteDatabase db = this.getReadableDatabase();
         // Usa i placeholder '?' per evitare SQL Injection
-        Cursor cursor = db.rawQuery("SELECT * FROM " + CITY_TABLE + " WHERE " + COLUMN_CITY_NAME + " = ?", new String[]{newCityName});
+        Cursor cursor = db.rawQuery("SELECT * FROM " + TABLE_CITY + " WHERE " + COLUMN_CITY_NAME + " = ?", new String[]{newCityName});
         if (cursor.moveToFirst()) {
             int idIndex = cursor.getColumnIndex(COLUMN_ID);
             int cityNameIndex = cursor.getColumnIndex(COLUMN_CITY_NAME);
@@ -418,7 +482,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
         values.put(COLUMN_ACCOUNT_ID, newTrans.getAccountId());
 
         // Aggiornamento della riga, ritorna il numero di righe aggiornate
-        int count = db.update(TRANSACTIONS_TABLE, values, COLUMN_ID + " = ?", new String[]{String.valueOf(newTrans.getId())});
+        int count = db.update(TABLE_TRANSACTIONS, values, COLUMN_ID + " = ?", new String[]{String.valueOf(newTrans.getId())});
 
         if (count > 0) {
             Log.d("SQLiteDB", "Transazione aggiornata con successo");
@@ -433,7 +497,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
     public void deleteTransaction(int transactionId) {
         SQLiteDatabase db = this.getWritableDatabase();
         // Elimina la transazione dato il suo ID
-        int deletedRows = db.delete(TRANSACTIONS_TABLE, COLUMN_ID + " = ?", new String[]{String.valueOf(transactionId)});
+        int deletedRows = db.delete(TABLE_TRANSACTIONS, COLUMN_ID + " = ?", new String[]{String.valueOf(transactionId)});
         if (deletedRows > 0) {
             Log.d("SQLiteDB", "Transazione eliminata con successo");
         } else {
@@ -444,7 +508,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
 
     public Category getCategoryById(int categoryId) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(CATEGORY_TABLE, new String[]{COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPTION}, COLUMN_ID + " = ?", new String[]{String.valueOf(categoryId)}, null, null, null);
+        Cursor cursor = db.query(TABLE_CATEGORY, new String[]{COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPTION}, COLUMN_ID + " = ?", new String[]{String.valueOf(categoryId)}, null, null, null);
         if (cursor.moveToFirst()) {
             int idIndex = cursor.getColumnIndex(COLUMN_ID);
             int nameIndex = cursor.getColumnIndex(COLUMN_NAME);
@@ -484,7 +548,7 @@ public class SQLiteDB extends SQLiteOpenHelper {
 
     public int getIdByAccountName(String accountName) {
         SQLiteDatabase db = this.getReadableDatabase();
-        Cursor cursor = db.query(ACCOUNT_TABLE, new String[]{COLUMN_ID}, COLUMN_NAME + "=?", new String[]{accountName}, null, null, null);
+        Cursor cursor = db.query(TABLE_ACCOUNT, new String[]{COLUMN_ID}, COLUMN_NAME + "=?", new String[]{accountName}, null, null, null);
         if (cursor != null && cursor.moveToFirst()) {
             @SuppressLint("Range") int accountId = cursor.getInt(cursor.getColumnIndex(COLUMN_ID));
             cursor.close();
@@ -492,6 +556,19 @@ public class SQLiteDB extends SQLiteOpenHelper {
         } else {
             return -1; // or any default value
         }
+    }
+
+    public void createPosition() {
+        SQLiteDatabase db = this.getWritableDatabase();
+        ContentValues values = new ContentValues();
+
+        City citta = new City();
+        values.put("Name", citta.getNameCity());
+        values.put("Latitude", citta.getLatitude());
+        values.put("Longitude", citta.getLongitude());
+        db.insert("Cities", null, values);
+        db.close();
+
     }
 
     public long addTransaction(Transactions transaction) {
@@ -575,4 +652,6 @@ public class SQLiteDB extends SQLiteOpenHelper {
         db.close();
         return categories;
     }
+
+
 }

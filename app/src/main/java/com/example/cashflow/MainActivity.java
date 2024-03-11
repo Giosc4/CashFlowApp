@@ -1,7 +1,9 @@
 package com.example.cashflow;
 
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 
@@ -28,7 +30,6 @@ public class MainActivity extends AppCompatActivity {
     private ArrayList<Account> accounts;
 
     private SQLiteDB sqLiteDB;
-    //JsonReadWrite jsonReadWrite;
     private static final int PERMISSION_REQUEST_CODE = 1;
 
     @Override
@@ -38,17 +39,25 @@ public class MainActivity extends AppCompatActivity {
 
 
         sqLiteDB = new SQLiteDB(this);
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+
+        sqLiteDB.onCreate(db);
 
         accounts = sqLiteDB.getAllAccounts();
 
         //accounts = null;
         System.out.println(accounts);
-        if (accounts == null) {
+        if (accounts == null || accounts.size() == 0) {
+            System.out.println("accounts is null");
             // Le righe di codice devono essere eseguite solo all'installazione dell'app.
             sqLiteDB.createAccount("Cash", 0);
             sqLiteDB.createAccount("Bank", 0);
 
             sqLiteDB.createCategory("Salary", "stipendio");
+
+            sqLiteDB.createPosition();
+
+            sqLiteDB.createTransaction(1, 100, "2021-01-01", 1, 1, 1);
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             String date = sdf.format(Calendar.getInstance().getTime());
