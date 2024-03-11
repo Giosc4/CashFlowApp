@@ -7,6 +7,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -39,6 +40,9 @@ import com.example.cashflow.dataClass.Account;
 import com.example.cashflow.dataClass.Category;
 import com.example.cashflow.dataClass.City;
 import com.example.cashflow.dataClass.Transactions;
+import com.example.cashflow.db.SQLiteDB;
+import com.example.cashflow.db.readSQL;
+import com.example.cashflow.db.writeSQL;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
@@ -72,10 +76,17 @@ public class NewTransactionFragment extends Fragment {
     private City cityPosition;
     private OCRManager ocrManager;
     private SQLiteDB sqLiteDB;
+    private readSQL readSQL;
+    private writeSQL writeSQL;
 
+    public NewTransactionFragment(City cityPosition) {
+        sqLiteDB = new SQLiteDB(requireContext());
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+        sqLiteDB.onCreate(db);
 
-    public NewTransactionFragment(SQLiteDB sqLiteDB, City cityPosition) {
-        this.accounts = sqLiteDB.getAllAccounts();
+        readSQL = new readSQL(db);
+        writeSQL = new writeSQL(db);
+        this.accounts = readSQL.getAllAccounts();
         this.cityPosition = cityPosition;
 
     }
@@ -206,7 +217,7 @@ public class NewTransactionFragment extends Fragment {
 
         // Spinner CATEGORIES
         ArrayList<String> categories = new ArrayList<>();
-        ArrayList<Category> categoryObjects = sqLiteDB.getAllCategories(); // Assumendo che getAllCategories() restituisca una lista di oggetti Categoria dal DB
+        ArrayList<Category> categoryObjects = readSQL.getAllCategories(); // Assumendo che getAllCategories() restituisca una lista di oggetti Categoria dal DB
         for (Category category : categoryObjects) {
             categories.add(category.getName());
         }
@@ -426,17 +437,17 @@ public class NewTransactionFragment extends Fragment {
 
 
             int cityId = cityPosition != null ? cityPosition.getId() : -1; // Assumi -1 o un altro valore di default se cityPosition è null
-            int categoryId = sqLiteDB.getCategoryIdByName(selectedCategory);
+            int categoryId = readSQL.getCategoryIdByName(selectedCategory);
 
-            int accountId = sqLiteDB.getIdByAccountName(accountSelected);
+            int accountId = readSQL.getIdByAccountName(accountSelected);
 
             Transactions newTrans = new Transactions(income, amount, selectedDate, cityId, categoryId, accountId);
-            long transactionId = sqLiteDB.addTransaction(newTrans);
+            long transactionId = writeSQL.addTransaction(newTrans);
 
             if (transactionId != -1) {
                 // La transazione è stata salvata con successo
                 // Aggiorna il saldo dell'account selezionato, assumendo che sqLiteDB abbia un metodo per farlo
-                sqLiteDB.updateAccountBalance(accountSelected, income ? amount : -amount);
+                writeSQL.updateAccountBalance(accountSelected, income ? amount : -amount);
                 Toast.makeText(getContext(), "Transazione salvata", Toast.LENGTH_LONG).show();
             } else {
                 // Errore nel salvataggio della transazione

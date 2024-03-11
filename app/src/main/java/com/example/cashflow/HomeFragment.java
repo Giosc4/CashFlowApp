@@ -1,6 +1,10 @@
 package com.example.cashflow;
 
+import android.content.Context;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
+import android.os.Parcelable;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -16,6 +20,9 @@ import androidx.fragment.app.FragmentTransaction;
 
 import com.example.cashflow.dataClass.Account;
 import com.example.cashflow.dataClass.City;
+import com.example.cashflow.db.SQLiteDB;
+import com.example.cashflow.db.readSQL;
+import com.example.cashflow.db.writeSQL;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -27,28 +34,39 @@ public class HomeFragment extends Fragment {
     private String subtotalText = "";
     TextView myTextView;
     private SQLiteDB sqLiteDB;
+    private readSQL readSQL;
+    private writeSQL writeSQL;
     Posizione posizione;
     City city;
 
 
-    public HomeFragment(SQLiteDB sqLiteDB) {
-        this.sqLiteDB = sqLiteDB;
-        this.accounts = sqLiteDB.getAllAccounts();
-    }
-
     public HomeFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
     }
-
 
     @Nullable
     @Override
     public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_home, container, false);
 
+
+        sqLiteDB = new SQLiteDB(requireContext());
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+        sqLiteDB.onCreate(db);
+
+        readSQL = new readSQL(db);
+        writeSQL = new writeSQL(db);
+
+        accounts = readSQL.getAllAccounts();
+
+
+
         GridLayout gridLayout = view.findViewById(R.id.gridLayout);
         myTextView = view.findViewById(R.id.myTextView);
 
+        if (accounts == null) {
+            accounts = readSQL.getAllAccounts();
+        }
 
         this.posizione = new Posizione(requireContext());
 
@@ -156,7 +174,7 @@ public class HomeFragment extends Fragment {
     }
 
     private void openTransactionFragment() {
-        NewTransactionFragment transactionFragment = new NewTransactionFragment(sqLiteDB, city);
+        NewTransactionFragment transactionFragment = new NewTransactionFragment(city);
         FragmentManager fragmentManager = getParentFragmentManager();
         FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
         fragmentTransaction.replace(R.id.fragment_container, transactionFragment);
@@ -173,6 +191,7 @@ public class HomeFragment extends Fragment {
         fragmentTransaction.replace(R.id.fragment_container, statisticsFragment);
         fragmentTransaction.addToBackStack(null);
         fragmentTransaction.commit();
-    */ }
+    */
+    }
 
 }

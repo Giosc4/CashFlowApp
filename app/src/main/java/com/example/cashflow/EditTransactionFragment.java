@@ -8,6 +8,7 @@ import android.content.ContentValues;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.net.Uri;
 import android.os.Bundle;
@@ -38,11 +39,13 @@ import com.example.cashflow.dataClass.Account;
 import com.example.cashflow.dataClass.Category;
 import com.example.cashflow.dataClass.City;
 import com.example.cashflow.dataClass.Transactions;
+import com.example.cashflow.db.SQLiteDB;
+import com.example.cashflow.db.readSQL;
+import com.example.cashflow.db.writeSQL;
 import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.theartofdev.edmodo.cropper.CropImage;
 import com.theartofdev.edmodo.cropper.CropImageView;
 
-import java.io.IOException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -86,11 +89,18 @@ public class EditTransactionFragment extends Fragment {
     private int originalAccountIndex;
 
     private SQLiteDB sqLiteDB;
+    private readSQL readSQL;
+    private writeSQL writeSQL;
 
     public EditTransactionFragment(Transactions transaction, SQLiteDB sqLiteDB) {
         this.transactionOriginal = transaction;
-        this.sqLiteDB = sqLiteDB;
-        this.accountOriginal = sqLiteDB.getAllAccounts().get(transaction.getAccountId());
+        sqLiteDB = new SQLiteDB(requireContext());
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+        sqLiteDB.onCreate(db);
+
+        readSQL = new readSQL(db);
+        writeSQL = new writeSQL(db);
+        this.accountOriginal = readSQL.getAllAccounts().get(transaction.getAccountId());
 
     }
 
@@ -130,7 +140,7 @@ public class EditTransactionFragment extends Fragment {
         selectedTimeTextView.setText(selectedDateString);
 
 
-        City transactionCity = sqLiteDB.getCityById(transactionOriginal.getCityId());
+        City transactionCity = readSQL.getCityById(transactionOriginal.getCityId());
         if (transactionCity != null) {
             locationEditText.setText(transactionCity.getNameCity());
         }
@@ -200,17 +210,16 @@ public class EditTransactionFragment extends Fragment {
         });
 
         // Spinner CATEGORIES
-        ArrayList<Category> categoriesList = sqLiteDB.getAllCategories();
+        ArrayList<Category> categoriesList = readSQL.getAllCategories();
         categories = new ArrayList<>();
         for (Category category : categoriesList) {
             categories.add(category.getName());
         }
 // Assumendo che tu abbia un metodo in Transactions per ottenere l'ID della categoria
-        Category transactionCategory = sqLiteDB.getCategoryById(transactionOriginal.getCategoryId());
+        Category transactionCategory = readSQL.getCategoryById(transactionOriginal.getCategoryId());
         if (transactionCategory != null) {
             this.originalTransactionIndex = categories.indexOf(transactionCategory.getName());
         }
-
 
 
         ArrayAdapter<String> categoryAdapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, categories);
@@ -230,7 +239,7 @@ public class EditTransactionFragment extends Fragment {
             }
         });
 
-        accounts = sqLiteDB.getAllAccounts();
+        accounts = readSQL.getAllAccounts();
 
         //SPINNER ACCOUNTS
         ArrayList<String> accountNames = new ArrayList<>();
@@ -411,7 +420,7 @@ public class EditTransactionFragment extends Fragment {
 
     private void deleteTransaction() {
         // Rimuovi la transazione originale dall'account originale
-        sqLiteDB.deleteTransaction(transactionOriginal.getId());
+        writeSQL.deleteTransaction(transactionOriginal.getId());
         accounts.set(originalAccountIndex, accountOriginal);
 
         if (getActivity() != null) {
@@ -427,7 +436,7 @@ public class EditTransactionFragment extends Fragment {
         boolean newIncome = incomeButton.isSelected();
         double newAmount = Double.parseDouble(numberEditText.getText().toString());
         String newCityName = locationEditText.getText().toString();
-        City newCity = sqLiteDB.getCityByName(newCityName); // Assumendo che tu abbia questo metodo, altrimenti aggiungi la città se non esiste
+        City newCity = readSQL.getCityByName(newCityName); // Assumendo che tu abbia questo metodo, altrimenti aggiungi la città se non esiste
         int categoryId = ((Category) categorySpinner.getSelectedItem()).getId();
         Calendar newDate = calendar;
 
@@ -435,7 +444,7 @@ public class EditTransactionFragment extends Fragment {
         Transactions newTrans = new Transactions(transactionOriginal.getId(), newIncome, newAmount, newDate, newCity.getId(), categoryId, accountOriginal.getId());
 
         // Aggiorna la transazione nel database
-        sqLiteDB.updateTransaction(newTrans);
+        writeSQL.updateTransaction(newTrans);
 
         Toast.makeText(getContext(), "Transazione aggiornata", Toast.LENGTH_LONG).show();
 

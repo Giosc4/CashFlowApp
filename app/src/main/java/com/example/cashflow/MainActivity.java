@@ -9,13 +9,13 @@ import android.widget.Button;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
-import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
 
-import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.dataClass.*;
+import com.example.cashflow.db.*;
 
 import java.text.SimpleDateFormat;
 
@@ -23,13 +23,14 @@ import java.util.ArrayList;
 import java.util.Calendar;
 
 import android.Manifest;
-import android.widget.Toast;
 
 public class MainActivity extends AppCompatActivity {
     private Button btnHome;
     private ArrayList<Account> accounts;
 
     private SQLiteDB sqLiteDB;
+    private readSQL readSQL;
+    private writeSQL writeSQL;
     private static final int PERMISSION_REQUEST_CODE = 1;
 
     @Override
@@ -43,25 +44,30 @@ public class MainActivity extends AppCompatActivity {
 
         sqLiteDB.onCreate(db);
 
-        accounts = sqLiteDB.getAllAccounts();
+//        sqLiteDB.clearAllTableData(db);
+        readSQL = new readSQL(db);
+        writeSQL = new writeSQL(db);
+
+        accounts = readSQL.getAllAccounts();
 
         //accounts = null;
         System.out.println(accounts);
         if (accounts == null || accounts.size() == 0) {
             System.out.println("accounts is null");
             // Le righe di codice devono essere eseguite solo all'installazione dell'app.
-            sqLiteDB.createAccount("Cash", 0);
-            sqLiteDB.createAccount("Bank", 0);
+            writeSQL.createAccount("Cash", 0);
+            writeSQL.createAccount("Bank", 0);
 
-            sqLiteDB.createCategory("Salary", "stipendio");
+            writeSQL.createCategory("Salary", "stipendio");
 
-            sqLiteDB.createPosition();
+            City city = new City();
+            writeSQL.createCity(city.getNameCity(), city.getLatitude(), city.getLongitude());
 
-            sqLiteDB.createTransaction(1, 100, "2021-01-01", 1, 1, 1);
+            writeSQL.createTransaction(1, 100, "2021-01-01", 1, 1, 1);
 
             SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd");
             String date = sdf.format(Calendar.getInstance().getTime());
-            sqLiteDB.createTransaction(1, 100, date, null, 1, 1);
+            writeSQL.createTransaction(1, 100, date, null, 1, 1);
         }
 
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
@@ -73,10 +79,10 @@ public class MainActivity extends AppCompatActivity {
         btnHome.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                loadFragment(new HomeFragment(sqLiteDB));
+                loadFragment(new HomeFragment(null));
             }
         });
-        loadFragment(new HomeFragment(sqLiteDB));
+        loadFragment(new HomeFragment(null));
 
     }
 

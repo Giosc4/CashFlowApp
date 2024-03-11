@@ -1,6 +1,7 @@
 package com.example.cashflow;
 
 import android.content.DialogInterface;
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -21,26 +22,32 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.example.cashflow.dataClass.Account;
 import com.example.cashflow.dataClass.Transactions;
+import com.example.cashflow.db.SQLiteDB;
+import com.example.cashflow.db.readSQL;
+import com.example.cashflow.db.writeSQL;
 
-import java.io.IOException;
 import java.text.ParseException;
 import java.util.ArrayList;
 
 public class AccountDetailsFragment extends Fragment {
 
     private Account account;
-
-    private SQLiteDB sqLiteDB;
-
-    // Views
     private EditText nameEditText;
     private TextView balanceTextView;
     private RecyclerView transactionsRecyclerView;
     private Button deleteButton;
     private Button saveButton;
+    private SQLiteDB sqLiteDB;
+    private readSQL readSQL;
+    private writeSQL writeSQL;
 
     public AccountDetailsFragment(SQLiteDB sqLiteDB, Account account) {
-        this.sqLiteDB = sqLiteDB;
+        sqLiteDB = new SQLiteDB(requireContext());
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+        sqLiteDB.onCreate(db);
+
+        readSQL = new readSQL(db);
+        writeSQL = new writeSQL(db);
         this.account = account;
     }
 
@@ -62,10 +69,17 @@ public class AccountDetailsFragment extends Fragment {
         balanceTextView.setText("Balance Account: " + String.valueOf(account.getBalance()));
 
 
+        sqLiteDB = new SQLiteDB(requireContext());
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+        sqLiteDB.onCreate(db);
+
+        readSQL = new readSQL(db);
+        writeSQL = new writeSQL(db);
+
         // Set up RecyclerView with transactions
         TransactionListAdapter adapter = null;
         try {
-            adapter = new TransactionListAdapter(sqLiteDB.getAllTransactions());
+            adapter = new TransactionListAdapter(readSQL.getAllTransactions());
         } catch (ParseException e) {
             throw new RuntimeException(e);
         }
@@ -77,7 +91,7 @@ public class AccountDetailsFragment extends Fragment {
             @Override
             public void onClick(View v) {
                 changeName();
-                HomeFragment homeFragment = new HomeFragment(sqLiteDB);
+                HomeFragment homeFragment = new HomeFragment(null   );
                 FragmentManager fragmentManager = getParentFragmentManager();
                 FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
                 fragmentTransaction.replace(R.id.fragment_container, homeFragment);
@@ -102,7 +116,7 @@ public class AccountDetailsFragment extends Fragment {
 
         if (!newName.isEmpty()) {
             account.setName(newName);
-            int updateResult = sqLiteDB.updateAccount(account);
+            int updateResult = writeSQL.updateAccount(account);
 
             if (updateResult > 0) {
                 Toast.makeText(getContext(), "Account aggiornato: " + newName, Toast.LENGTH_LONG).show();
@@ -148,13 +162,13 @@ public class AccountDetailsFragment extends Fragment {
     // Method to delete the account
     private void deleteAccount() {
         // Nessuna necessità di ricercare l'account perché già lo hai come variabile di istanza
-        sqLiteDB.deleteAccount(account.getId());
+        writeSQL.deleteAccount(account.getId());
 
         Toast.makeText(getContext(), "Account eliminato: " + account.getName(), Toast.LENGTH_LONG).show();
         if (getActivity() != null && isAdded()) {
             FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
             fragmentManager.popBackStackImmediate(null, FragmentManager.POP_BACK_STACK_INCLUSIVE);
-            HomeFragment homeFragment = new HomeFragment(sqLiteDB); // Aggiorna per usare SQLiteDB
+            HomeFragment homeFragment = new HomeFragment(null); // Aggiorna per usare SQLiteDB
             fragmentManager.beginTransaction()
                     .replace(R.id.fragment_container, homeFragment)
                     .commit();

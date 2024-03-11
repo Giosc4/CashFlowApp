@@ -1,5 +1,6 @@
 package com.example.cashflow;
 
+import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -13,8 +14,10 @@ import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentTransaction;
 
 import com.example.cashflow.dataClass.Account;
+import com.example.cashflow.db.SQLiteDB;
+import com.example.cashflow.db.readSQL;
+import com.example.cashflow.db.writeSQL;
 
-import java.io.IOException;
 import java.util.ArrayList;
 
 public class NewAccountFragment extends Fragment {
@@ -22,8 +25,18 @@ public class NewAccountFragment extends Fragment {
     private EditText edtName;
     private ArrayList<Account> accounts;
 
+    private SQLiteDB sqLiteDB;
+    private readSQL readSQL;
+    private writeSQL writeSQL;
+
     public NewAccountFragment(ArrayList<Account> accounts) {
         this.accounts = accounts;
+        sqLiteDB = new SQLiteDB(requireContext());
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+        sqLiteDB.onCreate(db);
+
+        readSQL = new readSQL(db);
+        writeSQL = new writeSQL(db);
     }
 
     @Nullable
@@ -44,8 +57,7 @@ public class NewAccountFragment extends Fragment {
                     Toast.makeText(getActivity(), "Inserisci il nome dell'account", Toast.LENGTH_SHORT).show();
                 } else {
                     // Utilizza SQLiteDB per salvare il nuovo account.
-                    SQLiteDB db = new SQLiteDB(getActivity());
-                    boolean success = db.createAccount(name, 0); // Assumendo che l'equilibrio iniziale sia 0.
+                    boolean success = writeSQL.createAccount(name, 0); // Assumendo che l'equilibrio iniziale sia 0.
 
                     if (success) {
                         Toast.makeText(getActivity(), "Conto creato!", Toast.LENGTH_SHORT).show();

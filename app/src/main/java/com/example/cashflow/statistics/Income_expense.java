@@ -1,36 +1,21 @@
 package com.example.cashflow.statistics;
 
-import android.graphics.Color;
-import android.os.Bundle;
-
 import androidx.fragment.app.Fragment;
 
-import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
+import android.database.sqlite.SQLiteDatabase;
 import android.widget.CheckBox;
 import android.widget.TextView;
 
-import com.example.cashflow.R;
-import com.example.cashflow.SQLiteDB;
+import com.example.cashflow.db.SQLiteDB;
 import com.example.cashflow.dataClass.Account;
-import com.example.cashflow.dataClass.Category;
-import com.example.cashflow.dataClass.Transactions;
+import com.example.cashflow.db.readSQL;
+import com.example.cashflow.db.writeSQL;
 import com.github.mikephil.charting.charts.BarChart;
 import com.github.mikephil.charting.charts.PieChart;
-import com.github.mikephil.charting.components.Legend;
-import com.github.mikephil.charting.data.BarData;
-import com.github.mikephil.charting.data.BarDataSet;
-import com.github.mikephil.charting.data.BarEntry;
-import com.github.mikephil.charting.data.PieData;
-import com.github.mikephil.charting.data.PieDataSet;
-import com.github.mikephil.charting.data.PieEntry;
 
 import java.util.ArrayList;
-import java.util.List;
 
 public class Income_expense extends Fragment {
     private final Boolean isIncome;
@@ -46,11 +31,17 @@ public class Income_expense extends Fragment {
     private BarChart barChart;
 
     private SQLiteDB sqLiteDB;
-
-    public Income_expense(Boolean isIncome, SQLiteDB sqLiteDB) {
+    private com.example.cashflow.db.readSQL readSQL;
+    private com.example.cashflow.db.writeSQL writeSQL;
+    public Income_expense(Boolean isIncome) {
         this.isIncome = isIncome;
-        this.sqLiteDB = sqLiteDB;
-        this.accounts = sqLiteDB.getAllAccounts();
+        sqLiteDB = new SQLiteDB(requireContext());
+        SQLiteDatabase db = sqLiteDB.getWritableDatabase();
+        sqLiteDB.onCreate(db);
+
+        readSQL = new readSQL(db);
+        writeSQL = new writeSQL(db);
+        this.accounts = readSQL.getAllAccounts();
         selectedAccounts = new ArrayList<>();
     }
 /*
