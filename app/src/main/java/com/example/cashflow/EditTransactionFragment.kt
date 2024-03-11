@@ -28,10 +28,10 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.cashflow.OCRManager.OCRListener
-import com.example.cashflow.dataClass.Account
-import com.example.cashflow.dataClass.CategoriesEnum
-import com.example.cashflow.dataClass.City
-import com.example.cashflow.dataClass.Transactions
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.SQLiteDB
+import com.example.cashflow.db.readSQL
+import com.example.cashflow.db.writeSQL
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
@@ -57,10 +57,12 @@ class EditTransactionFragment(//CONSTRUCTOR
     private var locationEditText: TextView? = null
     private var doneButton: Button? = null
     private var deleteButton: Button? = null
-    private var categories: ArrayList<String>? = null
+    private var categories: ArrayList<Category>? = null
 
-    //GET FROM JSON
-    private val jsonReadWrite: JsonReadWrite
+    private var db: SQLiteDB
+    private var readSql: readSQL
+    private var writeSql: writeSQL
+
     private var accounts: ArrayList<Account>? = null
 
     //CHANGE ACCCOUNT TRANS
@@ -68,7 +70,9 @@ class EditTransactionFragment(//CONSTRUCTOR
     private var originalAccountIndex = 0
 
     init {
-        jsonReadWrite = JsonReadWrite()
+        db = SQLiteDB(context)
+        readSql = readSQL(db.writableDatabase)
+        writeSql = writeSQL(db.writableDatabase)
     }
 
     override fun onCreateView(
@@ -91,19 +95,25 @@ class EditTransactionFragment(//CONSTRUCTOR
         cameraButton = view.findViewById(R.id.cameraButton)
         ocrManager = OCRManager(requireContext())
         var str = ""
-        if (transactionOriginal.amount < 0) {
-            str = transactionOriginal.amount.toString()
+        if (transactionOriginal.amountValue < 0) {
+            str = transactionOriginal.amountValue.toString()
             str = str.replace("-", "")
             setExpense()
         } else {
-            str = transactionOriginal.amount.toString()
+            str = transactionOriginal.amountValue.toString()
             setIncome()
         }
         numberEditText?.setText(str)
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         val selectedDateString = dateFormat.format(transactionOriginal.date.time)
         selectedTimeTextView?.setText(selectedDateString)
-        locationEditText?.setText(transactionOriginal.city.printOnApp())
+
+        val city = readSql.getCityById(transactionOriginal.cityId)
+
+        if (city != null) {
+            locationEditText?.setText(city.printOnApp())
+        }
+
         dateButton?.setOnClickListener(View.OnClickListener { showDatePickerDialog() })
         numberEditText?.setFilters(arrayOf(
             InputFilter { source, start, end, dest, dstart, dend -> // Check if the input contains a decimal point
@@ -149,15 +159,23 @@ class EditTransactionFragment(//CONSTRUCTOR
             setIncome()
         })
 
-        // Spinner CATEGORIES
-        categories = ArrayList()
-        for (category in CategoriesEnum.entries) {
-            categories!!.add(category.name)
+        val localCategories = readSql.getCategories()
+
+// Utilizza la variabile locale immutabile per lavorare con le categorie
+        val categoryId = transactionOriginal.categoryId
+        originalTransactionIndex = localCategories.indexOfFirst { it.id == categoryId }
+
+// Assicurati che originalTransactionIndex sia valido prima di usarlo
+        if (originalTransactionIndex >= 0) {
+            categorySpinner?.setSelection(originalTransactionIndex)
         }
-        originalTransactionIndex = categories!!.indexOf(transactionOriginal.category.name)
+
+// Configura l'adapter del categorySpinner usando la variabile locale immutabile
         val categoryAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories!!)
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, localCategories)
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        categorySpinner?.adapter = categoryAdapter
+
         categorySpinner?.setAdapter(categoryAdapter)
         categorySpinner?.setSelection(originalTransactionIndex)
         categorySpinner?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
@@ -174,12 +192,12 @@ class EditTransactionFragment(//CONSTRUCTOR
                 // Codice da eseguire quando non viene selezionato nessun elemento
             }
         })
-        accounts = jsonReadWrite.readAccountsFromJson(requireContext())
+        accounts = readSql.getAccounts()
 
         //SPINNER ACCOUNTS
         val accountNames = ArrayList<String>()
         for (account in (accounts as java.util.ArrayList<Account>?)!!) {
-            accountNames.add(account.name)
+            account.name?.let { accountNames.add(it) }
         }
         originalAccountIndex = accountNames.indexOf(accountOriginal.name + "")
         val dataAdapter =
@@ -331,59 +349,51 @@ class EditTransactionFragment(//CONSTRUCTOR
     }
 
     private fun deleteTransaction() {
-        // Rimuovi la transazione originale dall'account originale
-        accountOriginal.removeTransaction(transactionOriginal)
-        accounts!![originalAccountIndex] = accountOriginal
         try {
-            // Esegui il salvataggio dell'account originale nel file JSON dopo la rimozione della transazione
-            jsonReadWrite.setList(accounts, requireContext())
-            if (activity != null) {
-                requireActivity().supportFragmentManager.popBackStack()
-                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.drawer_layout)
-                mainLayout.visibility = View.VISIBLE
-            }
-            Toast.makeText(context, "Transazione Eliminata", Toast.LENGTH_LONG).show()
-        } catch (e: IOException) {
-            e.printStackTrace()
+            writeSql.deleteTransaction(transactionOriginal.id)
+            Toast.makeText(context, "Transazione eliminata", Toast.LENGTH_LONG).show()
+            // Logica per tornare indietro o aggiornare UI
+        } catch (e: Exception) {
             Toast.makeText(
                 context,
-                "Errore durante il salvataggio delle modifiche",
+                "Errore durante l'eliminazione della transazione",
                 Toast.LENGTH_LONG
             ).show()
         }
     }
 
+
     private fun updateTransaction() {
-        val newIncome = incomeButton!!.isSelected
-        val newAmount = numberEditText!!.getText().toString().toDouble()
-        val nuovacitta = locationEditText!!.getText().toString()
-        //transactionOriginal.getCity().getNameCity())
-        val newCity = City(locationEditText!!.getText().toString(), 0f, 0f)
-        val newCategory = CategoriesEnum.entries[categorySpinner!!.selectedItemPosition]
-        val newAccountIndex = accountSpinner!!.selectedItemPosition
-        val newDate = calendar
-        val newTrans = Transactions(newIncome, newAmount, newDate, newCity, newCategory)
-        if (newAccountIndex != originalAccountIndex) {
-            accountOriginal.removeTransaction(transactionOriginal)
-            accounts!![newAccountIndex].addTransaction(newTrans)
-        } else {
-            accountOriginal.editTransaction(transactionOriginal, newTrans)
+        val newIncome = incomeButton?.isSelected ?: false
+        val newAmount = numberEditText?.text.toString().toDoubleOrNull() ?: 0.0
+        val categoryId = categories?.get(categorySpinner?.selectedItemPosition ?: 0)?.id ?: -1
+        val accountId = accounts?.get(accountSpinner?.selectedItemPosition ?: 0)?.id ?: -1
+        val newDate = calendar?.timeInMillis ?: System.currentTimeMillis()
+
+        val calendarDate: Calendar = Calendar.getInstance().apply {
+            timeInMillis = newDate // dove newDate è il valore Long
         }
+
+        val cityId =
+            readSql.getIdByCityName(locationEditText?.text.toString()) // Implementare questo metodo in readSQL
+
+        val updatedTransaction = Transactions(
+            transactionOriginal.id,
+            newIncome,
+            newAmount,
+            calendarDate,
+            cityId,
+            categoryId,
+            accountId
+        )
         try {
-            // Esegui il salvataggio dei dati qui, dopo aver apportato tutte le modifiche
-            accounts!![originalAccountIndex] = accountOriginal
-            jsonReadWrite.setList(accounts, requireContext())
-            if (activity != null) {
-                requireActivity().supportFragmentManager.popBackStack()
-                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.drawer_layout)
-                mainLayout.visibility = View.VISIBLE
-            }
+            writeSql.updateTransaction(updatedTransaction)
             Toast.makeText(context, "Transazione aggiornata", Toast.LENGTH_LONG).show()
-        } catch (e: IOException) {
-            e.printStackTrace()
+            // Logica per tornare indietro o aggiornare UI
+        } catch (e: Exception) {
             Toast.makeText(
                 context,
-                "Errore durante il salvataggio delle modifiche",
+                "Errore durante l'aggiornamento della transazione",
                 Toast.LENGTH_LONG
             ).show()
         }

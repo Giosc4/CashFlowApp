@@ -11,7 +11,9 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.R
-import com.example.cashflow.dataClass.Transactions
+
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.*
 
 class box_list_credito_fragment : Fragment() {
     var gridLayout: GridLayout? = null

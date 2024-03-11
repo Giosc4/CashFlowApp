@@ -10,8 +10,9 @@ import android.widget.GridLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.cashflow.R
-import com.example.cashflow.dataClass.Transactions
 import java.util.Calendar
+
+import com.example.cashflow.dataClass.*
 
 class box_list_debito_fragment : Fragment() {
     var gridLayout: GridLayout? = null
@@ -71,9 +72,9 @@ class box_list_debito_fragment : Fragment() {
         val calendar = Calendar.getInstance()
 
         // Creazione di oggetti di transazione di debito di esempio
-        val transaction1 = Transactions(false, 50.0, calendar, null, null)
-        val transaction2 = Transactions(false, 30.0, calendar, null, null)
-        val transaction3 = Transactions(false, 20.0, calendar, null, null)
+        val transaction1 = Transactions(false, 50.0, calendar, 1, 1, 1)
+        val transaction2 = Transactions(false, 30.0, calendar, 2, 2, 2)
+        val transaction3 = Transactions(false, 20.0, calendar, 3, 3, 3)
         val debitTransactions = ArrayList<Transactions>()
         // Aggiungi le transazioni alla lista
         debitTransactions.add(transaction1)

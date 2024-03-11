@@ -7,7 +7,6 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.example.cashflow.BuildConfig
 import com.example.cashflow.R
-import com.example.cashflow.dataClass.Account
 import org.osmdroid.api.IGeoPoint
 import org.osmdroid.config.Configuration
 import org.osmdroid.tileprovider.tilesource.TileSourceFactory
@@ -16,8 +15,15 @@ import org.osmdroid.util.GeoPoint
 import org.osmdroid.views.MapView
 import org.osmdroid.views.overlay.Marker
 
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.*
+
 class MapFragment(private val accounts: ArrayList<Account>) : Fragment() {
     private var mapView: MapView? = null
+    private lateinit var db: SQLiteDB
+    private lateinit var readSql: readSQL
+    private lateinit var writeSql: writeSQL
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -32,6 +38,12 @@ class MapFragment(private val accounts: ArrayList<Account>) : Fragment() {
         mapView?.setTileSource(TileSourceFactory.MAPNIK)
         mapView?.setBuiltInZoomControls(true)
         mapView?.setMultiTouchControls(true)
+
+        db = SQLiteDB(context)
+        readSql = readSQL(db.writableDatabase)
+        writeSql = writeSQL(db.writableDatabase)
+
+
         addMarkers()
         return view
     }
@@ -78,20 +90,19 @@ class MapFragment(private val accounts: ArrayList<Account>) : Fragment() {
         get() {
             val markersList = ArrayList<Marker>()
             for (account in accounts) {
-                val transactions = account.listTrans
-                if (transactions != null) {
-                    for (transaction in transactions) {
-                        val city = transaction.city.nameCity
-                        println("city $city")
-                        if (city != null) {
-                            val cityGeoPoint =
-                                GeoPoint(transaction.city.latitude, transaction.city.longitude)
-                            println("cityGeoPoint $cityGeoPoint")
-                            val marker = Marker(mapView)
-                            marker.setPosition(cityGeoPoint)
-                            marker.title = city
-                            markersList.add(marker)
-                        }
+                val transactions = readSql.getTransactionsByAccountId(account.id)
+                for (transaction in transactions) {
+                    val city = readSql.getCityById(transaction.cityId)?.nameCity
+                    val latitude = readSql.getCityById(transaction.cityId)?.latitude ?: 0.0
+                    val longitude = readSql.getCityById(transaction.cityId)?.longitude ?: 0.0
+                    println("city $city")
+                    if (city != null) {
+                        val cityGeoPoint = GeoPoint(latitude, longitude)
+                        println("cityGeoPoint $cityGeoPoint")
+                        val marker = Marker(mapView)
+                        marker.position = cityGeoPoint
+                        marker.title = city
+                        markersList.add(marker)
                     }
                 }
             }

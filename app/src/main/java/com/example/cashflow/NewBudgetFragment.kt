@@ -11,14 +11,21 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
-import com.example.cashflow.dataClass.CategoriesEnum
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.SQLiteDB
+import com.example.cashflow.db.readSQL
+import com.example.cashflow.db.writeSQL
 
 class NewBudgetFragment : Fragment() {
     private var editTextNome: EditText? = null
     private var spinnerCategoria: Spinner? = null
     private var editTextImporto: EditText? = null
     private var buttonSalva: Button? = null
-    private var categories: ArrayList<String>? = null
+    private var categories: ArrayList<Category>? = null
+
+    private lateinit var db: SQLiteDB
+    private lateinit var readSql: readSQL
+    private lateinit var writeSql: writeSQL
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -30,29 +37,17 @@ class NewBudgetFragment : Fragment() {
         editTextImporto = view.findViewById(R.id.editTextImporto)
         buttonSalva = view.findViewById(R.id.buttonSalva)
 
-        // Spinner CATEGORIES
-        categories = ArrayList()
-        for (category in CategoriesEnum.entries) {
-            categories!!.add(category.name)
-        }
-        val categoryAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories!!)
-        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        spinnerCategoria?.setAdapter(categoryAdapter)
-        spinnerCategoria?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View,
-                position: Int,
-                id: Long
-            ) {
-                val selectedCategory = parent.getItemAtPosition(position).toString()
-            }
+        db = SQLiteDB(context)
+        readSql = readSQL(db.writableDatabase)
+        writeSql = writeSQL(db.writableDatabase)
 
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Codice da eseguire quando non viene selezionato nessun elemento
-            }
-        })
+        categories = readSql.getCategories()
+        val categoryNames = categories?.map { it.name }
+        val categoryAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categoryNames ?: listOf())
+        categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        spinnerCategoria?.adapter = categoryAdapter
+
+
         editTextImporto?.setFilters(arrayOf(
             InputFilter { source, start, end, dest, dstart, dend -> // Check if the input contains a decimal point
                 var hasDecimalSeparator = dest.toString().contains(".")

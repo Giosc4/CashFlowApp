@@ -1,5 +1,6 @@
 package com.example.cashflow
 
+import android.content.Context
 import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -14,12 +15,16 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.cashflow.dataClass.Account
-import com.example.cashflow.dataClass.Transactions
-import java.io.IOException
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.SQLiteDB
+import com.example.cashflow.db.readSQL
+import com.example.cashflow.db.writeSQL
 
-class AccountDetailsFragment(private val account: Account) : Fragment() {
-    private val jsonReadWrite: JsonReadWrite
+class AccountDetailsFragment : Fragment() {
+    private var accountId: Int = -1
+    private lateinit var db: SQLiteDB
+    private lateinit var readSql: readSQL
+    private lateinit var writeSql: writeSQL
 
     // Views
     private var nameEditText: EditText? = null
@@ -28,9 +33,9 @@ class AccountDetailsFragment(private val account: Account) : Fragment() {
     private var deleteButton: Button? = null
     private var saveButton: Button? = null
 
-    init {
-        jsonReadWrite = JsonReadWrite()
-    }
+    private var account: Account? = null
+    private var transactions: List<Transactions>? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -44,14 +49,25 @@ class AccountDetailsFragment(private val account: Account) : Fragment() {
         saveButton = view.findViewById(R.id.saveButton)
         deleteButton = view.findViewById(R.id.deleteButton)
 
+        arguments?.getInt("ACCOUNT_ID")?.let {
+            accountId = it
+        }
+        db = SQLiteDB(context)
+        readSql = readSQL(db.writableDatabase)
+        writeSql = writeSQL(db.writableDatabase)
 
-        // Set account details
-        nameEditText?.setText(account.name)
-        balanceTextView?.setText("Balance Account: " + account.getBalance().toString())
 
+        account = readSql.getAccountById(accountId)
+        transactions = readSql.getTransactionsByAccountId(accountId)
+
+
+        if (account != null && account!!.isNotEmpty()) {
+            nameEditText?.setText(account!!.name)
+            balanceTextView?.setText("Balance Account: " + account!!.balance.toString())
+        }
 
         // Set up RecyclerView with transactions
-        val adapter = TransactionListAdapter(account.listTrans)
+        val adapter = TransactionListAdapter(transactions as ArrayList<Transactions>)
         val layoutManager = LinearLayoutManager(context)
         transactionsRecyclerView?.setLayoutManager(layoutManager)
         transactionsRecyclerView?.setAdapter(adapter)
@@ -66,23 +82,31 @@ class AccountDetailsFragment(private val account: Account) : Fragment() {
     }
 
     private fun changeName() {
-        val newName = nameEditText!!.getText().toString()
-        val oldName = account.name
-        try {
-            val accounts = jsonReadWrite.readAccountsFromJson(requireContext())
-            val index = findAccountIndex(accounts, oldName)
-            if (index != -1 && !doesAccountExist(accounts, newName)) {
-                account.name = newName
-                accounts[index] = account
-                jsonReadWrite.setList(accounts, requireContext())
-                Toast.makeText(context, "Account aggiornato: $newName", Toast.LENGTH_LONG).show()
-            } else {
-                Toast.makeText(context, "Errore aggiornamto account.", Toast.LENGTH_LONG).show()
+        val newName = nameEditText!!.text.toString()
+        if (newName.isNotEmpty()) {
+            try {
+                if (!readSql.doesAccountExist(newName)) {
+                    writeSql.updateAccountName(accountId, newName)
+                    Toast.makeText(context, "Account aggiornato: $newName", Toast.LENGTH_LONG)
+                        .show()
+                } else {
+                    Toast.makeText(
+                        context,
+                        "Account con questo nome già esiste.",
+                        Toast.LENGTH_LONG
+                    ).show()
+                }
+            } catch (e: Exception) {
+                e.printStackTrace()
+                Toast.makeText(
+                    context,
+                    "Errore nell'aggiornamento del nome dell'account.",
+                    Toast.LENGTH_LONG
+                ).show()
             }
-        } catch (e: IOException) {
-            e.printStackTrace()
         }
     }
+
 
     private fun doesAccountExist(accounts: ArrayList<Account>, name: String): Boolean {
         for (account in accounts) {
@@ -113,32 +137,21 @@ class AccountDetailsFragment(private val account: Account) : Fragment() {
 
     // Method to delete the account
     private fun deleteAccount() {
-        val accountToDelete = account.name
         try {
-            val accounts = jsonReadWrite.readAccountsFromJson(requireContext())
-            val index = findAccountIndex(accounts, accountToDelete)
-            if (index != -1) {
-                accounts.removeAt(index)
-                jsonReadWrite.setList(accounts, requireContext())
-                Toast.makeText(context, "Account eliminato: $accountToDelete", Toast.LENGTH_LONG)
-                    .show()
-                if (activity != null && isAdded) {
-                    val fragmentManager = requireActivity().supportFragmentManager
-                    fragmentManager.popBackStackImmediate(
-                        null,
-                        FragmentManager.POP_BACK_STACK_INCLUSIVE
-                    )
-                    val intent = Intent(requireContext(), MainActivity::class.java)
-                    intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
-                    startActivity(intent)
-                }
-            } else {
-                Toast.makeText(context, "Errore per eliminare l'account.", Toast.LENGTH_LONG).show()
+            writeSql.deleteAccount(accountId)
+            Toast.makeText(context, "Account eliminato", Toast.LENGTH_LONG).show()
+            if (activity != null && isAdded) {
+                val intent = Intent(requireContext(), MainActivity::class.java)
+                intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+                startActivity(intent)
             }
-        } catch (e: IOException) {
+        } catch (e: Exception) {
             e.printStackTrace()
+            Toast.makeText(context, "Errore nell'eliminazione dell'account.", Toast.LENGTH_LONG)
+                .show()
         }
     }
+
 
     // Custom RecyclerView.Adapter for displaying transactions with a "Detail" button
     private inner class TransactionListAdapter internal constructor(private val transactions: ArrayList<Transactions>) :
@@ -167,23 +180,22 @@ class AccountDetailsFragment(private val account: Account) : Fragment() {
             var transactionDetailTextView: TextView
             var detailButton: Button
 
+
             init {
                 transactionDetailTextView = itemView.findViewById(R.id.transactionDetailTextView)
                 detailButton = itemView.findViewById(R.id.detailButton)
-                transactionDetailTextView.setOnClickListener {
-                    //                        EditTransactionFragment editTransactionFragment = new EditTransactionFragment(transactions.get(getAdapterPosition()), account);
-//                        FragmentManager fragmentManager = requireActivity().getSupportFragmentManager();
-//                        FragmentTransaction fragmentTransaction = fragmentManager.beginTransaction();
-//                        fragmentTransaction.replace(R.id.fragment_container, editTransactionFragment);
-//                        fragmentTransaction.addToBackStack(null);
-//                        fragmentTransaction.commit();
-                }
                 detailButton.setOnClickListener {
                     val editTransactionFragment =
-                        EditTransactionFragment(transactions[getAdapterPosition()], account)
+                        account?.let { it1 ->
+                            EditTransactionFragment(transactions[getAdapterPosition()],
+                                it1
+                            )
+                        }
                     val fragmentManager = requireActivity().supportFragmentManager
                     val fragmentTransaction = fragmentManager.beginTransaction()
-                    fragmentTransaction.replace(R.id.linearContainer, editTransactionFragment)
+                    if (editTransactionFragment != null) {
+                        fragmentTransaction.replace(R.id.linearContainer, editTransactionFragment)
+                    }
                     fragmentTransaction.addToBackStack(null)
                     fragmentTransaction.commit()
                 }

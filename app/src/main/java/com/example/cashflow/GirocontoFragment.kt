@@ -9,7 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
-import com.example.cashflow.dataClass.Account
+import com.example.cashflow.dataClass.*
 
 class GirocontoFragment(private val accounts: ArrayList<Account>) : Fragment() {
     private var accountSpinnerProv: Spinner? = null
@@ -28,7 +28,7 @@ class GirocontoFragment(private val accounts: ArrayList<Account>) : Fragment() {
         //SPINNER ACCOUNTS
         val accountNames = ArrayList<String>()
         for (account in accounts) {
-            accountNames.add(account.name)
+            account.name?.let { accountNames.add(it) }
         }
         val dataAdapterProv =
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, accountNames)

@@ -9,7 +9,6 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.example.cashflow.dataClass.Account
 import com.example.cashflow.statistics.Income_expense
 import com.example.cashflow.statistics.Line_chart
 import com.example.cashflow.statistics.MapFragment
@@ -19,6 +18,9 @@ import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.*
+
 
 class StatisticsFragment(private val accounts: ArrayList<Account>) : Fragment() {
     private var btnLineChart: Button? = null
@@ -26,6 +28,11 @@ class StatisticsFragment(private val accounts: ArrayList<Account>) : Fragment() 
     private var incomeButton: Button? = null
     private var expenseButton: Button? = null
     private var btnCSVFileDownload: Button? = null
+
+    private lateinit var db: SQLiteDB
+    private lateinit var readSql: readSQL
+    private lateinit var writeSql: writeSQL
+
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,8 +45,13 @@ class StatisticsFragment(private val accounts: ArrayList<Account>) : Fragment() 
         incomeButton = view.findViewById(R.id.incomeButton)
         expenseButton = view.findViewById(R.id.expenseButton)
         btnCSVFileDownload = view.findViewById(R.id.btnCSVFileDownload)
+
+        db = SQLiteDB(context)
+        readSql = readSQL(db.writableDatabase)
+        writeSql = writeSQL(db.writableDatabase)
+
         btnLineChart?.setOnClickListener(View.OnClickListener {
-            val barChartFragment = Line_chart(accounts)
+            val barChartFragment = Line_chart()
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.linearContainer, barChartFragment)
                 .commit()
@@ -64,7 +76,7 @@ class StatisticsFragment(private val accounts: ArrayList<Account>) : Fragment() 
         })
         btnCSVFileDownload?.setOnClickListener(View.OnClickListener { // Call the function to save the CSV file
             try {
-                if (saveToCSV(accounts)) {
+                if (saveToCSV()) {
                     Toast.makeText(activity, "File CSV Salvato", Toast.LENGTH_SHORT).show()
                 } else {
                     Toast.makeText(activity, "Inserisci il nome dell'account", Toast.LENGTH_SHORT)
@@ -77,60 +89,68 @@ class StatisticsFragment(private val accounts: ArrayList<Account>) : Fragment() 
         return view
     }
 
-    @Throws(IOException::class)
-    fun saveToCSV(accounts: ArrayList<Account>): Boolean {
+    fun saveToCSV(): Boolean {
+        val accounts = readSql.getAccounts()
+
         // Check if external storage is available and writable
         val state = Environment.getExternalStorageState()
-        return if (Environment.MEDIA_MOUNTED == state) {
-            // Get the directory path for the "Download" folder
-            val downloadDirectory =
-                Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
-            if (!downloadDirectory.exists() && !downloadDirectory.mkdirs()) {
-                throw IOException("Cannot create 'Download' directory")
-            }
+        if (Environment.MEDIA_MOUNTED != state) {
+            return false
+        }
 
-            // Generate a unique file name using the current timestamp
-            val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US).format(Date())
-            val fileName = "CashFlowApp_$timestamp.csv"
+        // Get the directory path for the "Download" folder
+        val downloadDirectory =
+            Environment.getExternalStoragePublicDirectory(Environment.DIRECTORY_DOWNLOADS)
+        if (!downloadDirectory.exists() && !downloadDirectory.mkdirs()) {
+            throw IOException("Cannot create 'Download' directory")
+        }
 
-            // Specify the file path
-            val file = File(downloadDirectory, fileName)
-            try {
-                FileWriter(file).use { writer ->
-                    // Write CSV header
-                    writer.write("Name, Balance, Transaction Type, Amount, Date, City, Category\n")
+        // Generate a unique file name using the current timestamp
+        val timestamp = SimpleDateFormat("yyyy-MM-dd_HH-mm-ss", Locale.US).format(Date())
+        val fileName = "CashFlowApp_$timestamp.csv"
 
-                    // Write account data to the file
-                    for (account in accounts) {
-                        val accountName = account.name
-                        val accountBalance = account.getBalance()
-                        for (transaction in account.listTrans) {
-                            val transactionType = if (transaction.isIncome) "INCOME" else "EXPENSE"
-                            val transactionAmount = transaction.amountValue
-                            val transactionDate = transaction.date.time.toString()
-                            val cityName = transaction.city.nameCity
-                            val category = transaction.category.name
-                            val csvData = String.format(
-                                "%s,%.2f,%s,%.2f,%s,%s,%s\n",
-                                accountName,
-                                accountBalance,
-                                transactionType,
-                                transactionAmount,
-                                transactionDate,
-                                cityName,
-                                category
-                            )
-                            writer.write(csvData)
-                        }
+        // Specify the file path
+        val file = File(downloadDirectory, fileName)
+        try {
+            FileWriter(file).use { writer ->
+                // Write CSV header
+                writer.write("Name, Balance, Transaction Type, Amount, Date, City, Category\n")
+
+                // Write account data to the file
+                for (account in accounts) {
+                    val accountName = account.name
+                    val accountBalance = account.balance
+                    val transactions = readSql.getTransactionsByAccountId(account.id)
+                    for (transaction in transactions) {
+                        val transactionType = if (transaction.isIncome) "INCOME" else "EXPENSE"
+                        val transactionAmount = transaction.amountValue
+                        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                        val transactionDate = dateFormat.format(transaction.date.time)
+                        val city = readSql.getCityFromID(transaction.cityId)
+                        val cityName = city?.nameCity ?: "Unknown"
+                        val category = readSql.getCategoryFromID(transaction.categoryId)
+                        val categoryName = category?.name ?: "Unknown"
+                        val csvData = String.format(
+                            "%s,%.2f,%s,%.2f,%s,%s,%s\n",
+                            accountName,
+                            accountBalance,
+                            transactionType,
+                            transactionAmount,
+                            transactionDate,
+                            cityName,
+                            categoryName
+                        )
+                        writer.write(csvData)
                     }
                 }
-            } catch (e: IOException) {
-                // Handle the exception
-                e.printStackTrace()
             }
-            true
-        } else {
-            false
+        } catch (e: IOException) {
+            // Handle the exception
+            e.printStackTrace()
+            return false
         }
+
+        return true
     }
+
 }

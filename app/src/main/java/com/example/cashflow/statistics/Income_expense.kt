@@ -12,8 +12,6 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.R
-import com.example.cashflow.dataClass.Account
-import com.example.cashflow.dataClass.CategoriesEnum
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Legend
@@ -23,6 +21,9 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.*
+
 
 class Income_expense(private val isIncome: Boolean, private val accounts: ArrayList<Account>) :
     Fragment() {
@@ -34,8 +35,16 @@ class Income_expense(private val isIncome: Boolean, private val accounts: ArrayL
     private var pieChart: PieChart? = null
     private var barChart: BarChart? = null
 
+    private  var db: SQLiteDB
+    private  var readSql: readSQL
+    private  var writeSql: writeSQL
+
     init {
         selectedAccounts = ArrayList()
+        db = SQLiteDB(context)
+        readSql = readSQL(db.writableDatabase)
+        writeSql = writeSQL(db.writableDatabase)
+
     }
 
     override fun onCreateView(
@@ -69,7 +78,7 @@ class Income_expense(private val isIncome: Boolean, private val accounts: ArrayL
         // Popola l'array di nomi degli account
         val accountNames = ArrayList<String>()
         for (account in accounts) {
-            accountNames.add(account.name)
+            account.name?.let { accountNames.add(it) }
         }
 
         // Inizializza l'adapter personalizzato per il RecyclerView
@@ -110,7 +119,6 @@ class Income_expense(private val isIncome: Boolean, private val accounts: ArrayL
         pieChart!!.extraTopOffset = 30f
         pieChart!!.setUsePercentValues(true)
         val pieDataSet = PieDataSet(getIncomeOrExpensePieData(selectedAccounts), "")
-        pieDataSet.setColors(*categoryColors)
         pieDataSet.setDrawValues(false)
 
         // Configura la legenda
@@ -130,24 +138,26 @@ class Income_expense(private val isIncome: Boolean, private val accounts: ArrayL
         barChart!!.setDrawValueAboveBar(true)
         barChart!!.legend.isEnabled = false
         val barDataSet = BarDataSet(getIncomeOrExpenseBarData(selectedAccounts), "")
-        val colors = categoryColors
-        barDataSet.setColors(*colors)
         val barData = BarData(barDataSet)
         barChart!!.setData(barData)
     }
 
     fun getIncomeOrExpensePieData(accounts: ArrayList<Account>): List<PieEntry> {
         val entries: MutableList<PieEntry> = ArrayList()
-        val categories = CategoriesEnum.entries.toTypedArray()
+
+        // Recupera tutte le categorie dal database
+        val categories = readSql.getCategories()
         for (category in categories) {
             var totalAmount = 0f
+
+            // Calcola il totale per categoria attraverso tutti gli account selezionati
             for (account in accounts) {
-                for (transaction in account.listTrans) {
-                    if (transaction.isIncome === isIncome && transaction.category == category) {
-                        totalAmount += transaction.amountValue.toFloat()
-                    }
+                val transactions = readSql.getTransactionsByAccountIdAndCategory(account.id, category.id, isIncome)
+                for (transaction in transactions) {
+                    totalAmount += transaction.amountValue.toFloat()
                 }
             }
+
             if (totalAmount > 0) {
                 entries.add(PieEntry(totalAmount, category.name))
             }
@@ -155,44 +165,26 @@ class Income_expense(private val isIncome: Boolean, private val accounts: ArrayL
         return entries
     }
 
+
     fun getIncomeOrExpenseBarData(accounts: ArrayList<Account>): List<BarEntry> {
         val entries: MutableList<BarEntry> = ArrayList()
-        val categories = CategoriesEnum.entries.toTypedArray()
+
+        val categories = readSql.getCategories()
         for (i in categories.indices) {
             var totalAmount = 0f
+
             for (account in accounts) {
-                for (transaction in account.listTrans) {
-                    if (transaction.isIncome === isIncome && transaction.category == categories[i]) {
-                        totalAmount += transaction.amountValue.toFloat()
-                    }
+                val transactions = readSql.getTransactionsByAccountIdAndCategory(account.id, categories[i].id, isIncome)
+                for (transaction in transactions) {
+                    totalAmount += transaction.amountValue.toFloat()
                 }
             }
+
             if (totalAmount > 0) {
-                entries.add(BarEntry(i.toFloat(), totalAmount, categories[i].name))
+                entries.add(BarEntry(i.toFloat(), totalAmount))
             }
         }
         return entries
     }
 
-    private val categoryColors: IntArray
-        private get() {
-            val categories = CategoriesEnum.entries.toTypedArray()
-            val colors = IntArray(categories.size)
-
-            // Assegna un colore univoco a ciascuna categoria
-            for (i in categories.indices) {
-                when (categories[i]) {
-                    CategoriesEnum.FoodAndDrinks -> colors[i] = Color.BLUE
-                    CategoriesEnum.Shopping -> colors[i] = Color.GREEN
-                    CategoriesEnum.House -> colors[i] = Color.RED
-                    CategoriesEnum.Transport -> colors[i] = Color.YELLOW
-                    CategoriesEnum.LifeAndEntertainment -> colors[i] = Color.MAGENTA
-                    CategoriesEnum.CommunicationAndPC -> colors[i] = Color.CYAN
-                    CategoriesEnum.Salary -> colors[i] = Color.LTGRAY
-                    CategoriesEnum.Gifts -> colors[i] = Color.DKGRAY
-                    CategoriesEnum.Other -> colors[i] = Color.BLACK
-                }
-            }
-            return colors
-        }
 }

@@ -11,6 +11,9 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.cashflow.R
 
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.*
+
 class box_transaction_fragment : Fragment() {
     private fun addTransactionList(view: View) {
         val gridLayout = view.findViewById<GridLayout>(R.id.gridLayout)

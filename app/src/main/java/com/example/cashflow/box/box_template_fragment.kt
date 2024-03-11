@@ -12,6 +12,9 @@ import android.widget.GridLayout
 import androidx.fragment.app.Fragment
 import com.example.cashflow.R
 
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.*
+
 class box_template_fragment : Fragment() {
     private fun addButtonsBox(numberOfButtons: Int, view: View) {
         val gridLayout = view.findViewById<GridLayout>(R.id.gridLayout)

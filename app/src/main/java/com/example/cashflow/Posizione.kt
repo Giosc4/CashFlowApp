@@ -6,11 +6,11 @@ import android.content.pm.PackageManager
 import android.location.Geocoder
 import android.location.Location
 import androidx.core.app.ActivityCompat
-import com.example.cashflow.dataClass.City
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationServices
 import java.io.IOException
 import java.util.Locale
+import com.example.cashflow.dataClass.*
 
 class Posizione(private val context: Context) {
     private val fusedLocationProviderClient: FusedLocationProviderClient
@@ -34,8 +34,8 @@ class Posizione(private val context: Context) {
                     callback.onLocationFetchFailed(Exception("Location is null"))
                     return@addOnSuccessListener
                 }
-                val latitude = location.latitude.toFloat()
-                val longitude = location.longitude.toFloat()
+                val latitude = location.latitude
+                val longitude = location.longitude
                 val geocoder = Geocoder(context, Locale.getDefault())
                 try {
                     val addresses =

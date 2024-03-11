@@ -32,16 +32,14 @@ import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.example.cashflow.OCRManager.OCRListener
-import com.example.cashflow.dataClass.Account
-import com.example.cashflow.dataClass.CategoriesEnum
-import com.example.cashflow.dataClass.City
-import com.example.cashflow.dataClass.Transactions
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
 import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.*
 
 class NewTransactionFragment(
     private val accounts: ArrayList<Account>,
@@ -67,11 +65,15 @@ class NewTransactionFragment(
     private var cameraImageUri: Uri? = null
     private var dateButton: Button? = null
     private var locationEditText: TextView? = null
-    private var jsonReadWrite: JsonReadWrite? = null
-    private var categories: ArrayList<String>? = null
+    private var categories: ArrayList<Category>? = null
     private var cameraButton: ImageView? = null
     private var selectedTimeTextView: TextView? = null
     private var ocrManager: OCRManager? = null
+
+    private lateinit var db: SQLiteDB
+    private lateinit var readSql: readSQL
+    private lateinit var writeSql: writeSQL
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -101,8 +103,14 @@ class NewTransactionFragment(
         fragment_container = view.findViewById(R.id.fragment_container)
         dateButton = view.findViewById(R.id.dateButton)
         deleteButton = view.findViewById(R.id.deleteButton)
+
         deleteButton?.setVisibility(View.INVISIBLE)
         deleteButton?.setVisibility(View.GONE)
+
+        db = SQLiteDB(context)
+        readSql = readSQL(db.writableDatabase)
+        writeSql = writeSQL(db.writableDatabase)
+
         selectedDate = Calendar.getInstance()
         val dateFormat = SimpleDateFormat("yyyy-MM-dd")
         val dataFormattata = dateFormat.format(selectedDate?.getTime())
@@ -213,35 +221,26 @@ class NewTransactionFragment(
             expenseButton?.setBackgroundColor(Color.parseColor("#a7c5f9")) // azzurro quando non selezionato
         })
 
-        // Spinner CATEGORIES
-        categories = ArrayList()
-        for (category in CategoriesEnum.entries) {
-            categories!!.add(category.name)
-        }
-        val categoryAdapter =
-            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categories!!)
+
+
+        categories = readSql.getCategories()
+        val categoryNames = categories?.map { it.name }
+        val categoryAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            categoryNames ?: listOf()
+        )
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
-        categorySpinner?.setAdapter(categoryAdapter)
-        categorySpinner?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
-            override fun onItemSelected(
-                parent: AdapterView<*>,
-                view: View,
-                position: Int,
-                id: Long
-            ) {
-                val selectedCategory = parent.getItemAtPosition(position).toString()
-            }
-
-            override fun onNothingSelected(parent: AdapterView<*>?) {
-                // Codice da eseguire quando non viene selezionato nessun elemento
-            }
-        })
+        categorySpinner?.adapter = categoryAdapter
 
 
+
+
+        categorySpinner
         //SPINNER ACCOUNTS
         val accountNames = ArrayList<String>()
         for (account in accounts) {
-            accountNames.add(account.name)
+            account.name?.let { accountNames.add(it) }
         }
         val dataAdapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, accountNames)
@@ -456,86 +455,68 @@ class NewTransactionFragment(
         })
     }
 
-
-    @Throws(IOException::class)
     private fun saveTransaction() {
-        if (numberEditText != null && accountSpinner != null) {
-            val income = incomeButton!!.isSelected
-            val expense = expenseButton!!.isSelected
-            val numberText = if (numberEditText!!.getText() != null) numberEditText!!.getText()
-                .toString() else ""
+        if (numberEditText == null || accountSpinner == null) {
+            // Gestisci il caso in cui uno dei componenti UI sia nullo
+            return
+        }
 
-// Estrai il testo dall'EditText e imposta un valore di default se null
-val rawNumberText = numberEditText?.text?.toString() ?: ""
-// Verifica se almeno uno dei pulsanti della spesa o entrata è stato premuto
-            if (!income && !expense) {
-                Toast.makeText(context, "Inserisci Spesa o Entrata", Toast.LENGTH_SHORT).show()
-                return  // Esce dal metodo senza salvare la transazione
-            }
+        val income = incomeButton?.isSelected ?: false
+        val expense = expenseButton?.isSelected ?: false
+        val rawNumberText = numberEditText?.text?.toString() ?: ""
 
-// Controlla se il testo è vuoto o rappresenta zero in formati diversi
-            if (rawNumberText.isEmpty() || rawNumberText == "0" || rawNumberText == "0.00") {
-                Toast.makeText(context, "Aggiungi un prezzo", Toast.LENGTH_SHORT).show()
-                return  // Esce dal metodo senza salvare la transazione
-            }
-            val amount: Double
-            amount = try {
-                numberText.toDouble()
-            } catch (e: NumberFormatException) {
-                // Il valore inserito non è un numero valido, mostra un messaggio di errore
-                Toast.makeText(context, "Numero numerico non valido", Toast.LENGTH_SHORT).show()
-                return  // Esce dal metodo senza salvare la transazione
-            }
-            val accountSelected =
-                if (accountSpinner!!.getSelectedItem() != null) accountSpinner!!.getSelectedItem()
-                    .toString() else ""
+        if (!income && !expense) {
+            Toast.makeText(context, "Inserisci Spesa o Entrata", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-            //formatting date for Toast
-            val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-            val dataFormattata = dateFormat.format(selectedDate!!.time)
-            println("dataFormattata $dataFormattata")
-            var location = ""
-            location = if (cityPosition != null) {
-                if (cityPosition.nameCity != null) cityPosition.nameCity.toString() else ""
-            } else {
-                "Nessuna città disponibile"
-            }
-            val selectedCategory =
-                if (categorySpinner!!.getSelectedItem() != null) categorySpinner!!.getSelectedItem()
-                    .toString() else ""
+        if (rawNumberText.isEmpty() || rawNumberText == "0" || rawNumberText == "0.00") {
+            Toast.makeText(context, "Aggiungi un prezzo", Toast.LENGTH_SHORT).show()
+            return
+        }
 
-            // Resto del codice per salvare la transazione
+        val amount: Double = try {
+            rawNumberText.toDouble()
+        } catch (e: NumberFormatException) {
+            Toast.makeText(context, "Numero numerico non valido", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val accountName = accountSpinner?.selectedItem?.toString() ?: ""
+        val categoryId =
+            categories?.find { it.name == categorySpinner?.selectedItem.toString() }?.id ?: -1
+        val cityId = readSql.getIdByCityName(locationEditText?.text.toString())
+        val date = selectedDate ?: Calendar.getInstance()
+
+        // Creazione dell'oggetto Transactions
+        val newTrans = Transactions(
+            income = income,
+            amount = if (income) amount else -amount, // Assicurati che le spese siano memorizzate come valori negativi
+            date = date,
+            cityId = cityId,
+            categoryId = categoryId,
+            accountId = readSql.getIdByAccountName(accountName) // Assicurati di avere questo metodo in readSQL
+        )
+
+        // Salvataggio della transazione nel database
+        try {
+            writeSql.insertTransaction(newTrans)
+            Toast.makeText(context, "Transazione salvata", Toast.LENGTH_LONG).show()
+
+            // Aggiorna UI o naviga verso un'altra vista se necessario
+            activity?.supportFragmentManager?.popBackStack()
+            val mainLayout = activity?.findViewById<LinearLayout>(R.id.drawer_layout)
+            mainLayout?.visibility = View.VISIBLE
+
+        } catch (e: Exception) {
             Toast.makeText(
                 context,
-                "Transazione salvata: $amount, $accountSelected, $dataFormattata, $location",
+                "Errore durante il salvataggio della transazione",
                 Toast.LENGTH_LONG
             ).show()
-            val newTrans = Transactions(
-                income,
-                amount,
-                selectedDate,
-                cityPosition,
-                CategoriesEnum.valueOf(selectedCategory)
-            )
-            jsonReadWrite = JsonReadWrite()
-            for (account in accounts) {
-                if (account.name == accountSelected) {
-                    account.listTrans.add(newTrans)
-                    account.updateBalance()
-                    println("New Transaction: $newTrans")
-                    jsonReadWrite!!.setList(accounts, requireContext())
-                    break
-                }
-            }
-            if (activity != null) {
-                requireActivity().supportFragmentManager.popBackStack()
-                val mainLayout = requireActivity().findViewById<LinearLayout>(R.id.drawer_layout)
-                mainLayout.visibility = View.VISIBLE
-            }
-        } else {
-            // Gestisci il caso in cui uno dei componenti UI sia nullo
         }
     }
+
 
     private fun showDatePickerDialog(textView: TextView?) {
         val calendar = Calendar.getInstance()

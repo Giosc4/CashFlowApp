@@ -12,7 +12,6 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.cashflow.R
-import com.example.cashflow.dataClass.Account
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
 import com.github.mikephil.charting.components.YAxis
@@ -24,7 +23,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class Line_chart(private val accounts: ArrayList<Account>) : Fragment() {
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.*
+
+class Line_chart() : Fragment() {
     private var openStartDatePickerButton: Button? = null
     private var openEndDatePickerButton: Button? = null
     private var generateChartButton: Button? = null
@@ -33,6 +35,12 @@ class Line_chart(private val accounts: ArrayList<Account>) : Fragment() {
     private var startDate: Calendar? = null
     private var endDate: Calendar? = null
     private var lineChart: LineChart? = null
+
+    private var accounts: ArrayList<Account>? = null
+    private lateinit var db: SQLiteDB
+    private lateinit var readSql: readSQL
+    private lateinit var writeSql: writeSQL
+
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -57,6 +65,14 @@ class Line_chart(private val accounts: ArrayList<Account>) : Fragment() {
         openStartDatePickerButton?.setOnClickListener(View.OnClickListener { openStartDatePicker() })
         openEndDatePickerButton?.setOnClickListener(View.OnClickListener { openEndDatePicker() })
         generateChartButton?.setOnClickListener(View.OnClickListener { createLineChart() })
+
+        db = SQLiteDB(context)
+        readSql = readSQL(db.writableDatabase)
+        writeSql = writeSQL(db.writableDatabase)
+
+        accounts = readSql.getAccounts()
+
+
         return view
     }
 
@@ -139,18 +155,17 @@ class Line_chart(private val accounts: ArrayList<Account>) : Fragment() {
         // Copia la data di inizio in una variabile temporanea per usarla durante l'iterazione
         val currentDate = startDate!!.clone() as Calendar
 
-        // Itera su tutte le date da startDate a endDate
         while (currentDate.compareTo(endDate) <= 0) {
-            // Inizializza la data corrente
             val dayKey = formatDateKeyWithoutYear(currentDate)
 
-            // Calcola il totale delle transazioni per questa data
             var dailyTotal = 0.0
-            for (account in accounts) {
-                for (transaction in account.listTrans) {
+
+            for (account in accounts!!) {
+                // Itera su tutte le transazioni all'interno di ciascun account
+                for (transaction in readSql.getTransactionsByAccountId(account.id)) {
                     val transactionDate = transaction.date
                     if (isSameDay(transactionDate, currentDate)) {
-                        dailyTotal += transaction.amount
+                        dailyTotal += transaction.amountValue // Utilizza amountValue per ottenere l'importo della transazione
                     }
                 }
             }

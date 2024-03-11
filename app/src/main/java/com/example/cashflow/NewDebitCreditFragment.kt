@@ -12,7 +12,10 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.example.cashflow.dataClass.Account
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.SQLiteDB
+import com.example.cashflow.db.readSQL
+import com.example.cashflow.db.writeSQL
 
 class NewDebitCreditFragment(private val accounts: ArrayList<Account>) : Fragment() {
     private var editTextName: EditText? = null
@@ -24,6 +27,11 @@ class NewDebitCreditFragment(private val accounts: ArrayList<Account>) : Fragmen
     private var buttonEndDate: Button? = null
     private var buttonNewDebit: Button? = null
     private var buttonNewCredit: Button? = null
+
+    private lateinit var db: SQLiteDB
+    private lateinit var readSql: readSQL
+    private lateinit var writeSql: writeSQL
+
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -82,10 +90,14 @@ class NewDebitCreditFragment(private val accounts: ArrayList<Account>) : Fragmen
             }
         ))
 
+        db = SQLiteDB(context)
+        readSql = readSQL(db.writableDatabase)
+        writeSql = writeSQL(db.writableDatabase)
+
         //SPINNER ACCOUNTS
         val accountNames = ArrayList<String>()
         for (account in accounts) {
-            accountNames.add(account.name)
+            accountNames.add(account.name ?: "")
         }
         val dataAdapter =
             ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, accountNames)

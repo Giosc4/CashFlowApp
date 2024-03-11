@@ -12,8 +12,9 @@ import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.cashflow.AccountDetailsFragment
 import com.example.cashflow.R
-import com.example.cashflow.dataClass.Account
 import java.math.BigDecimal
+import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.*
 
 class box_account_fragment(private var accounts: ArrayList<Account>?) : Fragment() {
 
@@ -45,10 +46,10 @@ class box_account_fragment(private var accounts: ArrayList<Account>?) : Fragment
                 for (account in accountList) {
                     Log.d(
                         "AccountFragment",
-                        "Account: " + account.name + " €" + account.getBalance()
+                        "Account: " + account.name + " €" + account.balance
                     )
                     val button = Button(context).apply {
-                        text = account.name + " €" + account.getBalance()
+                        text = account.name + " €" + account.balance
                         id = View.generateViewId()
                         layoutParams = GridLayout.LayoutParams().apply {
                             width = GridLayout.LayoutParams.WRAP_CONTENT
@@ -58,7 +59,7 @@ class box_account_fragment(private var accounts: ArrayList<Account>?) : Fragment
                             setMargins(8, 8, 8, 8)
                         }
                         setOnClickListener {
-                            val accountDetailsFragment = AccountDetailsFragment(account)
+                            val accountDetailsFragment = AccountDetailsFragment()
                             fragmentManager?.beginTransaction()?.apply {
                                 replace(R.id.linearContainer, accountDetailsFragment)
                                 addToBackStack(null)
@@ -90,7 +91,7 @@ class box_account_fragment(private var accounts: ArrayList<Account>?) : Fragment
         get() {
             var sum = BigDecimal.ZERO
             accounts?.forEach { account ->
-                sum = sum.add(BigDecimal.valueOf(account.getBalance()))
+                sum = sum.add(BigDecimal.valueOf(account.balance))
             }
             return sum.setScale(2, BigDecimal.ROUND_HALF_UP).toString()
         }

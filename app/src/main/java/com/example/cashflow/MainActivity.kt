@@ -3,6 +3,7 @@ package com.example.cashflow
 import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
+import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -20,11 +21,14 @@ import com.example.cashflow.dataClass.*
 import com.example.cashflow.statistics.*
 import com.google.android.material.navigation.NavigationView
 import java.io.IOException
+import com.example.cashflow.db.*
 
 
 class MainActivity : AppCompatActivity() {
+    private lateinit var db: SQLiteDB
+    private lateinit var readSQL: readSQL
+    private lateinit var writeSQL: writeSQL
     private var accounts: ArrayList<Account>? = null
-    var jsonReadWrite: JsonReadWrite? = null
     var city: City? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -39,6 +43,12 @@ class MainActivity : AppCompatActivity() {
         val hamburgerMenu: ImageButton = findViewById(R.id.menu_hamburger)
         val btnHome: ImageView = findViewById(R.id.logo)
 
+
+        db = SQLiteDB(this)
+        readSQL = readSQL(db.writableDatabase)
+        writeSQL = writeSQL(db.writableDatabase)
+
+        accounts = readSQL.getAccounts()
 
         posizione = Posizione(this)
         posizione!!.requestDeviceLocation(object : Posizione.DeviceLocationCallback {
@@ -71,7 +81,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.new_conto -> {
-                    fragment = NewAccountFragment(accounts!!)
+                    fragment = NewAccountFragment()
                     Log.d("Menu-Hamburger", "NewAccountFragment")
                 }
 
@@ -91,7 +101,7 @@ class MainActivity : AppCompatActivity() {
                 }
 
                 R.id.line_chart -> {
-                    fragment = Line_chart(accounts!!)
+                    fragment = Line_chart()
                     Log.d("Menu-Hamburger", "Line_chart")
                 }
 
@@ -137,34 +147,6 @@ class MainActivity : AppCompatActivity() {
 
         btnHome.setOnClickListener {
             loadHomeFragment()
-        }
-
-
-        // Inizializza il JsonReadWrite
-        jsonReadWrite = JsonReadWrite()
-        accounts = jsonReadWrite!!.readAccountsFromJson(this@MainActivity)
-        //accounts = null;
-        if (accounts == null) {
-            // Le righe di codice devono essere eseguite solo all'installazione dell'app.
-            val test = Test()
-            accounts = test.list
-            jsonReadWrite = JsonReadWrite(test.list)
-
-        }
-        try {
-            jsonReadWrite!!.setList(accounts, this)
-        } catch (e: IOException) {
-            throw RuntimeException(e)
-        }
-        if (ContextCompat.checkSelfPermission(
-                this,
-                Manifest.permission.ACCESS_FINE_LOCATION
-            ) != PackageManager.PERMISSION_GRANTED
-        ) {
-            requestPermissions(
-                arrayOf(Manifest.permission.ACCESS_FINE_LOCATION),
-                PERMISSION_REQUEST_CODE
-            )
         }
 
         addBoxFragment(box_template_fragment(), "box_template_fragment")

@@ -1,94 +1,81 @@
-package com.example.cashflow.dataClass;
+package com.example.cashflow.dataClass
 
-import com.example.cashflow.dataClass.CategoriesEnum;
+import java.text.SimpleDateFormat
+import java.util.Calendar
+import java.util.Locale
 
-import java.util.Calendar;
-import java.text.SimpleDateFormat;
-import java.util.Locale;
+class Transactions {
+    // Getter and Setter Methods
+    var id = 0
+    var isIncome // True for income, false for expense
+            : Boolean
+    var amountValue: Double
+        get() = field
+        set
+    var date: Calendar
+    var cityId: Int
+    var categoryId: Int
+    var accountId: Int
 
+    constructor(
+        income: Boolean,
+        amount: Double,
+        date: Calendar,
+        cityId: Int,
+        categoryId: Int,
+        accountId: Int
+    ) {
+        isIncome = income
+        amountValue = amount
 
-public class Transactions {
-    private Boolean income;
-    private double amount;
-    private Calendar date;
-    private City city;
-    private CategoriesEnum category;
-
-    public Transactions() {
-        this.income = false;
-        this.amount = 00.01;
-        this.date = Calendar.getInstance();
-        this.city = new City();
-
-        this.category = CategoriesEnum.FoodAndDrinks;
+        val calendar = Calendar.getInstance()
+        this.date = calendar
+        this.cityId = cityId
+        this.categoryId = categoryId
+        this.accountId = accountId
     }
 
-    public Transactions(Boolean income, double amount, Calendar date, City city, CategoriesEnum category) {
-        this.income = income;
-        this.amount = amount;
-        this.date = date;
-        this.city = city;
-        this.category = category;
+    constructor(
+        id: Int,
+        income: Boolean,
+        amount: Double,
+        date: Calendar,
+        cityId: Int,
+        categoryId: Int,
+        accountId: Int
+    ) {
+        this.id = id
+        isIncome = income
+        amountValue = amount
+        this.date = date
+        this.cityId = cityId
+        this.categoryId = categoryId
+        this.accountId = accountId
     }
 
-    public CategoriesEnum getCategory() {
-        return category;
-    }
-
-    public Boolean isIncome() {
-        return income;
-    }
-
-    public double getAmount() {
-        if (isIncome()) {
-            return amount;
-        } else {
-            return -amount;
-        }
-    }
-
-    public double getAmountValue() {
-        return amount;
-    }
-
-    public Calendar getDate() {
-        return date;
-    }
-
-    public City getCity() {
-        return this.city;
-    }
-
-
-    @Override
-    public String toString() {
-        String cityString = (city != null) ? city.toString() : "Nessuna città";
+    override fun toString(): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         return "Transactions{" +
-                "isIncome=" + isIncome() +
-                ", amount=" + amount +
-                ", date=" + date +
-                ", city=" + cityString +
-                ", category=" + category +
-                '}';
+                "id=" + id +
+                ", income=" + isIncome +
+                ", amount=" + amountValue +
+                ", date=" + dateFormat.format(date.time) +
+                ", cityId=" + cityId +
+                ", categoryId=" + categoryId +
+                ", accountId=" + accountId +
+                '}'
     }
 
-
-    public String printOnApp() {
-        SimpleDateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd", Locale.US);
-        String formattedDate = dateFormat.format(date.getTime());
-
-        String cityString = (city != null) ? city.getNameCity() : "Città sconosciuta";
-
-        if (income) {
-            return "INCOME " + "Amount: " + amount + "\n" +
-                    "Date: " + formattedDate + "\n" +
-                    "City: " + cityString + "\n" +
-                    "Category: " + category.name();
-        } else {
-            return "EXPENSE " + "Amount: " + amount + "\n" +
-                    "Date: " + formattedDate + "\n" +
-                    "City: " + cityString + "\n" +
-                    "Category: " + category.name();
-        }
+    fun printOnApp(): String {
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+        return "Transactions{" +
+                "id=" + id +
+                ", income=" + (if (isIncome) "Income" else "Expense") +
+                ", amount=" + amountValue +
+                ", date=" + dateFormat.format(date.time) +
+                ", cityId=" + cityId +
+                ", categoryId=" + categoryId +
+                ", accountId=" + accountId +
+                '}'
     }
 }

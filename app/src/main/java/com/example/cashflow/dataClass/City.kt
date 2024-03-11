@@ -1,61 +1,44 @@
-package com.example.cashflow.dataClass;
+package com.example.cashflow.dataClass
 
-public class City {
+class City {
+    var id = 0
+        private set
+    var nameCity: String?
+    var latitude: Double
+    var longitude: Double
 
-    private String nameCity;
-    private double latitude;
-    private double longitude;
-
-    public City() {
-        this.nameCity = "Bologna";
-        this.latitude = 44.50;
-        this.longitude = 11;
+    constructor() {
+        nameCity = "Bologna"
+        latitude = 44.50
+        longitude = 11.0
     }
 
-    public City(String nameCity, float latitude, float longitude) {
-        this.nameCity = nameCity;
-        this.latitude = latitude;
-        this.longitude = longitude;
+    constructor(cityName: String?, latitude: Double, longitude: Double) {
+        nameCity = cityName
+        this.latitude = latitude
+        this.longitude = longitude
     }
 
-    public String getNameCity() {
-        return nameCity;
+    constructor(id: Int, cityName: String?, latitude: Double, longitude: Double) {
+        this.id = id
+        nameCity = cityName
+        this.latitude = latitude
+        this.longitude = longitude
     }
 
-    public void setNameCity(String nameCity) {
-        this.nameCity = nameCity;
-    }
-
-    public double getLatitude() {
-        return latitude;
-    }
-
-    public void setLatitude(double latitude) {
-        this.latitude = latitude;
-    }
-
-    public double getLongitude() {
-        return longitude;
-    }
-
-    public void setLongitude(double longitude) {
-        this.longitude = longitude;
-    }
-
-    @Override
-    public String toString() {
+    override fun toString(): String {
         return "City{" +
                 "nameCity='" + nameCity + '\'' +
                 ", latitude=" + latitude +
                 ", longitude=" + longitude +
-                '}';
+                '}'
     }
 
-    public String printOnApp() {
-        if (nameCity != null) {
-            return "Città: " + nameCity;
+    fun printOnApp(): String {
+        return if (nameCity != null) {
+            "Città: $nameCity"
         } else {
-            return "Città sconosciuta";
+            "Città sconosciuta"
         }
     }
 }
