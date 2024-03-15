@@ -23,6 +23,8 @@ class SQLiteDB(context: Context?) :
         db.execSQL(CREATE_TABLE_SAVING)
         db.execSQL(CREATE_TABLE_TRANSACTION)
         db.execSQL(CREATE_TABLE_PLANNING)
+        db.execSQL(CREATE_TRIGGER_UPDATE_BALANCE)
+        clearAllTableData(db)
     }
 
     fun clearAllTableData(db: SQLiteDatabase) {
@@ -41,7 +43,7 @@ class SQLiteDB(context: Context?) :
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         // Elimina tutte le tabelle esistenti
         deleteAllTables(db)
-
+        clearAllTableData(db)
         // Ricrea il database
         onCreate(db)
     }
@@ -112,6 +114,21 @@ class SQLiteDB(context: Context?) :
         // Debito and Credito Tables - column names
         private const val COLUMN_CONCESSION_DATE = "Data_Concessione"
         private const val COLUMN_EXTINCTION_DATE = "Data_Estinsione"
+
+        val CREATE_TRIGGER_UPDATE_BALANCE = """
+        CREATE TRIGGER UpdateAccountBalance AFTER INSERT ON $TABLE_TRANSACTIONS
+        FOR EACH ROW
+        BEGIN
+            UPDATE $TABLE_ACCOUNT
+            SET $COLUMN_BALANCE = $COLUMN_BALANCE + CASE
+                WHEN NEW.$COLUMN_INCOME = 1 THEN NEW.$COLUMN_AMOUNT
+                ELSE -NEW.$COLUMN_AMOUNT
+            END
+            WHERE $COLUMN_ID = NEW.$COLUMN_ACCOUNT_ID;
+        END;
+    """.trimIndent()
+
+
         const val CREATE_TABLE_ACCOUNT = "CREATE TABLE IF NOT EXISTS " + TABLE_ACCOUNT + " ( " +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_NAME + " TEXT NOT NULL, " +

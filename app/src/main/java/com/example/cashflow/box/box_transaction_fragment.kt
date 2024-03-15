@@ -15,36 +15,54 @@ import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
 class box_transaction_fragment : Fragment() {
-    private fun addTransactionList(view: View) {
-        val gridLayout = view.findViewById<GridLayout>(R.id.gridLayout)
-        // Dati fittizi delle transazioni
-        val transactions = arrayOf(
-            arrayOf("Caffè", "€2"),
-            arrayOf("Libro", "€15"),
-            arrayOf("Biglietto cinema", "€8"),
-            arrayOf("Abbonamento palestra", "€30")
-        )
-        for (i in transactions.indices) {
-            for (j in transactions[i].indices) {
-                val textView = TextView(context)
-                textView.text = transactions[i][j]
-//                textView.setPadding(10, 10, 10, 10)
-                textView.setGravity(Gravity.CENTER)
-                val params = GridLayout.LayoutParams()
-                params.rowSpec = GridLayout.spec(i)
-                params.columnSpec = GridLayout.spec(j, 1f)
-                textView.setLayoutParams(params)
+    private lateinit var db: SQLiteDB
+    private lateinit var readSQL: readSQL
+    private lateinit var writeSQL: writeSQL
+    private var noDataTextView: TextView? = null
 
-                // Alternare il colore di sfondo per le righe
-                if (i % 2 == 0) {
-                    textView.setBackgroundColor(Color.parseColor("#7ad95f"))
-                } else {
-                    textView.setBackgroundColor(Color.parseColor("#e9F2ef"))
-                }
-                gridLayout.addView(textView)
+    private fun addTransactionList(view: View, transactions: List<Transactions>?) {
+        val gridLayout = view.findViewById<GridLayout>(R.id.gridLayout)
+        // Ottieni le transazioni dal database
+
+        transactions?.forEachIndexed { index: Int, transaction: Transactions ->
+            val nameTextView = TextView(context).apply {
+
+
+                text =
+                    "${readSQL.getCategoryById(transaction.categoryId)?.name}"
+                gravity = Gravity.CENTER
+                // Configurazione del layout
+                val params = GridLayout.LayoutParams()
+                params.rowSpec = GridLayout.spec(index)
+                params.columnSpec = GridLayout.spec(0, 1f)
+                layoutParams = params
             }
+
+            val amountTextView = TextView(context).apply {
+                text = "${transaction.amountValue} €"
+                gravity = Gravity.CENTER
+                // Configurazione del layout
+                val params = GridLayout.LayoutParams()
+                params.rowSpec = GridLayout.spec(index)
+                params.columnSpec = GridLayout.spec(1, 1f)
+                layoutParams = params
+            }
+
+            // Alternare il colore di sfondo per le righe
+            if (index % 2 == 0) {
+                nameTextView.setBackgroundColor(Color.parseColor("#7ad95f"))
+                amountTextView.setBackgroundColor(Color.parseColor("#7ad95f"))
+            } else {
+                nameTextView.setBackgroundColor(Color.parseColor("#e9F2ef"))
+                amountTextView.setBackgroundColor(Color.parseColor("#e9F2ef"))
+            }
+
+            // Aggiungi i TextView al GridLayout
+            gridLayout.addView(nameTextView)
+            gridLayout.addView(amountTextView)
         }
     }
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,10 +70,22 @@ class box_transaction_fragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         return inflater.inflate(R.layout.box_fragment_transaction, container, false)
+
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        addTransactionList(view)
+        noDataTextView = view.findViewById(R.id.noDataTextView)
+        db = SQLiteDB(requireContext())
+        readSQL = readSQL(db.writableDatabase)
+        writeSQL = writeSQL(db.writableDatabase)
+
+        val transactions = readSQL.getAllTransactions()
+        if (transactions.isNullOrEmpty()) {
+            noDataTextView?.visibility = View.VISIBLE
+        } else {
+            noDataTextView?.visibility = View.GONE
+            addTransactionList(view, transactions)
+        }
     }
 }

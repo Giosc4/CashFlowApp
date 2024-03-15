@@ -3,10 +3,7 @@ package com.example.cashflow.db
 import android.annotation.SuppressLint
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import com.example.cashflow.dataClass.Account
-import com.example.cashflow.dataClass.Category
-import com.example.cashflow.dataClass.City
-import com.example.cashflow.dataClass.Transactions
+import com.example.cashflow.dataClass.*
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -80,6 +77,159 @@ class readSQL(private val db: SQLiteDatabase?) {
             }
         }
         return null
+    }
+
+    fun getAllTemplateTransactions(): List<TemplateTransaction> {
+        val templatesList = mutableListOf<TemplateTransaction>()
+        // Esegue la query SQL per selezionare tutti i template
+        // Aggiungi i risultati alla lista templatesList
+        return templatesList
+    }
+
+
+    fun getAllTransactions(): ArrayList<Transactions> {
+        val transactionsList = ArrayList<Transactions>()
+        val cursor = db?.query(
+            TABLE_TRANSACTIONS,
+            null, // null indica che vogliamo tutte le colonne
+            null, // nessuna clausola WHERE, quindi restituisce tutte le righe
+            null,
+            null,
+            null,
+            null
+        )
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+
+        while (cursor != null && cursor.moveToNext()) {
+            val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+            val income = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_INCOME)) > 0
+            val amount = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_AMOUNT))
+            val dateString = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE))
+            val date = Calendar.getInstance()
+            sdf.parse(dateString)?.let {
+                date.time = it
+            }
+            val cityId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CITY_ID))
+            val categoryId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CATEGORY_ID))
+            val accountId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ACCOUNT_ID))
+
+            transactionsList.add(
+                Transactions(
+                    id,
+                    income,
+                    amount,
+                    date,
+                    cityId,
+                    categoryId,
+                    accountId
+                )
+            )
+        }
+        cursor?.close()
+        return transactionsList
+    }
+
+    fun getAllDebits(): List<Debito> {
+        val debitsList = mutableListOf<Debito>()
+
+        // Assicurati che il database non sia nullo
+        db?.let { database ->
+            // Esegue la query per selezionare tutti i debiti
+            val cursor = database.query(
+                TABLE_DEBITO,
+                null, // Seleziona tutte le colonne
+                null, // Nessuna clausola WHERE, quindi seleziona tutte le righe
+                null,
+                null,
+                null,
+                null
+            )
+
+            // Itera su tutti i risultati della query e costruisce la lista di debiti
+            while (cursor.moveToNext()) {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+                val amount = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_AMOUNT))
+                val name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
+                val concessionDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONCESSION_DATE))
+                val extinctionDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EXTINCTION_DATE))
+                val accountId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ACCOUNT_ID))
+
+                // Crea un nuovo oggetto Debito con i valori recuperati e aggiungilo alla lista
+                debitsList.add(Debito(id, amount, name, concessionDate, extinctionDate, accountId))
+            }
+
+            // Chiudi il cursore dopo aver finito di utilizzarlo
+            cursor.close()
+        }
+
+        // Restituisce la lista di debiti
+        return debitsList
+    }
+
+    fun getBudgetData(categoryId: Int? = null): Budget? {
+        db?.let { database ->
+            // Costruisci la query basata sulla presenza o assenza di categoryId
+            val selectionArgs = categoryId?.toString()?.let { arrayOf(it) }
+            val selection = categoryId?.let { "$COLUMN_CATEGORY_ID = ?" }
+
+            val cursor = database.query(
+                TABLE_BUDGET,
+                arrayOf(COLUMN_ID, COLUMN_CATEGORY_ID, COLUMN_AMOUNT, COLUMN_NAME),
+                selection,
+                selectionArgs,
+                null,
+                null,
+                null
+            )
+            cursor.use { cur ->
+                if (cur.moveToFirst()) {
+                    val id = cur.getInt(cur.getColumnIndexOrThrow(COLUMN_ID))
+                    val categoryId = cur.getInt(cur.getColumnIndexOrThrow(COLUMN_CATEGORY_ID))
+                    val amount = cur.getDouble(cur.getColumnIndexOrThrow(COLUMN_AMOUNT))
+                    val name = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME))
+                    return Budget(id, categoryId, amount, name)
+                }
+            }
+        }
+        return null
+    }
+
+
+    fun getAllCredits(): List<Credito> {
+        val debitsList = mutableListOf<Credito>()
+
+        // Assicurati che il database non sia nullo
+        db?.let { database ->
+            // Esegue la query per selezionare tutti i debiti
+            val cursor = database.query(
+                TABLE_DEBITO,
+                null, // Seleziona tutte le colonne
+                null, // Nessuna clausola WHERE, quindi seleziona tutte le righe
+                null,
+                null,
+                null,
+                null
+            )
+
+            // Itera su tutti i risultati della query e costruisce la lista di debiti
+            while (cursor.moveToNext()) {
+                val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
+                val amount = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_AMOUNT))
+                val name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
+                val concessionDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONCESSION_DATE))
+                val extinctionDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EXTINCTION_DATE))
+                val accountId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ACCOUNT_ID))
+
+                // Crea un nuovo oggetto Debito con i valori recuperati e aggiungilo alla lista
+                debitsList.add(Credito(id, amount, name, concessionDate, extinctionDate, accountId))
+            }
+
+            // Chiudi il cursore dopo aver finito di utilizzarlo
+            cursor.close()
+        }
+
+        // Restituisce la lista di debiti
+        return debitsList
     }
 
     fun getCityByName(newCityName: String): City? {
@@ -241,6 +391,32 @@ class readSQL(private val db: SQLiteDatabase?) {
         return incomeTransactionsList
     }
 
+    fun getAccountBalanceById(accountId: Int): Double {
+        db?.let { database ->
+            val cursor = database.query(
+                TABLE_ACCOUNT,
+                arrayOf(COLUMN_BALANCE), // Seleziona solo la colonna del saldo
+                "$COLUMN_ID = ?", // Usa l'ID dell'account per filtrare la riga corretta
+                arrayOf(accountId.toString()), // Valori per la clausola WHERE
+                null,
+                null,
+                null
+            )
+            if (cursor != null && cursor.moveToFirst()) {
+                val balanceIndex = cursor.getColumnIndex(COLUMN_BALANCE)
+                if (balanceIndex != -1) {
+                    val balance = cursor.getDouble(balanceIndex)
+                    cursor.close()
+                    return balance
+                }
+            }
+            cursor?.close()
+        }
+        return 0.0 // Ritorna 0.0 se l'account non viene trovato o in caso di errore
+    }
+
+
+
     fun getCategoryById(categoryId: Int): Category? {
         val cursor = db!!.query(
             TABLE_CATEGORY,
@@ -264,6 +440,15 @@ class readSQL(private val db: SQLiteDatabase?) {
                 return Category(id, name, description)
             }
         }
+        Log.d("getCategoryById", "Searching for categoryId: $categoryId")
+        if (cursor.moveToFirst()) {
+            // Dopo aver trovato la categoria, logga il nome trovato
+            Log.d("getCategoryById", "Category found: $categoryId.name ")
+        } else {
+            Log.d("getCategoryById", "Category not found for ID: $categoryId")
+        }
+
+
         cursor.close()
         return null
     }

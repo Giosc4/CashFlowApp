@@ -13,11 +13,18 @@ import com.example.cashflow.R
 import java.util.Calendar
 
 import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.SQLiteDB
+import com.example.cashflow.db.readSQL
+import com.example.cashflow.db.writeSQL
 
 class box_list_debito_fragment : Fragment() {
     var gridLayout: GridLayout? = null
     var textViewTitle: TextView? = null
-    private var debitTransactions: List<Transactions>? = null
+    private var noDataTextView: TextView? = null
+
+    private lateinit var db: SQLiteDB
+    private lateinit var readSQL: readSQL
+    private lateinit var writeSQL: writeSQL
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -27,59 +34,76 @@ class box_list_debito_fragment : Fragment() {
         val view = inflater.inflate(R.layout.box_fragment_credito_debito, container, false)
         gridLayout = view.findViewById(R.id.gridLayout)
         textViewTitle = view.findViewById(R.id.textViewTitle)
+        noDataTextView = view.findViewById(R.id.noDataTextView)
         textViewTitle?.setText("Debito (da dare)")
 
-        // Popola la lista di transazioni debit
-        debitTransactions = populateRecyclerViewWithExampleData()
+        db = SQLiteDB(requireContext())
+        readSQL = readSQL(db.writableDatabase)
+        writeSQL = writeSQL(db.writableDatabase)
 
-        // Aggiungi le transazioni alla tabella GridLayout
-        addTransactionList(view)
+        val debits = readSQL.getAllDebits()
+
+        val localNoDataTextView = noDataTextView
+        if (debits.isEmpty()) {
+            localNoDataTextView?.visibility = View.VISIBLE
+        } else {
+            localNoDataTextView?.visibility = View.GONE
+            addDebitsList(view, debits)
+        }
         return view
     }
 
-    private fun addTransactionList(view: View) {
+    private fun addDebitsList(view: View, debits: List<Debito>) {
+        // Imposta il numero di colonne per il GridLayout. Ad esempio, 2 per id e importo.
+        gridLayout?.columnCount = 2
 
-        // Dati di esempio delle transazioni di debito
-        val transactions = arrayOf(
-            arrayOf("Transazione 1", "€50.0"),
-            arrayOf("Transazione 2", "€30.0"),
-            arrayOf("Transazione 3", "€20.0")
-        )
-        for (i in transactions.indices) {
-            for (j in transactions[i].indices) {
-                val textView = TextView(context)
-                textView.text = transactions[i][j]
-//                textView.setPadding(10, 10, 10, 10)
-                textView.setGravity(Gravity.CENTER)
-                val params = GridLayout.LayoutParams()
-                params.rowSpec = GridLayout.spec(i)
-                params.columnSpec = GridLayout.spec(j, 1f)
-                textView.setLayoutParams(params)
-
-                // Alternare il colore di sfondo per le righe
-                if (i % 2 == 0) {
-                    textView.setBackgroundColor(Color.parseColor("#7ad95f"))
-                } else {
-                    textView.setBackgroundColor(Color.parseColor("#e9F2ef"))
+        // Per ogni debito nella lista, crea una nuova riga nel GridLayout
+        debits.forEachIndexed { index, debito ->
+            // Crea un TextView per l'id del debito o il nome
+            val textViewName = TextView(context).apply {
+                text = "${debito.name}: €${debito.amount}"
+                gravity = Gravity.CENTER
+                setBackgroundColor(
+                    if (index % 2 == 0) Color.parseColor("#FFEBEE") else Color.parseColor(
+                        "#ECEFF1"
+                    )
+                )
+                layoutParams = GridLayout.LayoutParams(
+                    GridLayout.spec(index, 1),
+                    GridLayout.spec(0, 1f)
+                ).apply {
+                    width = 0 // Usare GridLayout.LayoutParams per assegnare peso
+                    bottomMargin = 2
+                    topMargin = 2
+                    leftMargin = 2
+                    rightMargin = 2
                 }
-                gridLayout!!.addView(textView)
             }
+            gridLayout?.addView(textViewName)
+
+            // Crea un TextView per la data di estinzione del debito
+            val textViewDate = TextView(context).apply {
+                text = debito.extinctionDate
+                gravity = Gravity.CENTER
+                setBackgroundColor(
+                    if (index % 2 == 0) Color.parseColor("#FFEBEE") else Color.parseColor(
+                        "#ECEFF1"
+                    )
+                )
+                layoutParams = GridLayout.LayoutParams(
+                    GridLayout.spec(index, 1),
+                    GridLayout.spec(1, 1f)
+                ).apply {
+                    width = 0 // Usare GridLayout.LayoutParams per assegnare peso
+                    bottomMargin = 2
+                    topMargin = 2
+                    leftMargin = 2
+                    rightMargin = 2
+                }
+            }
+            gridLayout?.addView(textViewDate)
         }
     }
 
-    private fun populateRecyclerViewWithExampleData(): List<Transactions> {
-        // Esempio di dati di transazione
-        val calendar = Calendar.getInstance()
 
-        // Creazione di oggetti di transazione di debito di esempio
-        val transaction1 = Transactions(false, 50.0, calendar, 1, 1, 1)
-        val transaction2 = Transactions(false, 30.0, calendar, 2, 2, 2)
-        val transaction3 = Transactions(false, 20.0, calendar, 3, 3, 3)
-        val debitTransactions = ArrayList<Transactions>()
-        // Aggiungi le transazioni alla lista
-        debitTransactions.add(transaction1)
-        debitTransactions.add(transaction2)
-        debitTransactions.add(transaction3)
-        return debitTransactions
-    }
 }

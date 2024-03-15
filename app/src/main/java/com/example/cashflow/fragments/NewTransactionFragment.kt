@@ -1,4 +1,4 @@
-package com.example.cashflow
+package com.example.cashflow.fragments
 
 import android.Manifest
 import android.app.Activity
@@ -31,7 +31,9 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.cashflow.OCRManager
 import com.example.cashflow.OCRManager.OCRListener
+import com.example.cashflow.R
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
@@ -461,11 +463,19 @@ class NewTransactionFragment(
             return
         }
 
-        val income = incomeButton?.isSelected ?: false
+        val isIncome = incomeButton?.isSelected ?: false
         val expense = expenseButton?.isSelected ?: false
         val rawNumberText = numberEditText?.text?.toString() ?: ""
+        val nomeAccount = accountSpinner?.selectedItem.toString()
+        val accountId = readSql.getIdByAccountName(nomeAccount)
 
-        if (!income && !expense) {
+        if (accountId == -1) {
+            Toast.makeText(context, "Errore: Account non trovato.", Toast.LENGTH_LONG).show()
+            Log.e("NewTransactionFragment", "Account not found")
+            return
+        }
+
+        if (!isIncome && !expense) {
             Toast.makeText(context, "Inserisci Spesa o Entrata", Toast.LENGTH_SHORT).show()
             return
         }
@@ -479,19 +489,19 @@ class NewTransactionFragment(
             rawNumberText.toDouble()
         } catch (e: NumberFormatException) {
             Toast.makeText(context, "Numero numerico non valido", Toast.LENGTH_SHORT).show()
+            Log.e("NewTransactionFragment", "Invalid number format", e)
             return
         }
 
         val accountName = accountSpinner?.selectedItem?.toString() ?: ""
-        val categoryId =
-            categories?.find { it.name == categorySpinner?.selectedItem.toString() }?.id ?: -1
+        val categoryId = categories?.find { it.name == categorySpinner?.selectedItem.toString() }?.id ?: -1
         val cityId = readSql.getIdByCityName(locationEditText?.text.toString())
-        val date = selectedDate ?: Calendar.getInstance()
+        val date = Calendar.getInstance()
 
         // Creazione dell'oggetto Transactions
         val newTrans = Transactions(
-            income = income,
-            amount = if (income) amount else -amount, // Assicurati che le spese siano memorizzate come valori negativi
+            income = isIncome,
+            amount = if (isIncome) amount else -amount,
             date = date,
             cityId = cityId,
             categoryId = categoryId,
@@ -500,13 +510,25 @@ class NewTransactionFragment(
 
         // Salvataggio della transazione nel database
         try {
-            writeSql.insertTransaction(newTrans)
-            Toast.makeText(context, "Transazione salvata", Toast.LENGTH_LONG).show()
+            val transactionId = writeSql.insertTransaction(newTrans)
+            if (transactionId != -1L) {
+                // La transazione è stata inserita correttamente, ora aggiorna il saldo dell'account
+                val currentBalance = readSql.getAccountBalanceById(accountId)
+                val newBalance = if (isIncome) currentBalance + amount else currentBalance - amount
+                writeSql.updateAccountBalance(accountId, newBalance)
+
+                Toast.makeText(context, "Transazione salvata e saldo aggiornato", Toast.LENGTH_LONG).show()
+                activity?.supportFragmentManager?.popBackStack()
+                val mainLayout = activity?.findViewById<LinearLayout>(R.id.drawer_layout)
+                mainLayout?.visibility = View.VISIBLE
+            } else {
+                Toast.makeText(context, "Errore durante il salvataggio della transazione", Toast.LENGTH_LONG).show()
+            }
+
+
 
             // Aggiorna UI o naviga verso un'altra vista se necessario
-            activity?.supportFragmentManager?.popBackStack()
-            val mainLayout = activity?.findViewById<LinearLayout>(R.id.drawer_layout)
-            mainLayout?.visibility = View.VISIBLE
+
 
         } catch (e: Exception) {
             Toast.makeText(

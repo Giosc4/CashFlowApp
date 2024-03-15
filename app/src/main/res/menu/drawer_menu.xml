@@ -15,6 +15,9 @@
                 android:id="@+id/new_transaction"
                 android:title="Nuova Transazione" />
             <item
+                android:id="@+id/new_category"
+                android:title="Nuova Categoria" />
+            <item
                 android:id="@+id/new_budget"
                 android:title="Nuovo Budget" />
             <item

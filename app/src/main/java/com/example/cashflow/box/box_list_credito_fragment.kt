@@ -18,10 +18,12 @@ import com.example.cashflow.db.*
 class box_list_credito_fragment : Fragment() {
     var gridLayout: GridLayout? = null
     var textViewTitle: TextView? = null
-    private val transactionsRecyclerView: RecyclerView? = null
 
-    // Lista di transazioni debit
-    private val creditoTransactions: List<Transactions>? = null
+    private var noDataTextView: TextView? = null
+
+    private lateinit var db: SQLiteDB
+    private lateinit var readSQL: readSQL
+    private lateinit var writeSQL: writeSQL
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -30,40 +32,76 @@ class box_list_credito_fragment : Fragment() {
         val view = inflater.inflate(R.layout.box_fragment_credito_debito, container, false)
         gridLayout = view.findViewById(R.id.gridLayout)
         textViewTitle = view.findViewById(R.id.textViewTitle)
+        noDataTextView = view.findViewById(R.id.noDataTextView)
         textViewTitle?.setText("Credito (da ricevere)")
-        addTransactionList(view)
+
+        db = SQLiteDB(requireContext())
+        readSQL = readSQL(db.writableDatabase)
+        writeSQL = writeSQL(db.writableDatabase)
+
+
+        val credits = readSQL.getAllCredits()
+
+        val localNoDataTextView = noDataTextView
+        if (credits.isEmpty()) {
+            localNoDataTextView?.visibility = View.VISIBLE
+        } else {
+            localNoDataTextView?.visibility = View.GONE
+            addCreditsList(view, credits)
+        }
         return view
     }
 
-    private fun addTransactionList(view: View) {
-        val gridLayout = view.findViewById<ViewGroup>(R.id.gridLayout)
+    private fun addCreditsList(view: View, credits: List<Credito>) {
+        // Imposta il numero di colonne per il GridLayout. Ad esempio, 2 per id e importo.
+        gridLayout?.columnCount = 2
 
-        // Dati fittizi delle transazioni
-        val transactions = arrayOf(
-            arrayOf("Caffè", "€2"),
-            arrayOf("Libro", "€15"),
-            arrayOf("Biglietto cinema", "€8"),
-            arrayOf("Abbonamento palestra", "€30")
-        )
-        for (i in transactions.indices) {
-            for (j in transactions[i].indices) {
-                val textView = TextView(context)
-                textView.text = transactions[i][j]
-//                textView.setPadding(10, 10, 10, 10)
-                textView.setGravity(Gravity.CENTER)
-                val params = GridLayout.LayoutParams()
-                params.rowSpec = GridLayout.spec(i)
-                params.columnSpec = GridLayout.spec(j, 1f)
-                textView.setLayoutParams(params)
-
-                // Alternare il colore di sfondo per le righe
-                if (i % 2 == 0) {
-                    textView.setBackgroundColor(Color.parseColor("#7ad95f"))
-                } else {
-                    textView.setBackgroundColor(Color.parseColor("#e9F2ef"))
+        // Per ogni debito nella lista, crea una nuova riga nel GridLayout
+        credits.forEachIndexed { index, credito ->
+            // Crea un TextView per l'id del debito o il nome
+            val textViewName = TextView(context).apply {
+                text = "${credito.name}: €${credito.amount}"
+                gravity = Gravity.CENTER
+                setBackgroundColor(
+                    if (index % 2 == 0) Color.parseColor("#FFEBEE") else Color.parseColor(
+                        "#ECEFF1"
+                    )
+                )
+                layoutParams = GridLayout.LayoutParams(
+                    GridLayout.spec(index, 1),
+                    GridLayout.spec(0, 1f)
+                ).apply {
+                    width = 0 // Usare GridLayout.LayoutParams per assegnare peso
+                    bottomMargin = 2
+                    topMargin = 2
+                    leftMargin = 2
+                    rightMargin = 2
                 }
-                gridLayout.addView(textView)
             }
+            gridLayout?.addView(textViewName)
+
+            // Crea un TextView per la data di estinzione del debito
+            val textViewDate = TextView(context).apply {
+                text = credito.extinctionDate
+                gravity = Gravity.CENTER
+                setBackgroundColor(
+                    if (index % 2 == 0) Color.parseColor("#FFEBEE") else Color.parseColor(
+                        "#ECEFF1"
+                    )
+                )
+                layoutParams = GridLayout.LayoutParams(
+                    GridLayout.spec(index, 1),
+                    GridLayout.spec(1, 1f)
+                ).apply {
+                    width = 0 // Usare GridLayout.LayoutParams per assegnare peso
+                    bottomMargin = 2
+                    topMargin = 2
+                    leftMargin = 2
+                    rightMargin = 2
+                }
+            }
+            gridLayout?.addView(textViewDate)
         }
     }
+
 }

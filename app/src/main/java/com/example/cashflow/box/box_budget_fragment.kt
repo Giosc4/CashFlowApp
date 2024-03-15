@@ -5,6 +5,7 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.cashflow.R
 import com.github.mikephil.charting.charts.HorizontalBarChart
@@ -17,6 +18,11 @@ import com.example.cashflow.db.*
 
 class box_budget_fragment : Fragment() {
     private var horizontalBarChart: HorizontalBarChart? = null
+    private var noDataTextView: TextView? = null
+    private lateinit var db: SQLiteDB
+    private lateinit var readSQL: readSQL
+    private lateinit var writeSQL: writeSQL
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
         savedInstanceState: Bundle?
@@ -24,11 +30,24 @@ class box_budget_fragment : Fragment() {
         // Inflate il layout per questo fragment
         val view = inflater.inflate(R.layout.box_fragment_budget, container, false)
         horizontalBarChart = view.findViewById(R.id.barraOrizzontale)
+        noDataTextView = view.findViewById(R.id.noDataTextView)
+
+        db = SQLiteDB(requireContext())
+        readSQL = readSQL(db.readableDatabase)
+
         setupChart()
-        setupChart()
-        setupChart()
-        setupChart()
-        return view
+
+        val budgetData = readSQL.getBudgetData()
+        if (budgetData == null ) {
+            noDataTextView?.visibility = View.VISIBLE
+            horizontalBarChart?.visibility = View.GONE
+        } else {
+            noDataTextView?.visibility = View.GONE
+            horizontalBarChart?.visibility = View.VISIBLE
+            setupChart()
+        }
+
+            return view
     }
 
     private fun setupChart() {

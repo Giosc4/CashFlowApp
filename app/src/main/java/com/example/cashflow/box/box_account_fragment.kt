@@ -10,7 +10,7 @@ import android.widget.Button
 import android.widget.GridLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.example.cashflow.AccountDetailsFragment
+import com.example.cashflow.fragments.AccountDetailsFragment
 import com.example.cashflow.R
 import java.math.BigDecimal
 import com.example.cashflow.dataClass.*

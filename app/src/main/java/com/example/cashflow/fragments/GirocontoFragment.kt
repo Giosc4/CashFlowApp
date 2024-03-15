@@ -1,4 +1,4 @@
-package com.example.cashflow
+package com.example.cashflow.fragments
 
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -9,6 +9,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
+import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 
 class GirocontoFragment(private val accounts: ArrayList<Account>) : Fragment() {

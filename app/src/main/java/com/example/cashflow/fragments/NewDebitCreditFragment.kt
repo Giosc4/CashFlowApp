@@ -1,4 +1,4 @@
-package com.example.cashflow
+package com.example.cashflow.fragments
 
 import android.os.Bundle
 import android.text.InputFilter
@@ -12,6 +12,7 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.readSQL

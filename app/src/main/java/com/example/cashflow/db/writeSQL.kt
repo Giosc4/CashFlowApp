@@ -49,29 +49,6 @@ class writeSQL(private val db: SQLiteDatabase) {
         }
     }
 
-    fun createTransaction(
-        income: Int,
-        amount: Double,
-        date: String?,
-        cityId: Int?,
-        categoryId: Int,
-        accountId: Int?
-    ): Boolean {
-        val cv = ContentValues()
-        cv.put(COLUMN_INCOME, income)
-        cv.put(COLUMN_AMOUNT, amount)
-        cv.put(COLUMN_DATE, date)
-        cv.put(COLUMN_CITY_ID, cityId)
-        cv.put(COLUMN_CATEGORY_ID, categoryId)
-        cv.put(COLUMN_ACCOUNT_ID, accountId)
-        val insert = db.insert(TABLE_TRANSACTIONS, null, cv)
-        return if (insert == -1L) {
-            Log.e("SQLiteDB", "Failed to insert transaction")
-            false
-        } else {
-            true
-        }
-    }
     fun updateAccountName(accountId: Int, newName: String) {
         val values = ContentValues().apply {
             put(COLUMN_NAME, newName) // Aggiorna il nome con il nuovo valore
@@ -144,16 +121,24 @@ class writeSQL(private val db: SQLiteDatabase) {
         }
     }
 
-    fun deleteTransaction(transactionId: Int) {
-        // Elimina la transazione dato il suo ID
-        val deletedRows =
-            db.delete(TABLE_TRANSACTIONS, COLUMN_ID + " = ?", arrayOf(transactionId.toString()))
-        if (deletedRows > 0) {
-            Log.d("SQLiteDB", "Transazione eliminata con successo")
+    fun deleteTransaction(transactionId: Int): Boolean {
+        // Assicurati che `db` sia l'istanza corrente di SQLiteDatabase
+        val numberOfRowsDeleted = db.delete(
+            TABLE_TRANSACTIONS, // Il nome della tabella da cui eliminare
+            "$COLUMN_ID = ?", // La clausola WHERE che specifica quali righe eliminare
+            arrayOf(transactionId.toString()) // I valori per la clausola WHERE, che sostituiscono i '?'
+        )
+
+        // Il metodo `delete` ritorna il numero di righe eliminate; se è > 0, l'operazione ha avuto successo
+        if (numberOfRowsDeleted > 0) {
+            Log.d("SQLiteDB", "Transaction with ID $transactionId deleted successfully.")
+            return true
         } else {
-            Log.e("SQLiteDB", "Errore nell'eliminazione della transazione")
+            Log.e("SQLiteDB", "Failed to delete transaction with ID $transactionId.")
+            return false
         }
     }
+
 
     // Aggiorna un Account esistente
     fun updateAccount(account: Account): Int {
@@ -179,10 +164,10 @@ class writeSQL(private val db: SQLiteDatabase) {
         return db.insert(TABLE_TRANSACTIONS, null, values)
     }
 
-    fun updateAccountBalance(accountName: String, amount: Double) {
+    fun updateAccountBalance(accountId: Int, amount: Double) {
         db.execSQL(
-            "UPDATE Accounts SET Balance = Balance + ? WHERE Name = ?",
-            arrayOf<Any>(amount, accountName)
+            "UPDATE Accounts SET Balance = Balance + ? WHERE Id = ?",
+            arrayOf<Any>(amount, accountId)
         )
     }
 

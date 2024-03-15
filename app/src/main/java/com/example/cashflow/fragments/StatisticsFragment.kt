@@ -1,4 +1,4 @@
-package com.example.cashflow
+package com.example.cashflow.fragments
 
 import android.annotation.SuppressLint
 import android.os.Bundle
@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.cashflow.R
 import com.example.cashflow.statistics.Income_expense
 import com.example.cashflow.statistics.Line_chart
 import com.example.cashflow.statistics.MapFragment

@@ -1,9 +1,7 @@
 package com.example.cashflow
 
-import android.Manifest
 import android.content.Intent
 import android.content.pm.PackageManager
-import android.database.sqlite.SQLiteDatabase
 import android.os.Bundle
 import android.util.Log
 import android.view.View
@@ -12,16 +10,15 @@ import android.widget.ImageView
 import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
-import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import com.google.android.material.navigation.NavigationView
 import androidx.fragment.app.Fragment
 import com.example.cashflow.box.*
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.statistics.*
-import com.google.android.material.navigation.NavigationView
-import java.io.IOException
 import com.example.cashflow.db.*
+import com.example.cashflow.fragments.*
 
 
 class MainActivity : AppCompatActivity() {
@@ -118,6 +115,10 @@ class MainActivity : AppCompatActivity() {
                 R.id.expense_chart -> {
                     fragment = Income_expense(false, accounts!!)
                     Log.d("Menu-Hamburger", "Income_expense")
+                }
+                R.id.new_category -> {
+                    fragment = NewCategoryFragment()
+                    Log.d("Menu-Hamburger", "NewCategoryFragment")
                 }
                 // Aggiungere qui ulteriori casi per altri elementi del menu
             }

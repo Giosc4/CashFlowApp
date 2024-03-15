@@ -1,16 +1,16 @@
-package com.example.cashflow
+package com.example.cashflow.fragments
 
 import android.os.Bundle
 import android.text.InputFilter
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.AdapterView
 import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
+import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.readSQL

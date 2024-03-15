@@ -1,4 +1,4 @@
-package com.example.cashflow
+package com.example.cashflow.fragments
 
 import android.content.Intent
 import android.os.Bundle
@@ -13,6 +13,8 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.cashflow.MainActivity
+import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.readSQL

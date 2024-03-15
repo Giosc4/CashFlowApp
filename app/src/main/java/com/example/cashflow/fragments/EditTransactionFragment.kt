@@ -1,4 +1,4 @@
-package com.example.cashflow
+package com.example.cashflow.fragments
 
 import android.Manifest
 import android.app.Activity
@@ -20,14 +20,15 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.ImageView
-import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.cashflow.OCRManager
 import com.example.cashflow.OCRManager.OCRListener
+import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.readSQL
@@ -35,7 +36,6 @@ import com.example.cashflow.db.writeSQL
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
-import java.io.IOException
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale

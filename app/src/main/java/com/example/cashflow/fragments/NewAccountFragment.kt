@@ -1,6 +1,5 @@
-package com.example.cashflow
+package com.example.cashflow.fragments
 
-import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,7 +8,7 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import java.io.IOException
+import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.readSQL
@@ -56,6 +55,8 @@ class NewAccountFragment() : Fragment() {
                 if (success) {
                     Toast.makeText(activity, "Conto creato!", Toast.LENGTH_SHORT).show()
                     // Opcionalmente, ritorna al fragment o all'activity precedente
+                    //TODO: Test if this workd
+                    //getFatherFragmentManager()
                     fragmentManager?.popBackStack()
                 } else {
                     Toast.makeText(activity, "Errore nella creazione del conto", Toast.LENGTH_SHORT)
