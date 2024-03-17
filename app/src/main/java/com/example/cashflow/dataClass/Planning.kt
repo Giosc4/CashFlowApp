@@ -1,9 +1,9 @@
 package com.example.cashflow.dataClass
 
-class Planning // Constructors, Getters, Setters
+class Planning
     (
-    private val id: Int,
-    private val templateId: Int,
-    private val repetition: String,
-    private val endDate: String
+    val id: Int,
+    val templateId: Int,
+    val repetition: String,
+    val endDate: String
 )

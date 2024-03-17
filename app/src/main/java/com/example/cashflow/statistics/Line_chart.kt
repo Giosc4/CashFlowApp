@@ -26,7 +26,7 @@ import java.util.Locale
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class Line_chart() : Fragment() {
+class Line_chart(private val readSQL: readSQL, private val writeSQL: writeSQL)  : Fragment() {
     private var openStartDatePickerButton: Button? = null
     private var openEndDatePickerButton: Button? = null
     private var generateChartButton: Button? = null
@@ -37,9 +37,6 @@ class Line_chart() : Fragment() {
     private var lineChart: LineChart? = null
 
     private var accounts: ArrayList<Account>? = null
-    private lateinit var db: SQLiteDB
-    private lateinit var readSql: readSQL
-    private lateinit var writeSql: writeSQL
 
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
@@ -66,11 +63,8 @@ class Line_chart() : Fragment() {
         openEndDatePickerButton?.setOnClickListener(View.OnClickListener { openEndDatePicker() })
         generateChartButton?.setOnClickListener(View.OnClickListener { createLineChart() })
 
-        db = SQLiteDB(context)
-        readSql = readSQL(db.writableDatabase)
-        writeSql = writeSQL(db.writableDatabase)
 
-        accounts = readSql.getAccounts()
+        accounts = readSQL.getAccounts()
 
 
         return view
@@ -162,7 +156,7 @@ class Line_chart() : Fragment() {
 
             for (account in accounts!!) {
                 // Itera su tutte le transazioni all'interno di ciascun account
-                for (transaction in readSql.getTransactionsByAccountId(account.id)) {
+                for (transaction in readSQL.getTransactionsByAccountId(account.id)) {
                     val transactionDate = transaction.date
                     if (isSameDay(transactionDate, currentDate)) {
                         dailyTotal += transaction.amountValue // Utilizza amountValue per ottenere l'importo della transazione

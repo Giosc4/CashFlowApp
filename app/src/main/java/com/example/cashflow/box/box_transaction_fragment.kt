@@ -2,6 +2,7 @@ package com.example.cashflow.box
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -14,10 +15,8 @@ import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_transaction_fragment : Fragment() {
-    private lateinit var db: SQLiteDB
-    private lateinit var readSQL: readSQL
-    private lateinit var writeSQL: writeSQL
+class box_transaction_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
+
     private var noDataTextView: TextView? = null
 
     private fun addTransactionList(view: View, transactions: List<Transactions>?) {
@@ -76,13 +75,11 @@ class box_transaction_fragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         noDataTextView = view.findViewById(R.id.noDataTextView)
-        db = SQLiteDB(requireContext())
-        readSQL = readSQL(db.writableDatabase)
-        writeSQL = writeSQL(db.writableDatabase)
 
         val transactions = readSQL.getAllTransactions()
-        if (transactions.isNullOrEmpty()) {
+        if (transactions == null || transactions.isEmpty()){
             noDataTextView?.visibility = View.VISIBLE
+            Log.d("Transactions", "No transactions found")
         } else {
             noDataTextView?.visibility = View.GONE
             addTransactionList(view, transactions)

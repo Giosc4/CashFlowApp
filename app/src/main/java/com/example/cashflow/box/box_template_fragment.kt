@@ -16,11 +16,8 @@ import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_template_fragment : Fragment() {
+class box_template_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
 
-    private lateinit var db: SQLiteDB
-    private lateinit var readSQL: readSQL
-    private lateinit var writeSQL: writeSQL
     private var noDataTextView: TextView? = null
 
 
@@ -92,9 +89,6 @@ class box_template_fragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        db = SQLiteDB(requireContext())
-        readSQL = readSQL(db.writableDatabase)
-        writeSQL = writeSQL(db.writableDatabase)
         noDataTextView = view.findViewById(R.id.noDataTextView)
 
         val templates = readSQL.getAllTemplateTransactions()
@@ -104,9 +98,5 @@ class box_template_fragment : Fragment() {
             noDataTextView?.visibility = View.GONE
             addTemplateButtons(view, templates)
         }
-
-
-
-
     }
 }

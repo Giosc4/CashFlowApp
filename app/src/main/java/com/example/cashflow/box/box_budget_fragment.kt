@@ -16,12 +16,9 @@ import com.github.mikephil.charting.data.BarEntry
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_budget_fragment : Fragment() {
+class box_budget_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
     private var horizontalBarChart: HorizontalBarChart? = null
     private var noDataTextView: TextView? = null
-    private lateinit var db: SQLiteDB
-    private lateinit var readSQL: readSQL
-    private lateinit var writeSQL: writeSQL
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -31,9 +28,6 @@ class box_budget_fragment : Fragment() {
         val view = inflater.inflate(R.layout.box_fragment_budget, container, false)
         horizontalBarChart = view.findViewById(R.id.barraOrizzontale)
         noDataTextView = view.findViewById(R.id.noDataTextView)
-
-        db = SQLiteDB(requireContext())
-        readSQL = readSQL(db.readableDatabase)
 
         setupChart()
 

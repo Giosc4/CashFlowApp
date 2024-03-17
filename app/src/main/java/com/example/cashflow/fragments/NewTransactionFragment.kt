@@ -42,10 +42,10 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
+import java.util.Locale
 
 class NewTransactionFragment(
-    private val accounts: ArrayList<Account>,
-    private val cityPosition: City?
+    private val readSQL: readSQL, private val writeSQL: writeSQL, private val cityPosition: City?
 ) : Fragment() {
     private var expenseButton: Button? = null
     private var incomeButton: Button? = null
@@ -72,9 +72,9 @@ class NewTransactionFragment(
     private var selectedTimeTextView: TextView? = null
     private var ocrManager: OCRManager? = null
 
-    private lateinit var db: SQLiteDB
-    private lateinit var readSql: readSQL
-    private lateinit var writeSql: writeSQL
+    private var accountSpinnerProv: Spinner? = null
+    private var accountSpinnerArrivo: Spinner? = null
+    private var accounts: ArrayList<Account> = readSQL.getAccounts()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -102,25 +102,24 @@ class NewTransactionFragment(
         templateCheckBox = view.findViewById(R.id.templateCheckBox)
         setNameTemplate = view.findViewById(R.id.setNameTemplate)
         girocontoButton = view.findViewById(R.id.girocontoButton)
-        fragment_container = view.findViewById(R.id.fragment_container)
+//        fragment_container = view.findViewById(R.id.fragment_container)
         dateButton = view.findViewById(R.id.dateButton)
         deleteButton = view.findViewById(R.id.deleteButton)
 
         deleteButton?.setVisibility(View.INVISIBLE)
         deleteButton?.setVisibility(View.GONE)
 
-        db = SQLiteDB(context)
-        readSql = readSQL(db.writableDatabase)
-        writeSql = writeSQL(db.writableDatabase)
+        accounts = readSQL.getAccounts()
 
         selectedDate = Calendar.getInstance()
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd")
-        val dataFormattata = dateFormat.format(selectedDate?.getTime())
-        selectedTimeTextView?.setText(dataFormattata + "")
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val formattedDate = dateFormat.format(selectedDate?.time)
+        selectedTimeTextView?.setText(formattedDate + "")
         if (cityPosition != null && cityPosition.nameCity != null) {
             locationEditText?.setText(cityPosition.printOnApp())
         } else {
             locationEditText?.setText("Nessun nome di città disponibile")
+            Log.e("NewTransactionFragment", "Nessuna città disponibile")
             Toast.makeText(context, "Nessun nome di città disponibile", Toast.LENGTH_SHORT).show()
         }
         ripetizioneCheckBox?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
@@ -128,10 +127,13 @@ class NewTransactionFragment(
                 accountLayout3?.setVisibility(View.VISIBLE)
                 endTimeTextView?.setVisibility(View.VISIBLE)
                 selectedTimeTextView?.setVisibility(View.VISIBLE)
+                templateCheckBox?.setVisibility(View.GONE)
+                Log.d("NewTransactionFragment", "Ripetizione selezionata")
             } else {
                 accountLayout3?.setVisibility(View.GONE)
                 endTimeTextView?.setVisibility(View.GONE)
                 selectedTimeTextView?.setVisibility(View.GONE)
+                templateCheckBox?.setVisibility(View.VISIBLE)
             }
         })
         val repeatOptions = arrayOf("Ogni giorno", "Ogni settimana", "Ogni mese", "Ogni anno")
@@ -152,10 +154,12 @@ class NewTransactionFragment(
                 // Chiudi il fragment del giroconto senza salvare e nascondi il fragment_container
                 requireActivity().supportFragmentManager.popBackStack()
                 fragment_container?.setVisibility(View.GONE)
+                accountSpinner?.setVisibility(View.VISIBLE)
             } else {
                 // Apri il fragment del giroconto
                 val girocontoFragment = GirocontoFragment(accounts)
                 fragment_container?.setVisibility(View.VISIBLE)
+                accountSpinner?.setVisibility(View.GONE)
                 val transaction = requireActivity().supportFragmentManager.beginTransaction()
                 transaction.replace(R.id.fragment_container, girocontoFragment)
                 transaction.addToBackStack(null)
@@ -170,7 +174,6 @@ class NewTransactionFragment(
         numberEditText?.setFilters(arrayOf(
             InputFilter { source, start, end, dest, dstart, dend -> // Check if the input contains a decimal point
                 var hasDecimalSeparator = dest.toString().contains(".")
-
                 // Get the current number of decimal places
                 var decimalPlaces = 0
                 if (hasDecimalSeparator) {
@@ -181,7 +184,6 @@ class NewTransactionFragment(
                         decimalPlaces = split[1].length
                     }
                 }
-
                 // Check if the input is a valid decimal number
                 for (i in start until end) {
                     val inputChar = source[i]
@@ -190,12 +192,10 @@ class NewTransactionFragment(
                     if (!Character.isDigit(inputChar) && inputChar != '.') {
                         return@InputFilter ""
                     }
-
                     // Allow only two decimal places
                     if (hasDecimalSeparator && decimalPlaces >= 2) {
                         return@InputFilter ""
                     }
-
                     // Increment the decimal places count if a decimal point is encountered
                     if (inputChar == '.') {
                         hasDecimalSeparator = true
@@ -223,9 +223,7 @@ class NewTransactionFragment(
             expenseButton?.setBackgroundColor(Color.parseColor("#a7c5f9")) // azzurro quando non selezionato
         })
 
-
-
-        categories = readSql.getCategories()
+        categories = readSQL.getCategories()
         val categoryNames = categories?.map { it.name }
         val categoryAdapter = ArrayAdapter(
             requireContext(),
@@ -234,9 +232,6 @@ class NewTransactionFragment(
         )
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         categorySpinner?.adapter = categoryAdapter
-
-
-
 
         categorySpinner
         //SPINNER ACCOUNTS
@@ -269,12 +264,12 @@ class NewTransactionFragment(
         templateCheckBox?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
                 setNameTemplate?.setVisibility(View.VISIBLE)
+                ripetizioneCheckBox?.setVisibility(View.GONE)
             } else {
                 setNameTemplate?.setVisibility(View.GONE)
+                ripetizioneCheckBox?.setVisibility(View.VISIBLE)
             }
         })
-
-
         // Add OnClickListener for the "DONE" button
         doneButton?.setOnClickListener(View.OnClickListener {
             try {
@@ -283,7 +278,6 @@ class NewTransactionFragment(
                 throw RuntimeException(e)
             }
         })
-
         // Imposta un listener per il pulsante della fotocamera
         cameraButton?.setOnClickListener(View.OnClickListener { // Crea un dialog per scegliere tra Fotocamera e Galleria
             val builder = MaterialAlertDialogBuilder(requireContext())
@@ -376,7 +370,6 @@ class NewTransactionFragment(
         super.onActivityResult(requestCode, resultCode, data)
         if (resultCode == Activity.RESULT_OK) {
             val imageUri: Uri?
-
             // Gestione del risultato della selezione dell'immagine dalla galleria
             if (requestCode == REQUEST_IMAGE_PICK && data != null && data.data != null) {
                 imageUri = data.data
@@ -416,7 +409,6 @@ class NewTransactionFragment(
             .setGuidelines(CropImageView.Guidelines.ON)
             .start(requireContext(), this)
     }
-
 
     private fun processCroppedImage(croppedImageUri: Uri) {
         ocrManager!!.processImage(croppedImageUri, object : OCRListener {
@@ -458,87 +450,169 @@ class NewTransactionFragment(
     }
 
     private fun saveTransaction() {
-        if (numberEditText == null || accountSpinner == null) {
-            // Gestisci il caso in cui uno dei componenti UI sia nullo
-            return
-        }
-
         val isIncome = incomeButton?.isSelected ?: false
-        val expense = expenseButton?.isSelected ?: false
-        val rawNumberText = numberEditText?.text?.toString() ?: ""
-        val nomeAccount = accountSpinner?.selectedItem.toString()
-        val accountId = readSql.getIdByAccountName(nomeAccount)
+        val rawNumberText = numberEditText?.text.toString()
+        val accountName = accountSpinner?.selectedItem.toString()
+        val accountId = readSQL.getIdByAccountName(accountName)
+        val categoryName = categorySpinner?.selectedItem.toString()
+        val categoryId = categories?.firstOrNull { it.name == categoryName }?.id ?: -1
+        val cityId = cityPosition?.id ?: -1
+        val amount = rawNumberText.toDoubleOrNull() ?: 0.0
 
-        if (accountId == -1) {
-            Toast.makeText(context, "Errore: Account non trovato.", Toast.LENGTH_LONG).show()
-            Log.e("NewTransactionFragment", "Account not found")
+        val isRipetizione = ripetizioneCheckBox?.isChecked ?: false
+        val isTemplate = templateCheckBox?.isChecked ?: false
+
+        if (accountId == -1 || categoryId == -1 || amount == 0.0) {
+            Toast.makeText(context, "Verifica i campi inseriti.", Toast.LENGTH_LONG).show()
             return
         }
-
-        if (!isIncome && !expense) {
-            Toast.makeText(context, "Inserisci Spesa o Entrata", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        if (rawNumberText.isEmpty() || rawNumberText == "0" || rawNumberText == "0.00") {
-            Toast.makeText(context, "Aggiungi un prezzo", Toast.LENGTH_SHORT).show()
-            return
-        }
-
-        val amount: Double = try {
-            rawNumberText.toDouble()
-        } catch (e: NumberFormatException) {
-            Toast.makeText(context, "Numero numerico non valido", Toast.LENGTH_SHORT).show()
-            Log.e("NewTransactionFragment", "Invalid number format", e)
-            return
-        }
-
-        val accountName = accountSpinner?.selectedItem?.toString() ?: ""
-        val categoryId = categories?.find { it.name == categorySpinner?.selectedItem.toString() }?.id ?: -1
-        val cityId = readSql.getIdByCityName(locationEditText?.text.toString())
-        val date = Calendar.getInstance()
-
-        // Creazione dell'oggetto Transactions
+        // Trasformazione dei dati in una Transazione
         val newTrans = Transactions(
             income = isIncome,
-            amount = if (isIncome) amount else -amount,
-            date = date,
+            amount = amount,
+            date = selectedDate ?: Calendar.getInstance(),
             cityId = cityId,
             categoryId = categoryId,
-            accountId = readSql.getIdByAccountName(accountName) // Assicurati di avere questo metodo in readSQL
+            accountId = accountId
+        )
+        // Logica per Giroconto
+        if (girocontoButton?.isSelected == true) {
+            handleGiroconto(newTrans)
+        } else {
+            // Salva la transazione base
+            writeSQL.insertTransaction(newTrans)
+        }
+        // Logica per Ripetizione
+        if (isRipetizione) {
+            handleRipetizione(newTrans)
+        }
+        // Logica per Template
+        if (isTemplate) {
+            handleTemplate(newTrans)
+        }
+        // Altre operazioni finali, ad esempio aggiornamento UI
+        Toast.makeText(context, "Transazione salvata", Toast.LENGTH_SHORT).show()
+    }
+
+    private fun handleGiroconto(transaction: Transactions) {
+        // Supponendo che hai già configurato gli spinner e ottenuto gli ID dei conti selezionati
+
+        // Configurazione dell'adapter dello spinner di provenienza con una lista di oggetti Account
+        accountSpinnerProv?.adapter = ArrayAdapter<Account>(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            accounts // Assumendo che 'accounts' sia la tua lista di oggetti Account
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
+// Configurazione dell'adapter dello spinner di arrivo, analogamente
+        accountSpinnerArrivo?.adapter = ArrayAdapter<Account>(
+            requireContext(),
+            android.R.layout.simple_spinner_dropdown_item,
+            accounts // La stessa lista o una diversa, a seconda della logica dell'app
+        ).apply {
+            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        }
+
+        val accountProvenienza = accountSpinnerProv?.selectedItem as Account
+        val accountIdProvenienza = accountProvenienza.id
+
+        val accountArrivo = accountSpinnerArrivo?.selectedItem as Account
+        val accountIdArrivo = accountArrivo.id
+
+
+        // Creiamo la transazione di uscita dal conto di provenienza
+        val exitTransaction = Transactions(
+            id = 0, // Lasciato a 0 se l'ID è auto-generato dal database
+            income = false,
+            amount = transaction.amountValue,
+            date = transaction.date,
+            cityId = transaction.cityId,
+            categoryId = transaction.categoryId,
+            accountId = accountIdProvenienza
+        )
+        // Inseriamo la transazione di uscita nel database
+        writeSQL.insertTransaction(exitTransaction)
+
+        // Aggiorniamo il saldo del conto di provenienza
+        val currentBalanceProvenienza = readSQL.getAccountBalanceById(accountIdProvenienza)
+        writeSQL.updateAccountBalance(
+            accountIdProvenienza,
+            currentBalanceProvenienza - transaction.amountValue
         )
 
-        // Salvataggio della transazione nel database
-        try {
-            val transactionId = writeSql.insertTransaction(newTrans)
-            if (transactionId != -1L) {
-                // La transazione è stata inserita correttamente, ora aggiorna il saldo dell'account
-                val currentBalance = readSql.getAccountBalanceById(accountId)
-                val newBalance = if (isIncome) currentBalance + amount else currentBalance - amount
-                writeSql.updateAccountBalance(accountId, newBalance)
+        // Creiamo la transazione di entrata nel conto di arrivo
+        val entryTransaction = Transactions(
+            id = 0, // Lasciato a 0 se l'ID è auto-generato dal database
+            income = true,
+            amount = transaction.amountValue,
+            date = transaction.date,
+            cityId = transaction.cityId,
+            categoryId = transaction.categoryId,
+            accountId = accountIdArrivo
+        )
+        // Inseriamo la transazione di entrata nel database
+        writeSQL.insertTransaction(entryTransaction)
 
-                Toast.makeText(context, "Transazione salvata e saldo aggiornato", Toast.LENGTH_LONG).show()
-                activity?.supportFragmentManager?.popBackStack()
-                val mainLayout = activity?.findViewById<LinearLayout>(R.id.drawer_layout)
-                mainLayout?.visibility = View.VISIBLE
-            } else {
-                Toast.makeText(context, "Errore durante il salvataggio della transazione", Toast.LENGTH_LONG).show()
+        // Aggiorniamo il saldo del conto di arrivo
+        val currentBalanceArrivo = readSQL.getAccountBalanceById(accountIdArrivo)
+        writeSQL.updateAccountBalance(
+            accountIdArrivo,
+            currentBalanceArrivo + transaction.amountValue
+        )
+
+        // Notifichiamo l'utente del successo dell'operazione
+        Toast.makeText(context, "Giroconto effettuato con successo", Toast.LENGTH_SHORT).show()
+    }
+
+
+    private fun updateAccountBalance(accountId: Int, amount: Double) {
+        // Ottieni il saldo corrente del conto
+        val currentBalance = readSQL.getAccountBalanceById(accountId)
+        val newBalance = currentBalance + amount
+        writeSQL.updateAccountBalance(accountId, newBalance)
+    }
+
+    private fun handleRipetizione(transaction: Transactions) {
+        // Ottieni i dettagli della ripetizione, come la data di fine e la frequenza
+        val endDate = dateEndRepButton?.text.toString()
+        val repetition = timeSpinner?.selectedItem.toString()
+
+        var nextDate = transaction.date.clone() as Calendar
+
+        while (nextDate.before(endDate)) {
+            when (repetition) {
+                "Ogni giorno" -> nextDate.add(Calendar.DAY_OF_MONTH, 1)
+                "Ogni settimana" -> nextDate.add(Calendar.WEEK_OF_YEAR, 1)
+                "Ogni mese" -> nextDate.add(Calendar.MONTH, 1)
+                "Ogni anno" -> nextDate.add(Calendar.YEAR, 1)
             }
-
-
-
-            // Aggiorna UI o naviga verso un'altra vista se necessario
-
-
-        } catch (e: Exception) {
-            Toast.makeText(
-                context,
-                "Errore durante il salvataggio della transazione",
-                Toast.LENGTH_LONG
-            ).show()
+            val newTransaction = Transactions(
+                income = transaction.isIncome,
+                amount = transaction.amountValue,
+                date = nextDate.clone() as Calendar,
+                cityId = transaction.cityId,
+                categoryId = transaction.categoryId,
+                accountId = transaction.accountId
+            )
+            writeSQL.insertTransaction(newTransaction)
         }
     }
 
+    private fun handleTemplate(transaction: Transactions) {
+        // Salva i dettagli della transazione come template per utilizzo futuro
+        val template = TemplateTransaction(
+            id = 0, // Assumiamo che l'ID venga generato dal DB
+            name = setNameTemplate?.text.toString(),
+            isIncome = transaction.isIncome,
+            amount = transaction.amountValue,
+            categoryId = transaction.categoryId,
+            accountId = transaction.accountId
+        )
+        // Assumi di avere un metodo writeSQL.insertTemplateTransaction() per salvare il template
+        writeSQL.insertTemplateTransaction(template)
+    }
 
     private fun showDatePickerDialog(textView: TextView?) {
         val calendar = Calendar.getInstance()

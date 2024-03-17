@@ -18,11 +18,9 @@ import org.osmdroid.views.overlay.Marker
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class MapFragment(private val accounts: ArrayList<Account>) : Fragment() {
+class MapFragment(private val readSQL: readSQL, private val writeSQL: writeSQL)  : Fragment() {
     private var mapView: MapView? = null
-    private lateinit var db: SQLiteDB
-    private lateinit var readSql: readSQL
-    private lateinit var writeSql: writeSQL
+    private var accounts: ArrayList<Account> = ArrayList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,10 +37,8 @@ class MapFragment(private val accounts: ArrayList<Account>) : Fragment() {
         mapView?.setBuiltInZoomControls(true)
         mapView?.setMultiTouchControls(true)
 
-        db = SQLiteDB(context)
-        readSql = readSQL(db.writableDatabase)
-        writeSql = writeSQL(db.writableDatabase)
 
+        accounts = readSQL.getAccounts()
 
         addMarkers()
         return view
@@ -90,11 +86,11 @@ class MapFragment(private val accounts: ArrayList<Account>) : Fragment() {
         get() {
             val markersList = ArrayList<Marker>()
             for (account in accounts) {
-                val transactions = readSql.getTransactionsByAccountId(account.id)
+                val transactions = readSQL.getTransactionsByAccountId(account.id)
                 for (transaction in transactions) {
-                    val city = readSql.getCityById(transaction.cityId)?.nameCity
-                    val latitude = readSql.getCityById(transaction.cityId)?.latitude ?: 0.0
-                    val longitude = readSql.getCityById(transaction.cityId)?.longitude ?: 0.0
+                    val city = readSQL.getCityById(transaction.cityId)?.nameCity
+                    val latitude = readSQL.getCityById(transaction.cityId)?.latitude ?: 0.0
+                    val longitude = readSQL.getCityById(transaction.cityId)?.longitude ?: 0.0
                     println("city $city")
                     if (city != null) {
                         val cityGeoPoint = GeoPoint(latitude, longitude)

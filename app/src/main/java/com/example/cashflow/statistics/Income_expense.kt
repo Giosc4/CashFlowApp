@@ -26,7 +26,7 @@ import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
 
-class Income_expense(private val isIncome: Boolean, private val accounts: ArrayList<Account>) :
+class Income_expense(private val isIncome: Boolean, private val readSQL: readSQL, private val writeSQL: writeSQL)  :
     Fragment() {
     private var title: TextView? = null
     private var accountsCheckBox: CheckBox? = null
@@ -36,10 +36,8 @@ class Income_expense(private val isIncome: Boolean, private val accounts: ArrayL
     private val selectedAccounts: ArrayList<Account>
     private var pieChart: PieChart? = null
     private var barChart: BarChart? = null
-
-    private lateinit var db: SQLiteDB
-    private lateinit var readSql: readSQL
-    private lateinit var writeSql: writeSQL
+    
+    private val accounts: ArrayList<Account> = readSQL.getAccounts()
 
     init {
         selectedAccounts = ArrayList()
@@ -57,10 +55,6 @@ class Income_expense(private val isIncome: Boolean, private val accounts: ArrayL
 
         pieChart = view.findViewById(R.id.pieChart)
         barChart = view.findViewById(R.id.barChart)
-
-        db = SQLiteDB(requireContext())
-        readSql = readSQL(db.writableDatabase)
-        writeSql = writeSQL(db.writableDatabase)
 
         title = view.findViewById(R.id.title)
         if (isIncome) {
@@ -110,9 +104,9 @@ class Income_expense(private val isIncome: Boolean, private val accounts: ArrayL
     private fun hasData(selectedAccounts: ArrayList<Account>): Boolean {
         for (account in selectedAccounts) {
             if (isIncome) {
-                if (readSql.getIncomeTransactionsByAccount(account.id).isNotEmpty()) return true
+                if (readSQL.getIncomeTransactionsByAccount(account.id).isNotEmpty()) return true
             } else {
-                if (readSql.getExpenseTransactionsByAccount(account.id).isNotEmpty()) return true
+                if (readSQL.getExpenseTransactionsByAccount(account.id).isNotEmpty()) return true
             }
         }
         return false
@@ -154,14 +148,14 @@ class Income_expense(private val isIncome: Boolean, private val accounts: ArrayL
         val entries: MutableList<PieEntry> = ArrayList()
 
         // Recupera tutte le categorie dal database
-        val categories = readSql.getCategories()
+        val categories = readSQL.getCategories()
         for (category in categories) {
             var totalAmount = 0f
 
             // Calcola il totale per categoria attraverso tutti gli account selezionati
             for (account in accounts) {
                 val transactions =
-                    readSql.getTransactionsByAccountIdAndCategory(account.id, category.id, isIncome)
+                    readSQL.getTransactionsByAccountIdAndCategory(account.id, category.id, isIncome)
                 for (transaction in transactions) {
                     totalAmount += transaction.amountValue.toFloat()
                 }
@@ -178,12 +172,12 @@ class Income_expense(private val isIncome: Boolean, private val accounts: ArrayL
     fun getIncomeOrExpenseBarData(accounts: ArrayList<Account>): List<BarEntry> {
         val entries: MutableList<BarEntry> = ArrayList()
 
-        val categories = readSql.getCategories()
+        val categories = readSQL.getCategories()
         for (i in categories.indices) {
             var totalAmount = 0f
 
             for (account in accounts) {
-                val transactions = readSql.getTransactionsByAccountIdAndCategory(
+                val transactions = readSQL.getTransactionsByAccountIdAndCategory(
                     account.id,
                     categories[i].id,
                     isIncome

@@ -14,12 +14,9 @@ import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.readSQL
 import com.example.cashflow.db.writeSQL
 
-class NewAccountFragment() : Fragment() {
+class NewAccountFragment(private val readSQL: readSQL, private val writeSQL: writeSQL)  : Fragment() {
     private var edtName: EditText? = null
 
-    private lateinit var db: SQLiteDB
-    private lateinit var readSQL: readSQL
-    private lateinit var writeSQL: writeSQL
     private var accounts: ArrayList<Account>? = null
 
     override fun onCreateView(
@@ -28,11 +25,6 @@ class NewAccountFragment() : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_new_account, container, false)
-
-        // Inizializzazione del database e delle classi per la lettura e la scrittura
-        db = SQLiteDB(requireContext())
-        readSQL = readSQL(db.writableDatabase)
-        writeSQL = writeSQL(db.writableDatabase)
 
         edtName = view.findViewById(R.id.edtName)
         val btnCreateAccount = view.findViewById<Button>(R.id.btnCreateAccount)

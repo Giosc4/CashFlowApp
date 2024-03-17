@@ -16,16 +16,13 @@ import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.readSQL
 import com.example.cashflow.db.writeSQL
 
-class NewBudgetFragment : Fragment() {
+class NewBudgetFragment(private val readSQL: readSQL, private val writeSQL: writeSQL)  : Fragment() {
     private var editTextNome: EditText? = null
     private var spinnerCategoria: Spinner? = null
     private var editTextImporto: EditText? = null
     private var buttonSalva: Button? = null
     private var categories: ArrayList<Category>? = null
 
-    private lateinit var db: SQLiteDB
-    private lateinit var readSql: readSQL
-    private lateinit var writeSql: writeSQL
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -37,11 +34,8 @@ class NewBudgetFragment : Fragment() {
         editTextImporto = view.findViewById(R.id.editTextImporto)
         buttonSalva = view.findViewById(R.id.buttonSalva)
 
-        db = SQLiteDB(context)
-        readSql = readSQL(db.writableDatabase)
-        writeSql = writeSQL(db.writableDatabase)
 
-        categories = readSql.getCategories()
+        categories = readSQL.getCategories()
         val categoryNames = categories?.map { it.name }
         val categoryAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categoryNames ?: listOf())
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)

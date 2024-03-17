@@ -14,10 +14,13 @@ import com.example.cashflow.fragments.AccountDetailsFragment
 import com.example.cashflow.R
 import java.math.BigDecimal
 import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.readSQL
+import com.example.cashflow.db.writeSQL
 
-class box_account_fragment(private var accounts: ArrayList<Account>?) : Fragment() {
+class box_account_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
 
     private var subtotalTextView: TextView? = null
+    private var accounts: ArrayList<Account>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,21 +29,20 @@ class box_account_fragment(private var accounts: ArrayList<Account>?) : Fragment
     ): View? {
         val view = inflater.inflate(R.layout.box_fragment_account, container, false)
         val gridLayout = view.findViewById<GridLayout>(R.id.gridLayout)
+        val noDataTextView = view.findViewById<TextView>(R.id.noDataTextView)
         subtotalTextView = view.findViewById<TextView>(R.id.totalAccounts)
+
+        accounts = readSQL.getAccounts()
 
         if (accounts == null && accounts!!.isEmpty()) {
             Log.d("AccountFragment", "No accounts")
-            val textView = TextView(context)
-            textView.text = getString(R.string.no_accounts)
-            textView.layoutParams = GridLayout.LayoutParams().apply {
-                width = GridLayout.LayoutParams.WRAP_CONTENT
-                height = GridLayout.LayoutParams.WRAP_CONTENT
-                columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
-                setMargins(8, 8, 8, 8)
-            }
-            gridLayout.addView(textView)
+            noDataTextView?.visibility = View.VISIBLE
+            subtotalTextView?.visibility = View.GONE
+            gridLayout.visibility = View.GONE
         } else {
+            noDataTextView?.visibility = View.GONE
+            subtotalTextView?.visibility = View.VISIBLE
+            gridLayout?.visibility = View.VISIBLE
             accounts?.let { accountList ->
                 for (account in accountList) {
                     Log.d(

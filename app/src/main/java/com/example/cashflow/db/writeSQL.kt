@@ -3,8 +3,7 @@ package com.example.cashflow.db
 import android.content.ContentValues
 import android.database.sqlite.SQLiteDatabase
 import android.util.Log
-import com.example.cashflow.dataClass.Account
-import com.example.cashflow.dataClass.Transactions
+import com.example.cashflow.dataClass.*
 
 class writeSQL(private val db: SQLiteDatabase) {
     fun createAccount(account_name: String?, balance: Double): Boolean {
@@ -87,6 +86,29 @@ class writeSQL(private val db: SQLiteDatabase) {
 
         return newRowId
     }
+
+fun insertTemplateTransaction(template: TemplateTransaction): Long {
+    val values = ContentValues().apply {
+        put("name", template.name)
+        put("isIncome", if (template.isIncome) 1 else 0)
+        put("amount", template.amount)
+        put("categoryId", template.categoryId)
+    }
+
+
+    // Insert the new template transaction into the database and return the ID of the new row, or -1 if an error occurred
+    val newRowId = db.insert(TABLE_TEMPLATE_TRANSACTIONS, null, values)
+
+    if (newRowId == -1L) {
+        Log.e("SQLiteDB", "Failed to insert new template transaction")
+    } else {
+        Log.d("SQLiteDB", "Template transaction inserted successfully with ID: $newRowId")
+    }
+
+    return newRowId
+}
+
+
 
 
     fun updateTransaction(newTrans: Transactions) {

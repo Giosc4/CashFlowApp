@@ -15,15 +15,12 @@ import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_list_credito_fragment : Fragment() {
+class box_list_credito_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
     var gridLayout: GridLayout? = null
     var textViewTitle: TextView? = null
 
     private var noDataTextView: TextView? = null
 
-    private lateinit var db: SQLiteDB
-    private lateinit var readSQL: readSQL
-    private lateinit var writeSQL: writeSQL
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -35,9 +32,6 @@ class box_list_credito_fragment : Fragment() {
         noDataTextView = view.findViewById(R.id.noDataTextView)
         textViewTitle?.setText("Credito (da ricevere)")
 
-        db = SQLiteDB(requireContext())
-        readSQL = readSQL(db.writableDatabase)
-        writeSQL = writeSQL(db.writableDatabase)
 
 
         val credits = readSQL.getAllCredits()
