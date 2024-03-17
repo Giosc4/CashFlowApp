@@ -26,7 +26,7 @@ import java.util.Locale
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class Line_chart(private val readSQL: readSQL, private val writeSQL: writeSQL)  : Fragment() {
+class Line_chart(private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  : Fragment() {
     private var openStartDatePickerButton: Button? = null
     private var openEndDatePickerButton: Button? = null
     private var generateChartButton: Button? = null

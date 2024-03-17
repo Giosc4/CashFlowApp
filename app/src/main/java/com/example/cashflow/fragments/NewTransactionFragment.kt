@@ -31,6 +31,7 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.cashflow.MainActivity
 import com.example.cashflow.OCRManager
 import com.example.cashflow.OCRManager.OCRListener
 import com.example.cashflow.R
@@ -42,10 +43,12 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
+import java.text.ParseException
+import java.util.Date
 import java.util.Locale
 
 class NewTransactionFragment(
-    private val readSQL: readSQL, private val writeSQL: writeSQL, private val cityPosition: City?
+    private val readSQL: ReadSQL, private val writeSQL: WriteSQL, private val cityPosition: City?
 ) : Fragment() {
     private var expenseButton: Button? = null
     private var incomeButton: Button? = null
@@ -112,9 +115,10 @@ class NewTransactionFragment(
         accounts = readSQL.getAccounts()
 
         selectedDate = Calendar.getInstance()
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val formattedDate = dateFormat.format(selectedDate?.time)
-        selectedTimeTextView?.setText(formattedDate + "")
+        val timestamp = selectedDate?.timeInMillis
+        val formattedDate =
+            timestamp?.let { SimpleDateFormat("dd/MM/yyyy", Locale.getDefault()).format(Date(it)) }
+        selectedTimeTextView?.setText(formattedDate)
         if (cityPosition != null && cityPosition.nameCity != null) {
             locationEditText?.setText(cityPosition.printOnApp())
         } else {
@@ -458,19 +462,47 @@ class NewTransactionFragment(
         val categoryId = categories?.firstOrNull { it.name == categoryName }?.id ?: -1
         val cityId = cityPosition?.id ?: -1
         val amount = rawNumberText.toDoubleOrNull() ?: 0.0
+        val isIncomeSelected = incomeButton?.isSelected ?: false
+        val isExpenseSelected = expenseButton?.isSelected ?: false
+
+        val dataString = selectedTimeTextView?.text.toString()
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        try {
+            val date = dateFormat.parse(dataString)
+            selectedDate?.time = date
+        } catch (e: ParseException) {
+            Toast.makeText(context, "Formato data non valido", Toast.LENGTH_LONG).show()
+            return
+        }
 
         val isRipetizione = ripetizioneCheckBox?.isChecked ?: false
         val isTemplate = templateCheckBox?.isChecked ?: false
 
-        if (accountId == -1 || categoryId == -1 || amount == 0.0) {
-            Toast.makeText(context, "Verifica i campi inseriti.", Toast.LENGTH_LONG).show()
+        if (!isIncomeSelected && !isExpenseSelected) {
+            // Se nessuno dei due pulsanti è selezionato, mostra un messaggio all'utente
+            Toast.makeText(context, "Seleziona Entrata o Uscita", Toast.LENGTH_LONG).show()
+            return // Interrompe l'esecuzione ulteriore della funzione
+        }
+
+        if (accountId == -1) {
+            Toast.makeText(context, "Seleziona un account", Toast.LENGTH_LONG).show()
             return
         }
+        if (categoryId == -1) {
+            Toast.makeText(context, "Seleziona una categoria", Toast.LENGTH_LONG).show()
+            return
+        }
+        if (amount == 0.0) {
+            Toast.makeText(context, "Inserisci un importo valido", Toast.LENGTH_LONG).show()
+            return
+        }
+
+
         // Trasformazione dei dati in una Transazione
         val newTrans = Transactions(
             income = isIncome,
             amount = amount,
-            date = selectedDate ?: Calendar.getInstance(),
+            date = selectedDate!!,
             cityId = cityId,
             categoryId = categoryId,
             accountId = accountId
@@ -492,6 +524,9 @@ class NewTransactionFragment(
         }
         // Altre operazioni finali, ad esempio aggiornamento UI
         Toast.makeText(context, "Transazione salvata", Toast.LENGTH_SHORT).show()
+        val intent = Intent(activity, MainActivity::class.java)
+        startActivity(intent)
+        activity?.finish()
     }
 
     private fun handleGiroconto(transaction: Transactions) {
@@ -636,6 +671,16 @@ class NewTransactionFragment(
 
         // Mostra il dialog per la selezione della data
         datePickerDialog.show()
+    }
+    private fun prepareSelectedDate() {
+        val timestamp = selectedTimeTextView?.text.toString().toLongOrNull()
+        if (timestamp != null) {
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = timestamp
+            selectedDate = calendar
+        } else {
+            Toast.makeText(context, "Formato data non valido", Toast.LENGTH_LONG).show()
+        }
     }
 
     companion object {

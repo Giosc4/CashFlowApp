@@ -1,5 +1,6 @@
 package com.example.cashflow
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
@@ -12,13 +13,18 @@ import com.example.cashflow.statistics.*
 
 class MenuManagerFragment : Fragment() {
 
-    private lateinit var readSQL: readSQL
-    private lateinit var writeSQL: writeSQL
+    private lateinit var readSQL: ReadSQL
+    private lateinit var writeSQL: WriteSQL
     private lateinit var city: City
     private var selectedMenuId: Int = 0
 
     companion object {
-        fun newInstance(selectedMenuId: Int, readSQLInstance: readSQL, writeSQLInstance: writeSQL, city: City): MenuManagerFragment {
+        fun newInstance(
+            selectedMenuId: Int,
+            readSQLInstance: ReadSQL,
+            writeSQLInstance: WriteSQL,
+            city: City
+        ): MenuManagerFragment {
             val fragment = MenuManagerFragment()
             fragment.readSQL = readSQLInstance
             fragment.writeSQL = writeSQLInstance
@@ -28,7 +34,11 @@ class MenuManagerFragment : Fragment() {
         }
     }
 
-    override fun onCreateView(inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?): View? {
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View? {
         val view = inflater.inflate(R.layout.menu_manager_fragment, container, false)
         loadFragmentBasedOnMenuId()
         return view
@@ -36,6 +46,11 @@ class MenuManagerFragment : Fragment() {
 
     private fun loadFragmentBasedOnMenuId() {
         val fragment = when (selectedMenuId) {
+            R.id.nav_home -> {
+                val intent = Intent(activity, MainActivity::class.java)
+                startActivity(intent)
+                null
+            }
             R.id.new_conto -> NewAccountFragment(readSQL, writeSQL)
             R.id.new_transaction -> NewTransactionFragment(readSQL, writeSQL, city)
             R.id.new_budget -> NewBudgetFragment(readSQL, writeSQL)
@@ -50,7 +65,7 @@ class MenuManagerFragment : Fragment() {
 
         fragment?.let {
             childFragmentManager.beginTransaction().apply {
-                replace(R.id.linearContainer, it) // Assicurati che questo ID sia corretto
+                replace(R.id.linearContainer, it)
                 commit()
             }
         }

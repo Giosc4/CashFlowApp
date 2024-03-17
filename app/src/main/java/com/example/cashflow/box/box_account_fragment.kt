@@ -14,12 +14,12 @@ import com.example.cashflow.fragments.AccountDetailsFragment
 import com.example.cashflow.R
 import java.math.BigDecimal
 import com.example.cashflow.dataClass.*
-import com.example.cashflow.db.readSQL
-import com.example.cashflow.db.writeSQL
+import com.example.cashflow.db.*
 
-class box_account_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
+class box_account_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+    Fragment() {
 
-    private var subtotalTextView: TextView? = null
+    private var totalAccounts: TextView? = null
     private var accounts: ArrayList<Account>? = null
 
     override fun onCreateView(
@@ -30,18 +30,26 @@ class box_account_fragment(private val readSQL: readSQL, private val writeSQL: w
         val view = inflater.inflate(R.layout.box_fragment_account, container, false)
         val gridLayout = view.findViewById<GridLayout>(R.id.gridLayout)
         val noDataTextView = view.findViewById<TextView>(R.id.noDataTextView)
-        subtotalTextView = view.findViewById<TextView>(R.id.totalAccounts)
+        totalAccounts = view.findViewById(R.id.totalAccounts)
 
         accounts = readSQL.getAccounts()
 
-        if (accounts == null && accounts!!.isEmpty()) {
+        var totalBalance = 0.0
+        accounts?.let { accountList ->
+            for (account in accountList) {
+                totalBalance += account.balance
+            }
+        }
+        totalAccounts?.text = "Totale: €$totalBalance"
+
+        if (accounts.isNullOrEmpty()) {
             Log.d("AccountFragment", "No accounts")
             noDataTextView?.visibility = View.VISIBLE
-            subtotalTextView?.visibility = View.GONE
+            totalAccounts?.visibility = View.GONE
             gridLayout.visibility = View.GONE
         } else {
             noDataTextView?.visibility = View.GONE
-            subtotalTextView?.visibility = View.VISIBLE
+            totalAccounts?.visibility = View.VISIBLE
             gridLayout?.visibility = View.VISIBLE
             accounts?.let { accountList ->
                 for (account in accountList) {
@@ -74,21 +82,13 @@ class box_account_fragment(private val readSQL: readSQL, private val writeSQL: w
                 }
             }
         }
-
-
-        updateSubtotal()
         return view
     }
 
     override fun onResume() {
         super.onResume()
-        updateSubtotal()
     }
 
-    @SuppressLint("StringFormatInvalid")
-    private fun updateSubtotal() {
-        subtotalTextView?.text = getString(R.string.total_template, subtotal)
-    }
 
     private val subtotal: String
         get() {

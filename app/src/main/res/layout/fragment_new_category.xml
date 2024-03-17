@@ -12,6 +12,18 @@
         android:hint="Nome Categoria"
         android:inputType="textPersonName" />
 
+    <EditText
+        android:id="@+id/editTextDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="16dp"
+        android:gravity="top"
+        android:hint="Inserisci descrizione"
+        android:inputType="textMultiLine"
+        android:maxLines="6"
+        android:minLines="4" />
+
+
     <!-- Button centered horizontally -->
     <Button
         android:id="@+id/btnCreateBufget"

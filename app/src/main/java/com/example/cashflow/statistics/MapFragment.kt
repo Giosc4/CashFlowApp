@@ -18,7 +18,7 @@ import org.osmdroid.views.overlay.Marker
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class MapFragment(private val readSQL: readSQL, private val writeSQL: writeSQL)  : Fragment() {
+class MapFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  : Fragment() {
     private var mapView: MapView? = null
     private var accounts: ArrayList<Account> = ArrayList()
 

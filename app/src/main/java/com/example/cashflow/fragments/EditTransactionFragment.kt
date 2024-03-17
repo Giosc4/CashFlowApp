@@ -31,8 +31,8 @@ import com.example.cashflow.OCRManager.OCRListener
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.SQLiteDB
-import com.example.cashflow.db.readSQL
-import com.example.cashflow.db.writeSQL
+import com.example.cashflow.db.ReadSQL
+import com.example.cashflow.db.WriteSQL
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
@@ -60,8 +60,8 @@ class EditTransactionFragment(//CONSTRUCTOR
     private var categories: ArrayList<Category>? = null
 
     private var db: SQLiteDB
-    private var readSql: readSQL
-    private var writeSql: writeSQL
+    private var readSql: ReadSQL
+    private var writeSql: WriteSQL
 
     private var accounts: ArrayList<Account>? = null
 
@@ -71,8 +71,8 @@ class EditTransactionFragment(//CONSTRUCTOR
 
     init {
         db = SQLiteDB(context)
-        readSql = readSQL(db.writableDatabase)
-        writeSql = writeSQL(db.writableDatabase)
+        readSql = ReadSQL(db.writableDatabase)
+        writeSql = WriteSQL(db.writableDatabase)
     }
 
     override fun onCreateView(

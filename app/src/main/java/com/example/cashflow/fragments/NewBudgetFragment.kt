@@ -1,7 +1,9 @@
 package com.example.cashflow.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.text.InputFilter
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,14 +11,15 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
+import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.cashflow.MainActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
-import com.example.cashflow.db.SQLiteDB
-import com.example.cashflow.db.readSQL
-import com.example.cashflow.db.writeSQL
+import com.example.cashflow.db.ReadSQL
+import com.example.cashflow.db.WriteSQL
 
-class NewBudgetFragment(private val readSQL: readSQL, private val writeSQL: writeSQL)  : Fragment() {
+class NewBudgetFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
     private var editTextNome: EditText? = null
     private var spinnerCategoria: Spinner? = null
     private var editTextImporto: EditText? = null
@@ -37,7 +40,11 @@ class NewBudgetFragment(private val readSQL: readSQL, private val writeSQL: writ
 
         categories = readSQL.getCategories()
         val categoryNames = categories?.map { it.name }
-        val categoryAdapter = ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, categoryNames ?: listOf())
+        val categoryAdapter = ArrayAdapter(
+            requireContext(),
+            android.R.layout.simple_spinner_item,
+            categoryNames ?: listOf()
+        )
         categoryAdapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
         spinnerCategoria?.adapter = categoryAdapter
 
@@ -86,9 +93,24 @@ class NewBudgetFragment(private val readSQL: readSQL, private val writeSQL: writ
     }
 
     private fun salvaDati() {
-        // Ottieni i dati dagli elementi UI
         val nome = editTextNome!!.getText().toString()
         val categoria = spinnerCategoria!!.getSelectedItem().toString()
         val importo = editTextImporto!!.getText().toString()
+
+
+        if (nome.isEmpty()) {
+            Toast.makeText(context, "Inserisci un nome", Toast.LENGTH_SHORT).show()
+            Log.d("NewBudgetFragment", "Nome vuoto")
+        }
+        if (importo.isEmpty()) {
+            Toast.makeText(context, "Inserisci un importo", Toast.LENGTH_SHORT).show()
+            Log.d("NewBudgetFragment", "Importo vuoto")
+        }
+        writeSQL.createBudget(nome, importo.toDouble(), categoria)
+
+        Toast.makeText(context, "Budget salvato", Toast.LENGTH_SHORT).show()
+        val intent = Intent(activity, MainActivity::class.java)
+        startActivity(intent)
+        activity?.finish()
     }
 }

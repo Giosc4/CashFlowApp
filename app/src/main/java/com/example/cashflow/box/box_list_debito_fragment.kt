@@ -10,14 +10,12 @@ import android.widget.GridLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import com.example.cashflow.R
-import java.util.Calendar
 
 import com.example.cashflow.dataClass.*
-import com.example.cashflow.db.SQLiteDB
-import com.example.cashflow.db.readSQL
-import com.example.cashflow.db.writeSQL
+import com.example.cashflow.db.ReadSQL
+import com.example.cashflow.db.WriteSQL
 
-class box_list_debito_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
+class box_list_debito_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
     var gridLayout: GridLayout? = null
     var textViewTitle: TextView? = null
     private var noDataTextView: TextView? = null

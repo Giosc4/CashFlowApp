@@ -14,10 +14,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
-import com.example.cashflow.db.readSQL
-import com.example.cashflow.db.writeSQL
+import com.example.cashflow.db.ReadSQL
+import com.example.cashflow.db.WriteSQL
 
-class NewDebitCreditFragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
+class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
     private var editTextName: EditText? = null
     private var editTextAmount: EditText? = null
     private var editTextContact: EditText? = null

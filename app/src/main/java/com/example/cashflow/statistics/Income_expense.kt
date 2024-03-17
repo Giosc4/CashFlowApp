@@ -1,16 +1,13 @@
 package com.example.cashflow.statistics
 
-import android.graphics.Color
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.CompoundButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.R
 import com.github.mikephil.charting.charts.BarChart
@@ -26,7 +23,7 @@ import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
 
-class Income_expense(private val isIncome: Boolean, private val readSQL: readSQL, private val writeSQL: writeSQL)  :
+class Income_expense(private val isIncome: Boolean, private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  :
     Fragment() {
     private var title: TextView? = null
     private var accountsCheckBox: CheckBox? = null

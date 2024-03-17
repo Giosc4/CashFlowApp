@@ -8,7 +8,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class readSQL(private val db: SQLiteDatabase?) {
+class ReadSQL(private val db: SQLiteDatabase?) {
     fun getCityNameById(cityId: Int): String? {
         var cityName: String? = null
         val cursor = db!!.query(
@@ -104,11 +104,10 @@ class readSQL(private val db: SQLiteDatabase?) {
             val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
             val income = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_INCOME)) > 0
             val amount = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_AMOUNT))
-            val dateString = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_DATE))
+            val timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_DATE))
             val date = Calendar.getInstance()
-            sdf.parse(dateString)?.let {
-                date.time = it
-            }
+            date.timeInMillis = timestamp
+
             val cityId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CITY_ID))
             val categoryId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_CATEGORY_ID))
             val accountId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ACCOUNT_ID))
@@ -125,6 +124,7 @@ class readSQL(private val db: SQLiteDatabase?) {
                 )
             )
         }
+
         cursor?.close()
         return transactionsList
     }
@@ -295,11 +295,9 @@ class readSQL(private val db: SQLiteDatabase?) {
                     val income =
                         cursor.getInt(incomeIndex) == 0 // Qui verifichiamo che income sia falso
                     val amount = cursor.getDouble(amountIndex)
-                    val dateString = cursor.getString(dateIndex)
+                    val timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_DATE))
                     val date = Calendar.getInstance()
-                    sdf.parse(dateString)?.let {
-                        date.time = it
-                    }
+                    date.timeInMillis = timestamp
                     val cityId = cursor.getInt(cityIdIndex)
                     val categoryId = cursor.getInt(categoryIdIndex)
                     val accountId = cursor.getInt(accountIdIndex)
@@ -362,11 +360,9 @@ class readSQL(private val db: SQLiteDatabase?) {
                     val id = cursor.getInt(idIndex)
                     val income = cursor.getInt(incomeIndex) > 0
                     val amount = cursor.getDouble(amountIndex)
-                    val dateString = cursor.getString(dateIndex)
+                    val timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_DATE))
                     val date = Calendar.getInstance()
-                    sdf.parse(dateString)?.let {
-                        date.time = it
-                    }
+                    date.timeInMillis = timestamp
                     val cityId = cursor.getInt(cityIdIndex)
                     val categoryId = cursor.getInt(categoryIdIndex)
                     val accountId = cursor.getInt(accountIdIndex)
@@ -666,11 +662,10 @@ class readSQL(private val db: SQLiteDatabase?) {
                 val id = cursor.getInt(idIndex)
                 val income = cursor.getInt(incomeIndex) > 0
                 val amount = cursor.getDouble(amountIndex)
-                val dateString = cursor.getString(dateIndex)
+                val timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_DATE))
                 val date = Calendar.getInstance()
-                sdf.parse(dateString)?.let {
-                    date.time = it
-                }
+                date.timeInMillis = timestamp
+
                 val cityId = cursor.getInt(cityIdIndex)
                 val categoryId = cursor.getInt(categoryIdIndex)
                 val accountId = cursor.getInt(accountIdIndex)

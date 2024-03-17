@@ -9,37 +9,48 @@
         android:id="@+id/editTextNome"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:layout_margin="16dp"
         android:hint="Inserisci il nome"
-        android:inputType="textPersonName"
-        android:layout_margin="16dp"/>
+        android:inputType="textPersonName" />
+
+    <TextView
+        android:id="@+id/textViewCategoria"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_below="@id/editTextNome"
+        android:layout_alignParentStart="true"
+        android:layout_alignParentEnd="true"
+        android:layout_marginLeft="60dp"
+        android:layout_marginRight="60dp"
+        android:text="Seleziona la categoria" />
 
     <Spinner
         android:id="@+id/spinnerCategoria"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_below="@id/editTextNome"
-        android:layout_marginTop="8dp"
+        android:layout_below="@id/textViewCategoria"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"/>
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="16dp" />
 
     <EditText
         android:id="@+id/editTextImporto"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:hint="Inserisci importo"
-        android:inputType="numberDecimal"
         android:layout_below="@id/spinnerCategoria"
-        android:layout_marginTop="8dp"
         android:layout_marginLeft="16dp"
-        android:layout_marginRight="16dp"/>
+        android:layout_marginTop="8dp"
+        android:layout_marginRight="16dp"
+        android:hint="Inserisci importo"
+        android:inputType="numberDecimal" />
 
     <Button
         android:id="@+id/buttonSalva"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Salva"
         android:layout_below="@id/editTextImporto"
         android:layout_centerHorizontal="true"
-        android:layout_marginTop="16dp"/>
+        android:layout_marginTop="16dp"
+        android:text="Salva" />
 
 </RelativeLayout>

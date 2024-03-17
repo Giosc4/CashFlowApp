@@ -17,14 +17,14 @@ import com.example.cashflow.MainActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.SQLiteDB
-import com.example.cashflow.db.readSQL
-import com.example.cashflow.db.writeSQL
+import com.example.cashflow.db.ReadSQL
+import com.example.cashflow.db.WriteSQL
 
 class AccountDetailsFragment(id: Int) : Fragment() {
     private var accountId: Int = -1
     private lateinit var db: SQLiteDB
-    private lateinit var readSql: readSQL
-    private lateinit var writeSql: writeSQL
+    private lateinit var readSql: ReadSQL
+    private lateinit var writeSql: WriteSQL
 
     // Views
     private var nameEditText: EditText? = null
@@ -50,8 +50,8 @@ class AccountDetailsFragment(id: Int) : Fragment() {
         deleteButton = view.findViewById(R.id.deleteButton)
 
         db = SQLiteDB(context)
-        readSql = readSQL(db.writableDatabase)
-        writeSql = writeSQL(db.writableDatabase)
+        readSql = ReadSQL(db.writableDatabase)
+        writeSql = WriteSQL(db.writableDatabase)
 
         arguments?.let {
             accountId = it.getInt(ARG_ACCOUNT_ID)

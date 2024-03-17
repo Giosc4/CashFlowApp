@@ -13,10 +13,9 @@ import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 
-import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_budget_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
+class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
     private var horizontalBarChart: HorizontalBarChart? = null
     private var noDataTextView: TextView? = null
 

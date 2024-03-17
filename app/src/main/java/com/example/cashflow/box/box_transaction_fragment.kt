@@ -15,7 +15,7 @@ import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_transaction_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
+class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
 
     private var noDataTextView: TextView? = null
 

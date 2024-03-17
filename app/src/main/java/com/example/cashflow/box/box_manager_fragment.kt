@@ -7,12 +7,9 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import androidx.fragment.app.Fragment
 import com.example.cashflow.R
-import com.example.cashflow.dataClass.Account
-import com.example.cashflow.db.SQLiteDB
-import com.example.cashflow.db.readSQL
-import com.example.cashflow.db.writeSQL
+import com.example.cashflow.db.*
 
-class box_manager_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) :
+class box_manager_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
     Fragment() {
 
     override fun onCreateView(
@@ -25,14 +22,19 @@ class box_manager_fragment(private val readSQL: readSQL, private val writeSQL: w
         val linearContainer = view.findViewById<LinearLayout>(R.id.linearContainer)
 
         addBoxFragment(
-            box_template_fragment(readSQL, writeSQL),
+            box_account_fragment(readSQL, writeSQL),
             linearContainer,
-            "box_template_fragment"
+            "box_account_fragment"
         )
         addBoxFragment(
             box_transaction_fragment(readSQL, writeSQL),
             linearContainer,
             "box_transaction_fragment"
+        )
+        addBoxFragment(
+            box_template_fragment(readSQL, writeSQL),
+            linearContainer,
+            "box_template_fragment"
         )
         addBoxFragment(
             box_budget_fragment(readSQL, writeSQL),
@@ -48,11 +50,6 @@ class box_manager_fragment(private val readSQL: readSQL, private val writeSQL: w
             box_list_credito_fragment(readSQL, writeSQL),
             linearContainer,
             "box_list_credito_fragment"
-        )
-        addBoxFragment(
-            box_account_fragment(readSQL, writeSQL),
-            linearContainer,
-            "box_account_fragment"
         )
 
         return view

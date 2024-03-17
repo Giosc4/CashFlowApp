@@ -31,8 +31,8 @@ class StatisticsFragment(private val accounts: ArrayList<Account>) : Fragment() 
     private var btnCSVFileDownload: Button? = null
 
     private lateinit var db: SQLiteDB
-    private lateinit var readSql: readSQL
-    private lateinit var writeSql: writeSQL
+    private lateinit var readSql: ReadSQL
+    private lateinit var writeSql: WriteSQL
 
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(
@@ -48,8 +48,8 @@ class StatisticsFragment(private val accounts: ArrayList<Account>) : Fragment() 
         btnCSVFileDownload = view.findViewById(R.id.btnCSVFileDownload)
 
         db = SQLiteDB(context)
-        readSql = readSQL(db.writableDatabase)
-        writeSql = writeSQL(db.writableDatabase)
+        readSql = ReadSQL(db.writableDatabase)
+        writeSql = WriteSQL(db.writableDatabase)
 
         btnLineChart?.setOnClickListener(View.OnClickListener {
             val barChartFragment = Line_chart(readSql, writeSql)

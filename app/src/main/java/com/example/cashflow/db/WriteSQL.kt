@@ -5,7 +5,7 @@ import android.database.sqlite.SQLiteDatabase
 import android.util.Log
 import com.example.cashflow.dataClass.*
 
-class writeSQL(private val db: SQLiteDatabase) {
+class WriteSQL(private val db: SQLiteDatabase) {
     fun createAccount(account_name: String?, balance: Double): Boolean {
         val cv = ContentValues()
         cv.put(COLUMN_NAME, account_name)
@@ -17,6 +17,44 @@ class writeSQL(private val db: SQLiteDatabase) {
         } else {
             true
         }
+    }
+
+    fun createBudget(budgetName: String, budgetAmount: Double, categoryName: String): Boolean {
+        val values = ContentValues().apply {
+            put(
+                "budget_name",
+                budgetName
+            )
+            put("budget_amount", budgetAmount)
+            val categoryId = getCategoryIdByName(categoryName)
+            if (categoryId == null) {
+                Log.e("SQLiteDB", "Categoria non trovata: $categoryName")
+                return false
+            }
+            put("category_id", categoryId)
+        }
+
+        val insertId = db.insert(TABLE_BUDGET, null, values)
+        if (insertId == -1L) {
+            Log.e("SQLiteDB", "Failed to insert new budget")
+            return false
+        } else {
+            Log.d("SQLiteDB", "Budget inserted successfully with ID: $insertId")
+            return true
+        }
+    }
+
+    private fun getCategoryIdByName(categoryName: String): Long? {
+        val cursor = db.query(
+            TABLE_CATEGORY,
+            arrayOf(COLUMN_ID),
+            "$COLUMN_NAME = ?", arrayOf(categoryName),
+            null, null, null
+        )
+        val categoryId =
+            if (cursor.moveToFirst()) cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_ID)) else null
+        cursor.close()
+        return categoryId
     }
 
     // Cancella un Account
@@ -67,7 +105,10 @@ class writeSQL(private val db: SQLiteDatabase) {
 
     fun insertTransaction(newTrans: Transactions): Long {
         val values = ContentValues().apply {
-            put(COLUMN_INCOME, if (newTrans.isIncome) 1 else 0) // SQLite non ha un tipo booleano, quindi usiamo 1 per true e 0 per false
+            put(
+                COLUMN_INCOME,
+                if (newTrans.isIncome) 1 else 0
+            ) // SQLite non ha un tipo booleano, quindi usiamo 1 per true e 0 per false
             put(COLUMN_AMOUNT, newTrans.amountValue)
             put(COLUMN_DATE, newTrans.date.timeInMillis)
             put(COLUMN_CITY_ID, newTrans.cityId)
@@ -87,28 +128,26 @@ class writeSQL(private val db: SQLiteDatabase) {
         return newRowId
     }
 
-fun insertTemplateTransaction(template: TemplateTransaction): Long {
-    val values = ContentValues().apply {
-        put("name", template.name)
-        put("isIncome", if (template.isIncome) 1 else 0)
-        put("amount", template.amount)
-        put("categoryId", template.categoryId)
+    fun insertTemplateTransaction(template: TemplateTransaction): Long {
+        val values = ContentValues().apply {
+            put("name", template.name)
+            put("isIncome", if (template.isIncome) 1 else 0)
+            put("amount", template.amount)
+            put("categoryId", template.categoryId)
+        }
+
+
+        // Insert the new template transaction into the database and return the ID of the new row, or -1 if an error occurred
+        val newRowId = db.insert(TABLE_TEMPLATE_TRANSACTIONS, null, values)
+
+        if (newRowId == -1L) {
+            Log.e("SQLiteDB", "Failed to insert new template transaction")
+        } else {
+            Log.d("SQLiteDB", "Template transaction inserted successfully with ID: $newRowId")
+        }
+
+        return newRowId
     }
-
-
-    // Insert the new template transaction into the database and return the ID of the new row, or -1 if an error occurred
-    val newRowId = db.insert(TABLE_TEMPLATE_TRANSACTIONS, null, values)
-
-    if (newRowId == -1L) {
-        Log.e("SQLiteDB", "Failed to insert new template transaction")
-    } else {
-        Log.d("SQLiteDB", "Template transaction inserted successfully with ID: $newRowId")
-    }
-
-    return newRowId
-}
-
-
 
 
     fun updateTransaction(newTrans: Transactions) {

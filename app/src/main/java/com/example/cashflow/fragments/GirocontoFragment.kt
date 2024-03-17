@@ -1,5 +1,6 @@
 package com.example.cashflow.fragments
 
+import android.content.Intent
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -9,6 +10,7 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.Spinner
 import androidx.fragment.app.Fragment
+import com.example.cashflow.MainActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 
@@ -61,8 +63,15 @@ class GirocontoFragment(private val accounts: ArrayList<Account>) : Fragment() {
         saveGirocontoButton?.setOnClickListener(View.OnClickListener { // Handle click for saving giroconto
             val selectedAccountProv = accountSpinnerProv?.getSelectedItem().toString()
             val selectedAccountArrivo = accountSpinnerArrivo?.getSelectedItem().toString()
-            // Perform actions with selected accounts
-            requireFragmentManager().popBackStack()
+
+
+            // gestire cosa fare quando clicco il pulsante
+
+
+
+            val intent = Intent(requireContext(), MainActivity::class.java)
+            intent.flags = Intent.FLAG_ACTIVITY_NEW_TASK or Intent.FLAG_ACTIVITY_CLEAR_TASK
+            startActivity(intent)
         })
         return view
     }

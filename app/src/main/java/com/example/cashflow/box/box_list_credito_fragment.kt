@@ -9,13 +9,12 @@ import android.view.ViewGroup
 import android.widget.GridLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.R
 
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_list_credito_fragment(private val readSQL: readSQL, private val writeSQL: writeSQL) : Fragment() {
+class box_list_credito_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
     var gridLayout: GridLayout? = null
     var textViewTitle: TextView? = null
 

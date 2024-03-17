@@ -1,30 +1,24 @@
 package com.example.cashflow
 
-import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
-import android.view.View
 import android.widget.ImageButton
 import android.widget.ImageView
-import android.widget.LinearLayout
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
-import androidx.fragment.app.Fragment
 import com.example.cashflow.box.*
 import com.example.cashflow.dataClass.*
-import com.example.cashflow.statistics.*
 import com.example.cashflow.db.*
-import com.example.cashflow.fragments.*
 
 
 class MainActivity : AppCompatActivity() {
     private lateinit var db: SQLiteDB
-    private lateinit var readSQL: readSQL
-    private lateinit var writeSQL: writeSQL
+    private lateinit var readSQL: ReadSQL
+    private lateinit var writeSQL: WriteSQL
     private var accounts: ArrayList<Account>? = null
     private lateinit var city: City
 
@@ -42,11 +36,11 @@ class MainActivity : AppCompatActivity() {
 
 
         db = SQLiteDB(this)
-        readSQL = readSQL(db.writableDatabase)
-        writeSQL = writeSQL(db.writableDatabase)
+        readSQL = ReadSQL(db.writableDatabase)
+        writeSQL = WriteSQL(db.writableDatabase)
 
-//        writeSQL.deleteTransaction(30)
-
+//        writeSQL.deleteTransaction(6)
+//        writeSQL.deleteTransaction(2)
 //        val isDeleted: Boolean = this.deleteDatabase("cashflow.db")
 //        if (isDeleted) {
 //            Log.d("SQLiteDB", "Database deleted successfully")
