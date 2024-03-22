@@ -1,6 +1,8 @@
 package com.example.cashflow.dataClass
 
-class City {
+import java.io.Serializable
+
+class City : Serializable {
     var id = 0
         private set
     var nameCity: String?

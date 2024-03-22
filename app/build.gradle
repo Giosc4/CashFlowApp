@@ -4,7 +4,6 @@ buildscript {
     repositories {
         google()
         mavenCentral()
-
     }
     dependencies {
         classpath 'com.android.tools.build:gradle:8.1.4'
@@ -34,13 +33,15 @@ android {
 
     defaultConfig {
         applicationId 'com.example.cashflow'
-        minSdk 30
+        minSdk 31
         targetSdk 34
         versionCode 1
         versionName '1.0'
         resConfigs 'en'
 
         testInstrumentationRunner 'androidx.test.runner.AndroidJUnitRunner'
+        buildConfigField 'String', 'MAPBOX_ACCESS_TOKEN', "\"${project.property('MAPBOX_DOWNLOADS_TOKEN')}\""
+
     }
 
     buildTypes {
@@ -72,9 +73,10 @@ dependencies {
     androidTestImplementation 'androidx.test.ext:junit:1.1.5'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.5.1'
 
-    implementation 'com.google.code.gson:gson:2.8.9'
     implementation 'com.github.PhilJay:MPAndroidChart:v3.1.0'
-    implementation 'org.osmdroid:osmdroid-android:6.1.10'
+
+    implementation 'com.mapbox.maps:android:11.2.1'
+
     implementation 'com.google.android.gms:play-services-location:18.0.0'
 
     implementation 'com.theartofdev.edmodo:android-image-cropper:2.8.0'

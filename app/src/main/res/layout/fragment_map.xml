@@ -1,13 +1,23 @@
-<?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:map="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:mapbox="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
-    android:layout_height="match_parent">
+    android:layout_height="match_parent"
+    android:orientation="vertical">
 
-    <org.osmdroid.views.MapView xmlns:android="http://schemas.android.com/apk/res/android"
-        android:id="@+id/map"
+    <TextView
+        android:id="@+id/label"
+        android:layout_width="wrap_content"
+        android:layout_height="42dp"
+        android:layout_gravity="center_horizontal"
+        android:text="Mappa con i markers"
+        android:textSize="24sp" />
+
+    <com.mapbox.maps.MapView
+        android:id="@+id/mapView"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_margin="10dp" />
-</RelativeLayout>
+        android:layout_height="600dp"
+        android:layout_weight="1"
+        mapbox:mapbox_cameraTargetLat="44.498"
+        mapbox:mapbox_cameraTargetLng="11.352"
+        mapbox:mapbox_cameraZoom="11" />
+</LinearLayout>

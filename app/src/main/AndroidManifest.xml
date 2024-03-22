@@ -36,6 +36,18 @@
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
+
+        <provider
+            android:name="androidx.core.content.FileProvider"
+            android:authorities="com.example.android.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/camera_path" />
+        </provider>
+        <meta-data android:name="com.mapbox.token" android:value="sk.eyJ1IjoiZ2lvc2NhIiwiYSI6ImNsdHg5ZHJodTAzb2Yyamtuc2VxaGt5eHUifQ.I1ZMeDzax5cvvHtRWC5v9g"/>
+
     </application>
 
 </manifest>

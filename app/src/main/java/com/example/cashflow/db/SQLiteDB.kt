@@ -9,7 +9,7 @@ class SQLiteDB(context: Context?) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
 
     init {
-        Log.d("SQLiteDB", "Database created")
+        Log.d("SQLiteDB", "Database initialized")
     }
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         Log.d("SQLiteDB", "Database upgraded from version $oldVersion to $newVersion")

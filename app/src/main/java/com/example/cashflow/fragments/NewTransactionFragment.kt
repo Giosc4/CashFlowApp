@@ -10,6 +10,7 @@ import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
+import android.os.Environment
 import android.provider.MediaStore
 import android.text.InputFilter
 import android.util.Log
@@ -30,6 +31,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
+import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import com.example.cashflow.MainActivity
 import com.example.cashflow.OCRManager
@@ -43,6 +45,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
+import java.io.File
 import java.text.ParseException
 import java.util.Date
 import java.util.Locale
@@ -283,43 +286,18 @@ class NewTransactionFragment(
             }
         })
         // Imposta un listener per il pulsante della fotocamera
-        cameraButton?.setOnClickListener(View.OnClickListener { // Crea un dialog per scegliere tra Fotocamera e Galleria
+        cameraButton?.setOnClickListener {
+            val options = arrayOf<CharSequence>("Fotocamera", "Galleria")
             val builder = MaterialAlertDialogBuilder(requireContext())
             builder.setTitle("Scegli la fonte dell'immagine")
-            builder.setItems(
-                arrayOf<CharSequence>("Fotocamera", "Galleria"),
-                object : DialogInterface.OnClickListener {
-                    override fun onClick(dialog: DialogInterface, which: Int) {
-                        if (which == 0) {
-                            if (ContextCompat.checkSelfPermission(
-                                    requireActivity(),
-                                    Manifest.permission.CAMERA
-                                )
-                                != PackageManager.PERMISSION_GRANTED
-                            ) {
-                                ActivityCompat.requestPermissions(
-                                    requireActivity(),
-                                    arrayOf(Manifest.permission.CAMERA),
-                                    PERMISSION_CAMERA
-                                )
-                            } else if (isCameraAppAvailable) {
-                                // Il permesso è già stato concesso e l'app della fotocamera è disponibile
-                                openCamera()
-                            } else {
-                                // Nessuna app della fotocamera disponibile
-                                Toast.makeText(
-                                    context,
-                                    "Nessuna app della fotocamera trovata",
-                                    Toast.LENGTH_SHORT
-                                ).show()
-                            }
-                        } else if (which == 1) { // Galleria
-                            openGallery()
-                        }
-                    }
-                })
+            builder.setItems(options) { dialog, which ->
+                when (which) {
+                    0 -> openCamera()
+                    1 -> openGallery()
+                }
+            }
             builder.show()
-        })
+        }
         return view
     }
 
@@ -339,31 +317,53 @@ class NewTransactionFragment(
         }
 
     private fun openCamera() {
-        isCameraAppAvailable
+//        isCameraAppAvailable
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-        Log.d("takePictureIntent", takePictureIntent.toString())
-        // Ensure there is a camera app to handle the intent
-        if (takePictureIntent.resolveActivity(requireActivity().packageManager) != null) {
-            // Create a file to save the photo
-            val values = ContentValues()
-            values.put(MediaStore.Images.Media.TITLE, "cashflow_image")
-            values.put(MediaStore.Images.Media.DESCRIPTION, "date: " + Calendar.getInstance().time)
-            cameraImageUri = requireActivity().contentResolver.insert(
-                MediaStore.Images.Media.EXTERNAL_CONTENT_URI,
-                values
-            )
-            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, cameraImageUri)
-            Log.d("NewTransactionFragment", "openCamera() cameraImageUri: $cameraImageUri")
-            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-        } else {
-            Log.e("NewTransactionFragment", "No camera app found")
-            Toast.makeText(
-                context,
-                "Please install a camera app to take photos",
-                Toast.LENGTH_SHORT
-            ).show()
+//        if (takePictureIntent.resolveActivity(requireActivity().packageManager) != null) {
+            val photoFile: File? = try {
+                createImageFile()
+            } catch (ex: IOException) {
+                // Errore durante la creazione del file
+                null
+            }
+            photoFile?.also {
+                val photoURI: Uri = FileProvider.getUriForFile(
+                    requireContext(),
+                    "com.example.android.fileprovider", // Cambia con il tuo applicationId
+                    it
+                )
+                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
+            }
+//        } else {
+//            Toast.makeText(
+//                requireContext(),
+//                "Nessuna app della fotocamera disponibile",
+//                Toast.LENGTH_SHORT
+//            ).show()
+//            Log.e("CameraCheck", "No camera app found.")
+//        }
+    }
+
+    @Throws(IOException::class)
+    private fun createImageFile(): File {
+        // Crea un nome univoco per l'immagine basato su un timestamp
+        val timeStamp: String =
+            SimpleDateFormat("yyyyMMdd_HHmmss", Locale.getDefault()).format(Date())
+        val imageFileName = "JPEG_$timeStamp"
+        // Ottiene il directory in cui salvare l'immagine
+        val storageDir = requireActivity().getExternalFilesDir(Environment.DIRECTORY_PICTURES)
+        // Crea un file vuoto per salvare l'immagine
+        return File.createTempFile(
+            imageFileName, /* prefisso del nome del file */
+            ".jpg", /* estensione del file */
+            storageDir /* directory */
+        ).also {
+            // Salva un riferimento al path del file
+            cameraImageUri = Uri.fromFile(it)
         }
     }
+
 
     private fun openGallery() {
         val galleryIntent = Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI)
@@ -672,6 +672,7 @@ class NewTransactionFragment(
         // Mostra il dialog per la selezione della data
         datePickerDialog.show()
     }
+
     private fun prepareSelectedDate() {
         val timestamp = selectedTimeTextView?.text.toString().toLongOrNull()
         if (timestamp != null) {

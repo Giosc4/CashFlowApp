@@ -20,7 +20,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var readSQL: ReadSQL
     private lateinit var writeSQL: WriteSQL
     private var accounts: ArrayList<Account>? = null
-    private lateinit var city: City
+    private var city: City? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -65,7 +65,7 @@ class MainActivity : AppCompatActivity() {
         supportActionBar?.setDisplayShowTitleEnabled(false)
         navigationView.setNavigationItemSelectedListener { menuItem ->
             // Passa l'ID dell'elemento del menu a MenuManagerFragment
-            loadMenuManagerFragment(menuItem.itemId)
+            loadMenuManagerFragment(menuItem.itemId, city!!)
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
@@ -108,14 +108,16 @@ class MainActivity : AppCompatActivity() {
             commit()
         }
     }
-    private fun loadMenuManagerFragment(selectedMenuId: Int) {
-        val menuManagerFragment = MenuManagerFragment.newInstance(selectedMenuId, readSQL, writeSQL, city)
+
+    private fun loadMenuManagerFragment(selectedMenuId: Int, city: City) {
+        val menuManagerFragment = MenuManagerFragment.newInstance(selectedMenuId, city)
         supportFragmentManager.beginTransaction().apply {
             replace(R.id.linearContainer, menuManagerFragment)
-            addToBackStack(null) // Permette di tornare indietro ai box_manager_fragment
+            addToBackStack(null)
             commit()
         }
     }
+
 
     companion object {
         private const val PERMISSION_REQUEST_CODE = 1

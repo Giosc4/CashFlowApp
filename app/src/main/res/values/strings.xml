@@ -1,4 +1,4 @@
-<resources>
+<resources xmlns:tools="http://schemas.android.com/tools">
     <string name="app_name">CashFlow</string>
 
     <string name="hello_blank_fragment">Hello blank fragment</string>
@@ -10,4 +10,7 @@
     <string name="no_accounts">0 Conti</string>
 
     <string name="home">Home</string>
+    <string name="mapbox_access_token" translatable="false" tools:ignore="UnusedResources">pk.eyJ1IjoiZ2lvc2NhIiwiYSI6ImNsdHgwaTR5aTAxN20ybGtueWt6ZXk2anEifQ.2hZa0HuzocuJLUtFecpGrg</string>
+
+
 </resources>
