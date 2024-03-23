@@ -150,8 +150,10 @@ class ReadSQL(private val db: SQLiteDatabase?) {
                 val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
                 val amount = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_AMOUNT))
                 val name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
-                val concessionDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONCESSION_DATE))
-                val extinctionDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EXTINCTION_DATE))
+                val concessionDate =
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONCESSION_DATE))
+                val extinctionDate =
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EXTINCTION_DATE))
                 val accountId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ACCOUNT_ID))
 
                 // Crea un nuovo oggetto Debito con i valori recuperati e aggiungilo alla lista
@@ -216,8 +218,10 @@ class ReadSQL(private val db: SQLiteDatabase?) {
                 val id = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ID))
                 val amount = cursor.getDouble(cursor.getColumnIndexOrThrow(COLUMN_AMOUNT))
                 val name = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_NAME))
-                val concessionDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONCESSION_DATE))
-                val extinctionDate = cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EXTINCTION_DATE))
+                val concessionDate =
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_CONCESSION_DATE))
+                val extinctionDate =
+                    cursor.getString(cursor.getColumnIndexOrThrow(COLUMN_EXTINCTION_DATE))
                 val accountId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ACCOUNT_ID))
 
                 // Crea un nuovo oggetto Debito con i valori recuperati e aggiungilo alla lista
@@ -412,7 +416,6 @@ class ReadSQL(private val db: SQLiteDatabase?) {
     }
 
 
-
     fun getCategoryById(categoryId: Int): Category? {
         val cursor = db!!.query(
             TABLE_CATEGORY,
@@ -573,6 +576,7 @@ class ReadSQL(private val db: SQLiteDatabase?) {
         }
         return ArrayList(categories)
     }
+
 
     fun getIdByCityName(cityName: String): Int {
         db?.let { database ->

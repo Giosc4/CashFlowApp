@@ -149,6 +149,32 @@ class WriteSQL(private val db: SQLiteDatabase) {
         return newRowId
     }
 
+    fun insertCity(city: City): Int {
+        val values = ContentValues()
+        values.put(
+            COLUMN_CITY_NAME,
+            city.nameCity
+        ) // COLUMN_CITY_NAME should match your column name for the city name
+        values.put(
+            COLUMN_LATITUDE,
+            city.latitude
+        )  // COLUMN_LATITUDE should match your column name for latitude
+        values.put(
+            COLUMN_LONGITUDE,
+            city.longitude
+        ) // COLUMN_LONGITUDE should match your column name for longitude
+
+        // Insert the city into the database table
+        val newRowId = db.insert(TABLE_CITY, null, values)
+
+        if (newRowId == -1L) {
+            Log.e("SQLiteDB", "Failed to insert new city: ${city.nameCity}")
+        } else {
+            Log.d("SQLiteDB", "City inserted successfully with ID: $newRowId")
+        }
+        return city.id
+    }
+
 
     fun updateTransaction(newTrans: Transactions) {
         // Ottieni il database in modalità scrittura

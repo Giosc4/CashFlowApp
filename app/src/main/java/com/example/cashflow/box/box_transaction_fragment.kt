@@ -15,7 +15,8 @@ import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
+class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+    Fragment() {
 
     private var noDataTextView: TextView? = null
 
@@ -24,11 +25,8 @@ class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQ
         // Ottieni le transazioni dal database
 
         transactions?.forEachIndexed { index: Int, transaction: Transactions ->
-            val nameTextView = TextView(context).apply {
-
-
-                text =
-                    "${readSQL.getCategoryById(transaction.categoryId)?.name}"
+            val contoTextView = TextView(context).apply {
+                text = readSQL.getAccountById(transaction.accountId)?.name
                 gravity = Gravity.CENTER
                 // Configurazione del layout
                 val params = GridLayout.LayoutParams()
@@ -37,8 +35,9 @@ class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQ
                 layoutParams = params
             }
 
-            val amountTextView = TextView(context).apply {
-                text = "${transaction.amountValue} €"
+            val nameTextView = TextView(context).apply {
+                text =
+                    "${readSQL.getCategoryById(transaction.categoryId)?.name}"
                 gravity = Gravity.CENTER
                 // Configurazione del layout
                 val params = GridLayout.LayoutParams()
@@ -47,18 +46,35 @@ class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQ
                 layoutParams = params
             }
 
+            val amountTextView = TextView(context).apply {
+                if (transaction.isIncome)
+                    text = "+${transaction.amountValue} €"
+                else
+                    text = "-${transaction.amountValue} €"
+                gravity = Gravity.CENTER
+                // Configurazione del layout
+                val params = GridLayout.LayoutParams()
+                params.rowSpec = GridLayout.spec(index)
+                params.columnSpec = GridLayout.spec(2, 1f)
+                layoutParams = params
+            }
+
             // Alternare il colore di sfondo per le righe
             if (index % 2 == 0) {
                 nameTextView.setBackgroundColor(Color.parseColor("#7ad95f"))
                 amountTextView.setBackgroundColor(Color.parseColor("#7ad95f"))
+                contoTextView.setBackgroundColor(Color.parseColor("#7ad95f"))
             } else {
                 nameTextView.setBackgroundColor(Color.parseColor("#e9F2ef"))
                 amountTextView.setBackgroundColor(Color.parseColor("#e9F2ef"))
+                contoTextView.setBackgroundColor(Color.parseColor("#e9F2ef"))
             }
 
             // Aggiungi i TextView al GridLayout
+            gridLayout.addView(contoTextView)
             gridLayout.addView(nameTextView)
             gridLayout.addView(amountTextView)
+
         }
     }
 
@@ -77,7 +93,7 @@ class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQ
         noDataTextView = view.findViewById(R.id.noDataTextView)
 
         val transactions = readSQL.getAllTransactions()
-        if (transactions == null || transactions.isEmpty()){
+        if (transactions == null || transactions.isEmpty()) {
             noDataTextView?.visibility = View.VISIBLE
             Log.d("Transactions", "No transactions found")
         } else {

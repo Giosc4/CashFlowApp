@@ -69,7 +69,13 @@ class NewTransactionFragment(
     private var templateCheckBox: CheckBox? = null
     private var setNameTemplate: EditText? = null
     private var girocontoButton: Button? = null
-    private var fragment_container: FrameLayout? = null
+
+    private var textViewTitle: TextView? = null
+    private var textViewProvenienza: TextView? = null
+    private var accountSpinnerProv: Spinner? = null
+    private var textViewArrivo: TextView? = null
+    private var accountSpinnerArrivo: Spinner? = null
+
     private var cameraImageUri: Uri? = null
     private var dateButton: Button? = null
     private var locationEditText: TextView? = null
@@ -78,8 +84,6 @@ class NewTransactionFragment(
     private var selectedTimeTextView: TextView? = null
     private var ocrManager: OCRManager? = null
 
-    private var accountSpinnerProv: Spinner? = null
-    private var accountSpinnerArrivo: Spinner? = null
     private var accounts: ArrayList<Account> = readSQL.getAccounts()
 
     override fun onCreateView(
@@ -108,7 +112,13 @@ class NewTransactionFragment(
         templateCheckBox = view.findViewById(R.id.templateCheckBox)
         setNameTemplate = view.findViewById(R.id.setNameTemplate)
         girocontoButton = view.findViewById(R.id.girocontoButton)
-//        fragment_container = view.findViewById(R.id.fragment_container)
+
+        textViewTitle = view.findViewById(R.id.textViewTitle)
+        textViewProvenienza = view.findViewById(R.id.textViewProvenienza)
+        accountSpinnerProv = view.findViewById(R.id.accountSpinnerProv)
+        textViewArrivo = view.findViewById(R.id.textViewArrivo)
+        accountSpinnerArrivo = view.findViewById(R.id.accountSpinnerArrivo)
+
         dateButton = view.findViewById(R.id.dateButton)
         deleteButton = view.findViewById(R.id.deleteButton)
 
@@ -153,33 +163,39 @@ class NewTransactionFragment(
                 endTimeTextView
             )
         })
-        girocontoButton?.setOnClickListener(View.OnClickListener {
-            // Verifica se il fragment del giroconto è già aperto
-            val existingFragment =
-                requireActivity().supportFragmentManager.findFragmentById(R.id.fragment_container)
-            if (existingFragment is GirocontoFragment) {
-                // Chiudi il fragment del giroconto senza salvare e nascondi il fragment_container
-                requireActivity().supportFragmentManager.popBackStack()
-                fragment_container?.setVisibility(View.GONE)
-                accountSpinner?.setVisibility(View.VISIBLE)
+
+        girocontoButton?.setOnClickListener {
+            it.isSelected = !it.isSelected
+
+            if (textViewTitle?.visibility == View.GONE) {
+                // If the views are currently hidden, show them
+                textViewTitle!!.visibility = View.VISIBLE
+                textViewProvenienza!!.visibility = View.VISIBLE
+                accountSpinnerProv!!.visibility = View.VISIBLE
+                textViewArrivo!!.visibility = View.VISIBLE
+                accountSpinnerArrivo!!.visibility = View.VISIBLE
+                accountSpinner!!.visibility = View.GONE
             } else {
-                // Apri il fragment del giroconto
-                val girocontoFragment = GirocontoFragment(accounts)
-                fragment_container?.setVisibility(View.VISIBLE)
-                accountSpinner?.setVisibility(View.GONE)
-                val transaction = requireActivity().supportFragmentManager.beginTransaction()
-                transaction.replace(R.id.fragment_container, girocontoFragment)
-                transaction.addToBackStack(null)
-                transaction.commit()
+                // If the views are currently shown, hide them
+                textViewTitle!!.visibility = View.GONE
+                textViewProvenienza!!.visibility = View.GONE
+                accountSpinnerProv!!.visibility = View.GONE
+                textViewArrivo!!.visibility = View.GONE
+                accountSpinnerArrivo!!.visibility = View.GONE
+                accountSpinner!!.visibility = View.VISIBLE
+
             }
-        })
+        }
+
         dateButton?.setOnClickListener(View.OnClickListener {
             showDatePickerDialog(
                 selectedTimeTextView
             )
         })
         numberEditText?.setFilters(arrayOf(
-            InputFilter { source, start, end, dest, dstart, dend -> // Check if the input contains a decimal point
+            InputFilter { source, start, end, dest, dstart, dend ->
+                val modifiedSource = source.toString().replace(',', '.')
+
                 var hasDecimalSeparator = dest.toString().contains(".")
                 // Get the current number of decimal places
                 var decimalPlaces = 0
@@ -258,6 +274,7 @@ class NewTransactionFragment(
                 id: Long
             ) {
                 val selectedAccount = parent.getItemAtPosition(position).toString()
+                Log.d("NewTransactionFragment", "Account selezionato: $selectedAccount")
                 /*
                 NON SUCCEDE NULLA PERCHè NEL METODO saveTransaction() VIENE SEELEZIONATO CON accountSpinner.getSelectedItem
                String accountSelected = accountSpinner.getSelectedItem() != null ? accountSpinner.getSelectedItem().toString() : "";
@@ -268,6 +285,35 @@ class NewTransactionFragment(
                 // SE NULLA è SELEZIONATO ALLORA VIENE PRESO IL PRIMO ACCOUNT
             }
         })
+
+        val dataAdapterProv =
+            ArrayAdapter(requireContext(), android.R.layout.simple_spinner_item, accountNames)
+        dataAdapterProv.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        accountSpinnerProv?.setAdapter(dataAdapterProv)
+        accountSpinnerProv?.setOnItemSelectedListener(object : AdapterView.OnItemSelectedListener {
+            override fun onItemSelected(
+                parent: AdapterView<*>,
+                view: View,
+                position: Int,
+                id: Long
+            ) {
+                val selectedAccountProv = parent.getItemAtPosition(position).toString()
+                val accountNamesArrivo = ArrayList(accountNames)
+                accountNamesArrivo.remove(selectedAccountProv)
+                val dataAdapterArrivo = ArrayAdapter(
+                    context!!,
+                    android.R.layout.simple_spinner_item,
+                    accountNamesArrivo
+                )
+                dataAdapterArrivo.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+                accountSpinnerArrivo?.setAdapter(dataAdapterArrivo)
+            }
+
+            override fun onNothingSelected(adapterView: AdapterView<*>?) {
+                // Handle nothing selected
+            }
+        })
+
         templateCheckBox?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
                 setNameTemplate?.setVisibility(View.VISIBLE)
@@ -278,13 +324,20 @@ class NewTransactionFragment(
             }
         })
         // Add OnClickListener for the "DONE" button
-        doneButton?.setOnClickListener(View.OnClickListener {
+        doneButton?.setOnClickListener {
+            Log.d("NewTransactionFragment", "Done clicked, girocontoButton isSelected: ${girocontoButton?.isSelected}")
             try {
-                saveTransaction() // Save the transaction
+                if (girocontoButton?.isSelected == true) {
+                    Log.d("NewTransactionFragment", "Handling Giroconto")
+                    handleGiroconto()
+                } else {
+                    Log.d("NewTransactionFragment", "Saving regular transaction")
+                    saveTransaction()
+                }
             } catch (e: IOException) {
                 throw RuntimeException(e)
             }
-        })
+        }
         // Imposta un listener per il pulsante della fotocamera
         cameraButton?.setOnClickListener {
             val options = arrayOf<CharSequence>("Fotocamera", "Galleria")
@@ -301,48 +354,23 @@ class NewTransactionFragment(
         return view
     }
 
-    private val isCameraAppAvailable: Boolean
-        private get() {
-            val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-            val packageManager = requireActivity().packageManager
-            return if (takePictureIntent.resolveActivity(packageManager) != null) {
-                // Camera app exists
-                Log.d("CameraCheck", "Camera app is available.")
-                true
-            } else {
-                // No camera app
-                Log.e("CameraCheck", "No camera app found.")
-                false
-            }
-        }
-
     private fun openCamera() {
-//        isCameraAppAvailable
         val takePictureIntent = Intent(MediaStore.ACTION_IMAGE_CAPTURE)
-//        if (takePictureIntent.resolveActivity(requireActivity().packageManager) != null) {
-            val photoFile: File? = try {
-                createImageFile()
-            } catch (ex: IOException) {
-                // Errore durante la creazione del file
-                null
-            }
-            photoFile?.also {
-                val photoURI: Uri = FileProvider.getUriForFile(
-                    requireContext(),
-                    "com.example.android.fileprovider", // Cambia con il tuo applicationId
-                    it
-                )
-                takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
-                startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
-            }
-//        } else {
-//            Toast.makeText(
-//                requireContext(),
-//                "Nessuna app della fotocamera disponibile",
-//                Toast.LENGTH_SHORT
-//            ).show()
-//            Log.e("CameraCheck", "No camera app found.")
-//        }
+        val photoFile: File? = try {
+            createImageFile()
+        } catch (ex: IOException) {
+            // Errore durante la creazione del file
+            null
+        }
+        photoFile?.also {
+            val photoURI: Uri = FileProvider.getUriForFile(
+                requireContext(),
+                "com.example.android.fileprovider", // Cambia con il tuo applicationId
+                it
+            )
+            takePictureIntent.putExtra(MediaStore.EXTRA_OUTPUT, photoURI)
+            startActivityForResult(takePictureIntent, REQUEST_IMAGE_CAPTURE)
+        }
     }
 
     @Throws(IOException::class)
@@ -453,6 +481,25 @@ class NewTransactionFragment(
         })
     }
 
+    private fun saveCity(city: City): Int {
+        // Check if the city already exists
+        val existingCityId = readSQL.getIdByCityName(city.nameCity ?: "")
+        Log.d("NewTransactionFragment", "Existing city ID: $existingCityId")
+        Log.d(
+            "NewTransactionFragment",
+            "City: ${city.id} ${city.nameCity} ${city.latitude} ${city.longitude}"
+        )
+        if (existingCityId != -1) {
+            // City already exists, no need to save again
+            Log.d("NewTransactionFragment", "City already exists with ID: $existingCityId")
+            return existingCityId
+        } else {
+            // Save the new city and return its ID
+            Log.d("NewTransactionFragment", "Saving new city: $city")
+            return writeSQL.insertCity(city)
+        }
+    }
+
     private fun saveTransaction() {
         val isIncome = incomeButton?.isSelected ?: false
         val rawNumberText = numberEditText?.text.toString()
@@ -497,6 +544,9 @@ class NewTransactionFragment(
             return
         }
 
+        if (cityPosition != null) {
+            saveCity(cityPosition)
+        }
 
         // Trasformazione dei dati in una Transazione
         val newTrans = Transactions(
@@ -509,105 +559,86 @@ class NewTransactionFragment(
         )
         // Logica per Giroconto
         if (girocontoButton?.isSelected == true) {
-            handleGiroconto(newTrans)
-        } else {
+            handleGiroconto()
+        } else if (!isTemplate) {
             // Salva la transazione base
             writeSQL.insertTransaction(newTrans)
+        } else {
+            // Salva la transazione come template
+            handleTemplate(newTrans)
         }
         // Logica per Ripetizione
         if (isRipetizione) {
             handleRipetizione(newTrans)
         }
-        // Logica per Template
-        if (isTemplate) {
-            handleTemplate(newTrans)
-        }
-        // Altre operazioni finali, ad esempio aggiornamento UI
+
         Toast.makeText(context, "Transazione salvata", Toast.LENGTH_SHORT).show()
+        Log.d("saveTransaction", "Transazione salvata "  + newTrans.toString())
         val intent = Intent(activity, MainActivity::class.java)
         startActivity(intent)
         activity?.finish()
     }
 
-    private fun handleGiroconto(transaction: Transactions) {
-        // Supponendo che hai già configurato gli spinner e ottenuto gli ID dei conti selezionati
+    private fun handleGiroconto() {
+        // Estrai gli ID degli account di provenienza e arrivo dai loro nomi selezionati negli Spinner.
+        val accountProvName = accountSpinnerProv?.selectedItem.toString()
+        val accountArrivoName = accountSpinnerArrivo?.selectedItem.toString()
 
-        // Configurazione dell'adapter dello spinner di provenienza con una lista di oggetti Account
-        accountSpinnerProv?.adapter = ArrayAdapter<Account>(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            accounts // Assumendo che 'accounts' sia la tua lista di oggetti Account
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val accountProvId = accounts.firstOrNull { it.name == accountProvName }?.id ?: -1
+        val accountArrivoId = accounts.firstOrNull { it.name == accountArrivoName }?.id ?: -1
+
+        Log.d("handleGiroconto", "Account di provenienza: $accountProvId")
+        Log.d("handleGiroconto", "Account di arrivo: $accountArrivoId")
+
+        if (accountProvId == -1 || accountArrivoId == -1) {
+            Toast.makeText(context, "Assicurati di aver selezionato entrambi gli account.", Toast.LENGTH_SHORT).show()
+            return
         }
 
-// Configurazione dell'adapter dello spinner di arrivo, analogamente
-        accountSpinnerArrivo?.adapter = ArrayAdapter<Account>(
-            requireContext(),
-            android.R.layout.simple_spinner_dropdown_item,
-            accounts // La stessa lista o una diversa, a seconda della logica dell'app
-        ).apply {
-            setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item)
+        val amountText = numberEditText?.text.toString()
+        if (amountText.isEmpty()) {
+            Toast.makeText(context, "Inserisci un importo per il giroconto.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val amount = amountText.toDoubleOrNull()
+        if (amount == null || amount <= 0) {
+            Toast.makeText(context, "L'importo deve essere maggiore di 0.", Toast.LENGTH_SHORT).show()
+            return
         }
 
-        val accountProvenienza = accountSpinnerProv?.selectedItem as Account
-        val accountIdProvenienza = accountProvenienza.id
-
-        val accountArrivo = accountSpinnerArrivo?.selectedItem as Account
-        val accountIdArrivo = accountArrivo.id
-
-
-        // Creiamo la transazione di uscita dal conto di provenienza
+        // Creazione della transazione di uscita per l'account di provenienza
         val exitTransaction = Transactions(
-            id = 0, // Lasciato a 0 se l'ID è auto-generato dal database
             income = false,
-            amount = transaction.amountValue,
-            date = transaction.date,
-            cityId = transaction.cityId,
-            categoryId = transaction.categoryId,
-            accountId = accountIdProvenienza
+            amount = amount,
+            date = selectedDate ?: Calendar.getInstance(),
+            cityId = cityPosition?.id ?: -1,
+            categoryId = -1, // Assumi un valore appropriato per categoryId
+            accountId = accountProvId
         )
-        // Inseriamo la transazione di uscita nel database
-        writeSQL.insertTransaction(exitTransaction)
+        Log.d("handleGiroconto", "Transazione di uscita: $exitTransaction")
 
-        // Aggiorniamo il saldo del conto di provenienza
-        val currentBalanceProvenienza = readSQL.getAccountBalanceById(accountIdProvenienza)
-        writeSQL.updateAccountBalance(
-            accountIdProvenienza,
-            currentBalanceProvenienza - transaction.amountValue
-        )
-
-        // Creiamo la transazione di entrata nel conto di arrivo
+        // Creazione della transazione di entrata per l'account di arrivo
         val entryTransaction = Transactions(
-            id = 0, // Lasciato a 0 se l'ID è auto-generato dal database
             income = true,
-            amount = transaction.amountValue,
-            date = transaction.date,
-            cityId = transaction.cityId,
-            categoryId = transaction.categoryId,
-            accountId = accountIdArrivo
+            amount = amount,
+            date = selectedDate ?: Calendar.getInstance(),
+            cityId = cityPosition?.id ?: -1,
+            categoryId = -1, // Assumi un valore appropriato per categoryId
+            accountId = accountArrivoId
         )
-        // Inseriamo la transazione di entrata nel database
+        Log.d("handleGiroconto", "Transazione di entrata: $entryTransaction")
+
+        // Inserimento delle transazioni nel database
+        writeSQL.insertTransaction(exitTransaction)
         writeSQL.insertTransaction(entryTransaction)
 
-        // Aggiorniamo il saldo del conto di arrivo
-        val currentBalanceArrivo = readSQL.getAccountBalanceById(accountIdArrivo)
-        writeSQL.updateAccountBalance(
-            accountIdArrivo,
-            currentBalanceArrivo + transaction.amountValue
-        )
-
-        // Notifichiamo l'utente del successo dell'operazione
-        Toast.makeText(context, "Giroconto effettuato con successo", Toast.LENGTH_SHORT).show()
+        Toast.makeText(context, "Giroconto completato con successo.", Toast.LENGTH_SHORT).show()
+        Log.d("handleGiroconto", "Giroconto completato con successo.")
+        val intent = Intent(activity, MainActivity::class.java)
+        startActivity(intent)
+        activity?.finish()
     }
 
-
-    private fun updateAccountBalance(accountId: Int, amount: Double) {
-        // Ottieni il saldo corrente del conto
-        val currentBalance = readSQL.getAccountBalanceById(accountId)
-        val newBalance = currentBalance + amount
-        writeSQL.updateAccountBalance(accountId, newBalance)
-    }
 
     private fun handleRipetizione(transaction: Transactions) {
         // Ottieni i dettagli della ripetizione, come la data di fine e la frequenza

@@ -27,6 +27,7 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
     private var buttonEndDate: Button? = null
     private var buttonNewDebit: Button? = null
     private var buttonNewCredit: Button? = null
+    private var doneButton: Button? = null
     private var accounts: ArrayList<Account>? = null
 
     override fun onCreateView(
@@ -47,6 +48,7 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
         buttonEndDate = view.findViewById(R.id.buttonEndDate)
         buttonNewDebit = view.findViewById(R.id.buttonNewDebit)
         buttonNewCredit = view.findViewById(R.id.buttonNewCredit)
+        doneButton = view.findViewById(R.id.doneButton)
         editTextAmount?.setFilters(arrayOf(
             InputFilter { source, start, end, dest, dstart, dend -> // Check if the input contains a decimal point
                 var hasDecimalSeparator = dest.toString().contains(".")
@@ -118,19 +120,23 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
         })
 
         // Set click listeners for date buttons
-        buttonStartDate?.setOnClickListener(View.OnClickListener { // Handle click for selecting start date
+        buttonStartDate?.setOnClickListener(View.OnClickListener {
             selectDate("Start Date")
         })
-        buttonEndDate?.setOnClickListener(View.OnClickListener { // Handle click for selecting end date
+        buttonEndDate?.setOnClickListener(View.OnClickListener {
             selectDate("End Date")
         })
 
         // Set click listeners for new debit and credit buttons
-        buttonNewDebit?.setOnClickListener(View.OnClickListener { // Handle click for adding new debit
+        buttonNewDebit?.setOnClickListener(View.OnClickListener {
             addNewDebit()
         })
-        buttonNewCredit?.setOnClickListener(View.OnClickListener { // Handle click for adding new credit
+        buttonNewCredit?.setOnClickListener(View.OnClickListener {
             addNewCredit()
+        })
+
+        doneButton?.setOnClickListener(View.OnClickListener {
+            saveDebitCredit()
         })
         return view
     }
@@ -155,5 +161,12 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
         // You can implement your logic here to add a new credit
         // This is just a placeholder method
         Toast.makeText(context, "Add new credit", Toast.LENGTH_SHORT).show()
+    }
+
+
+    private fun saveDebitCredit() {
+        // You can implement your logic here to save the transaction
+        // This is just a placeholder method
+        Toast.makeText(context, "Save transaction", Toast.LENGTH_SHORT).show()
     }
 }

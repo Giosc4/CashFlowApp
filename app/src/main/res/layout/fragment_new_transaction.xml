@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:enableOnBackInvokedCallback="true"
@@ -100,13 +102,50 @@
             android:layout_height="wrap_content"
             android:text="Giroconto" />
 
+
     </LinearLayout>
-    <FrameLayout
-        android:id="@+id/fragment_container"
+
+
+    <TextView
+        android:id="@+id/textViewTitle"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:visibility="gone"
-        />
+        android:gravity="center_horizontal"
+        android:text="Nuovo Giroconto"
+        android:textSize="24sp"
+        android:textStyle="bold"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/textViewProvenienza"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="Provenienza"
+        android:visibility="gone" />
+
+    <Spinner
+        android:id="@+id/accountSpinnerProv"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:gravity="center_horizontal"
+        android:visibility="gone" />
+
+    <TextView
+        android:id="@+id/textViewArrivo"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center_horizontal"
+        android:text="Arrivo"
+        android:visibility="gone" />
+
+    <Spinner
+        android:id="@+id/accountSpinnerArrivo"
+        android:layout_width="wrap_content"
+        android:layout_height="50dp"
+        android:gravity="center_horizontal"
+        android:visibility="gone" />
+
 
     <CheckBox
         android:id="@+id/ripetizioneCheckBox"
