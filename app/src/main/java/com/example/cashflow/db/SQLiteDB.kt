@@ -23,6 +23,7 @@ class SQLiteDB(context: Context?) :
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         Log.d("SQLiteDB", "Database upgraded from version $oldVersion to $newVersion")
     }
+
     override fun onCreate(db: SQLiteDatabase) {
         db.execSQL(CREATE_TABLE_ACCOUNT)
         db.execSQL(CREATE_TABLE_CITY)
@@ -98,6 +99,7 @@ class SQLiteDB(context: Context?) :
         private const val COLUMN_LONGITUDE = "longitude"
 
         // Transactions Table - column names
+        private const val COLUMN_TRANSACTION_ID = "transaction_id"
         private const val COLUMN_INCOME = "income"
         private const val COLUMN_AMOUNT = "amount"
         private const val COLUMN_DATE = "date"
@@ -176,12 +178,20 @@ class SQLiteDB(context: Context?) :
                 COLUMN_AMOUNT + " REAL NOT NULL, " +
                 COLUMN_NAME + " TEXT NOT NULL, " +
                 "FOREIGN KEY (" + COLUMN_CATEGORY_ID + ") REFERENCES " + TABLE_CATEGORY + "(" + COLUMN_ID + ") ON DELETE CASCADE);"
-        const val CREATE_TABLE_PLANNING = "CREATE TABLE IF NOT EXISTS " + TABLE_PLANNING + " ( " +
-                COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COLUMN_TEMPLATE_ID + " INTEGER, " +
-                COLUMN_REPETITION + " TEXT, " +
-                COLUMN_END_DATE + " TEXT, " +
-                "FOREIGN KEY (" + COLUMN_TEMPLATE_ID + ") REFERENCES Template_Transazioni(" + COLUMN_ID + ") );"
+        const val CREATE_TABLE_PLANNING =
+            "CREATE TABLE IF NOT EXISTS $TABLE_PLANNING ( " +
+                    "$COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +
+                    "$COLUMN_INCOME INTEGER NOT NULL, " +
+                    "$COLUMN_AMOUNT REAL NOT NULL, " +
+                    "$COLUMN_DATE TEXT NOT NULL, " +
+                    "$COLUMN_CITY_ID INTEGER, " +
+                    "$COLUMN_CATEGORY_ID INTEGER NOT NULL, " +
+                    "$COLUMN_ACCOUNT_ID INTEGER, " +
+                    "$COLUMN_REPETITION TEXT NOT NULL, " +
+                    "$COLUMN_END_DATE TEXT NOT NULL, " +
+                    "FOREIGN KEY ($COLUMN_CITY_ID) REFERENCES $TABLE_CITY($COLUMN_ID), " +
+                    "FOREIGN KEY ($COLUMN_CATEGORY_ID) REFERENCES $TABLE_CATEGORY($COLUMN_ID), " +
+                    "FOREIGN KEY ($COLUMN_ACCOUNT_ID) REFERENCES $TABLE_ACCOUNT($COLUMN_ID) ON DELETE CASCADE);"
         const val CREATE_TABLE_TEMPLATE_TRANSACTIONS =
             "CREATE TABLE IF NOT EXISTS $TABLE_TEMPLATE_TRANSACTIONS ( " +
                     "$COLUMN_ID INTEGER PRIMARY KEY AUTOINCREMENT, " +

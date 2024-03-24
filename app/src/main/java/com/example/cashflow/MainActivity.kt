@@ -39,8 +39,7 @@ class MainActivity : AppCompatActivity() {
         readSQL = ReadSQL(db.writableDatabase)
         writeSQL = WriteSQL(db.writableDatabase)
 
-//        writeSQL.deleteTransaction(6)
-//        writeSQL.deleteTransaction(2)
+
 //        val isDeleted: Boolean = this.deleteDatabase("cashflow.db")
 //        if (isDeleted) {
 //            Log.d("SQLiteDB", "Database deleted successfully")

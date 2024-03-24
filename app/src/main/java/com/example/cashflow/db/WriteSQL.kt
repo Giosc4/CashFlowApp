@@ -73,6 +73,32 @@ class WriteSQL(private val db: SQLiteDatabase) {
         db.insert(TABLE_CITY, null, values)
     }
 
+    fun insertPlanning(planning: Planning): Long {
+        val values = ContentValues().apply {
+            put(COLUMN_INCOME, planning.income)
+            put(COLUMN_AMOUNT, planning.amount)
+            put(COLUMN_DATE, planning.date) // Assicurati che il formato della data sia coerente con quello del database
+            put(COLUMN_CITY_ID, planning.cityId)
+            put(COLUMN_CATEGORY_ID, planning.categoryId)
+            put(COLUMN_ACCOUNT_ID, planning.accountId)
+            put(COLUMN_REPETITION, planning.repetition)
+            put(COLUMN_END_DATE, planning.endDate) // Anche qui, assicurati del formato della data
+        }
+
+        // Inserisce il nuovo oggetto Planning nel database e ritorna l'ID della nuova riga, oppure -1 in caso di errore
+        val newRowId = db.insert(TABLE_PLANNING, null, values)
+
+        if (newRowId == -1L) {
+            Log.e("WriteSQL", "Failed to insert new planning")
+        } else {
+            Log.d("WriteSQL", "Planning inserted successfully with ID: $newRowId")
+        }
+
+        return newRowId
+    }
+
+
+
     fun createCategory(name: String?, description: String?): Boolean {
         val cv = ContentValues()
         cv.put(COLUMN_NAME, name)

@@ -66,7 +66,7 @@ class NewTransactionFragment(
     private var dateEndRepButton: Button? = null
     private var accountLayout3: LinearLayout? = null
     private var endTimeTextView: TextView? = null
-    private var ripetizioneCheckBox: CheckBox? = null
+    private var pianificazioneCheckBox: CheckBox? = null
     private var templateCheckBox: CheckBox? = null
     private var setNameTemplate: EditText? = null
     private var girocontoButton: Button? = null
@@ -109,7 +109,7 @@ class NewTransactionFragment(
         dateEndRepButton = view.findViewById(R.id.dateEndRepButton)
         accountLayout3 = view.findViewById(R.id.accountLayout3)
         endTimeTextView = view.findViewById(R.id.endTimeTextView)
-        ripetizioneCheckBox = view.findViewById(R.id.ripetizioneCheckBox)
+        pianificazioneCheckBox = view.findViewById(R.id.pianificazioneCheckBox)
         templateCheckBox = view.findViewById(R.id.templateCheckBox)
         setNameTemplate = view.findViewById(R.id.setNameTemplate)
         girocontoButton = view.findViewById(R.id.girocontoButton)
@@ -144,19 +144,19 @@ class NewTransactionFragment(
             Log.e("NewTransactionFragment", "Nessuna città disponibile")
             Toast.makeText(context, "Nessun nome di città disponibile", Toast.LENGTH_SHORT).show()
         }
-        ripetizioneCheckBox?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
+        pianificazioneCheckBox?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
                 accountLayout3?.setVisibility(View.VISIBLE)
                 endTimeTextView?.setVisibility(View.VISIBLE)
                 selectedTimeTextView?.visibility = if (isChecked) View.VISIBLE else View.GONE
                 templateCheckBox?.setVisibility(View.GONE)
-                Log.d("NewTransactionFragment", "Ripetizione selezionata")
+                Log.d("NewTransactionFragment", "Pianificazione selezionata")
             } else {
                 accountLayout3?.setVisibility(View.GONE)
                 endTimeTextView?.setVisibility(View.GONE)
                 selectedTimeTextView?.setVisibility(View.GONE)
                 templateCheckBox?.setVisibility(View.VISIBLE)
-                Log.d("NewTransactionFragment", "Ripetizione non selezionata")
+                Log.d("NewTransactionFragment", "Pianificazione non selezionata")
             }
         })
         val repeatOptions = arrayOf("Ogni giorno", "Ogni settimana", "Ogni mese", "Ogni anno")
@@ -323,10 +323,10 @@ class NewTransactionFragment(
         templateCheckBox?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
                 setNameTemplate?.visibility = if (isChecked) View.VISIBLE else View.GONE
-                ripetizioneCheckBox?.setVisibility(View.GONE)
+                pianificazioneCheckBox?.setVisibility(View.GONE)
             } else {
                 setNameTemplate?.setVisibility(View.GONE)
-                ripetizioneCheckBox?.setVisibility(View.VISIBLE)
+                pianificazioneCheckBox?.setVisibility(View.VISIBLE)
             }
         })
         // Add OnClickListener for the "DONE" button
@@ -339,9 +339,9 @@ class NewTransactionFragment(
                 if (girocontoButton?.isSelected == true) {
                     Log.d("NewTransactionFragment", "Handling Giroconto")
                     handleGiroconto()
-                } else if (ripetizioneCheckBox?.isChecked == true) {
-                    Log.d("NewTransactionFragment", "Handling Ripetizione")
-                    handleRipetizione()
+                } else if (pianificazioneCheckBox?.isChecked == true) {
+                    Log.d("NewTransactionFragment", "Handling Pianificazione")
+                    handlePianificazione()
                 } else if (templateCheckBox?.isChecked == true) {
                     Log.d("NewTransactionFragment", "Handling Template")
                     handleTemplate()
@@ -505,10 +505,7 @@ class NewTransactionFragment(
         // Check if the city already exists
         val existingCityId = readSQL.getIdByCityName(city.nameCity ?: "")
         Log.d("NewTransactionFragment", "Existing city ID: $existingCityId")
-        Log.d(
-            "NewTransactionFragment",
-            "City: ${city.id} ${city.nameCity} ${city.latitude} ${city.longitude}"
-        )
+
         if (existingCityId != -1) {
             // City already exists, no need to save again
             Log.d("NewTransactionFragment", "City already exists with ID: $existingCityId")
@@ -521,7 +518,7 @@ class NewTransactionFragment(
     }
 
     private fun saveTransaction() {
-        Log.d("NewTransactionFragment", "Saving transaction")
+        Log.d("saveTransaction", "Saving transaction")
         val isIncome = incomeButton?.isSelected ?: false
         val rawNumberText = numberEditText?.text.toString()
         val accountName = accountSpinner?.selectedItem.toString()
@@ -533,17 +530,18 @@ class NewTransactionFragment(
         val isIncomeSelected = incomeButton?.isSelected ?: false
         val isExpenseSelected = expenseButton?.isSelected ?: false
 
-        val dataString = selectedTimeTextView?.text.toString()
+        // Formattazione della data
         val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val dateString = selectedDate?.let { dateFormat.format(it.time) } ?: ""
         try {
-            val date = dateFormat.parse(dataString)
+            val date = dateFormat.parse(dateString) ?: Calendar.getInstance().time
             selectedDate?.time = date
         } catch (e: ParseException) {
             Toast.makeText(context, "Formato data non valido", Toast.LENGTH_LONG).show()
             return
         }
 
-        val isRipetizione = ripetizioneCheckBox?.isChecked ?: false
+        val isPianificazione = pianificazioneCheckBox?.isChecked ?: false
         val isTemplate = templateCheckBox?.isChecked ?: false
 
         if (!isIncomeSelected && !isExpenseSelected) {
@@ -564,9 +562,10 @@ class NewTransactionFragment(
             Toast.makeText(context, "Inserisci un importo valido", Toast.LENGTH_LONG).show()
             return
         }
-
+        var valueCityId = cityId
         if (cityPosition != null) {
-            saveCity(cityPosition)
+            valueCityId = saveCity(cityPosition)
+            Log.d("saveTransaction", "City ID: $valueCityId")
         }
 
         // Trasformazione dei dati in una Transazione
@@ -574,7 +573,7 @@ class NewTransactionFragment(
             income = isIncome,
             amount = amount,
             date = selectedDate!!,
-            cityId = cityId,
+            cityId = valueCityId,
             categoryId = categoryId,
             accountId = accountId
         )
@@ -669,78 +668,68 @@ class NewTransactionFragment(
         }
     }
 
+    private fun handlePianificazione() {
+        Log.d("NewTransactionFragment", "Handling Pianificazione")
 
-    private fun handleRipetizione() {
-
-        Log.d("handleRipetizione", "Handling Ripetizione")
+        // Raccogli i dati necessari dalla UI
         val isIncome = incomeButton?.isSelected ?: false
-        val rawNumberText = numberEditText?.text.toString()
-        val accountName = accountSpinner?.selectedItem.toString()
-        val accountId = readSQL.getIdByAccountName(accountName)
-        val categoryName = categorySpinner?.selectedItem.toString()
-        val categoryId = categories?.firstOrNull { it.name == categoryName }?.id ?: -1
-        val cityId = cityPosition?.id ?: -1
-        val amount = rawNumberText.toDoubleOrNull() ?: 0.0
-        val isIncomeSelected = incomeButton?.isSelected ?: false
-        val isExpenseSelected = expenseButton?.isSelected ?: false
-
-        // Preparazione dei parametri per le transazioni ripetute
+        val rawAmountText = numberEditText?.text.toString()
+        val amount = rawAmountText.toDoubleOrNull() ?: 0.0
+        val categorySelected = categorySpinner?.selectedItem.toString()
+        val categoryId = categories?.firstOrNull { it.name == categorySelected }?.id ?: -1
+        val accountSelected = accountSpinner?.selectedItem.toString()
+        val accountId = readSQL.getIdByAccountName(accountSelected)
         val repetition = timeSpinner?.selectedItem.toString()
-        val endDateString = endTimeTextView?.text.toString()
-        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
-        val endDate: Calendar = Calendar.getInstance()
 
-        try {
-            endDate.time = dateFormat.parse(endDateString) ?: return
-        } catch (e: ParseException) {
-            Toast.makeText(context, "Formato data non valido", Toast.LENGTH_LONG).show()
+        // Utilizza SimpleDateFormat per formattare correttamente la data di inizio e fine
+        val dateFormat = SimpleDateFormat("dd/MM/yyyy", Locale.getDefault())
+        val startDateString = selectedDate?.let { dateFormat.format(it.time) } ?: ""
+        val endDateString = endTimeTextView?.text.toString()
+
+        // Verifica la validità dei dati raccolti
+        if (amount <= 0.0) {
+            Toast.makeText(context, "Inserisci un importo valido", Toast.LENGTH_SHORT).show()
+            Log.e("handlePianificazione", "Invalid amount: $amount")
             return
         }
 
-        var nextDate = dateEndRepButton?.text.toString().toLongOrNull()?.let {
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = it
-            calendar
-        } ?: selectedDate?.clone() as Calendar
-        nextDate.add(Calendar.DATE, 1) // Inizia il giorno successivo alla transazione originale
-
-        while (nextDate.before(endDate) || nextDate == endDate) {
-            val newTransaction = Transactions(
-                income = isIncome,
-                amount = amount,
-                date = nextDate.clone() as Calendar,
-                cityId = cityId,
-                categoryId = categoryId,
-                accountId = accountId
-            )
-
-            // Inserimento della transazione ripetuta nel database
-            val insertResult = writeSQL.insertTransaction(newTransaction)
-            if (insertResult == -1L) {
-                Log.e(
-                    "NewTransactionFragment",
-                    "Errore nell'inserimento della transazione ripetuta per la data: ${
-                        dateFormat.format(nextDate.time)
-                    }"
-                )
-            }
-
-            // Calcolo della prossima data di ripetizione
-            when (repetition) {
-                "Ogni giorno" -> nextDate.add(Calendar.DAY_OF_MONTH, 1)
-                "Ogni settimana" -> nextDate.add(Calendar.WEEK_OF_YEAR, 1)
-                "Ogni mese" -> nextDate.add(Calendar.MONTH, 1)
-                "Ogni anno" -> nextDate.add(Calendar.YEAR, 1)
-                else -> break // Se la ripetizione non corrisponde, interrompi il ciclo
-            }
+        if (categoryId == -1) {
+            Toast.makeText(context, "Seleziona una categoria", Toast.LENGTH_SHORT).show()
+            Log.e("handlePianificazione", "Category ID not found")
+            return
         }
 
-        Toast.makeText(
-            context,
-            "Transazioni ripetute inserite correttamente fino al $endDateString.",
-            Toast.LENGTH_LONG
-        ).show()
+        if (accountId == -1) {
+            Toast.makeText(context, "Seleziona un account", Toast.LENGTH_SHORT).show()
+            Log.e("handlePianificazione", "Account ID not found")
+            return
+        }
+
+        // Prepara l'ID della città se disponibile
+        val cityId = if (cityPosition != null) saveCity(cityPosition) else null
+        Log.d("handlePianificazione", "City ID: $cityId")
+
+        // Crea un nuovo oggetto Planning
+        val newPlanning = Planning(
+            income = if (isIncome) 1 else 0,
+            amount = amount,
+            date = startDateString,
+            cityId = cityId,
+            categoryId = categoryId,
+            accountId = accountId,
+            repetition = repetition,
+            endDate = endDateString
+        )
+
+        // Inserisci l'oggetto Planning nel database
+        if (writeSQL.insertPlanning(newPlanning) != -1L) {
+            Toast.makeText(context, "Pianificazione salvata con successo", Toast.LENGTH_SHORT).show()
+            // Potresti voler aggiungere qui codice per chiudere il frammento o aggiornare l'UI
+        } else {
+            Toast.makeText(context, "Errore nel salvare la pianificazione", Toast.LENGTH_SHORT).show()
+        }
     }
+
 
     private fun handleTemplate() {
         Log.d("NewTransactionFragment", "Handling Template")
