@@ -11,6 +11,15 @@ class SQLiteDB(context: Context?) :
     init {
         Log.d("SQLiteDB", "Database initialized")
     }
+
+    override fun onOpen(db: SQLiteDatabase) {
+        super.onOpen(db)
+        if (!db.isReadOnly) {
+            // Enable foreign key constraints
+            db.execSQL("PRAGMA foreign_keys=ON;")
+        }
+    }
+
     override fun onUpgrade(db: SQLiteDatabase, oldVersion: Int, newVersion: Int) {
         Log.d("SQLiteDB", "Database upgraded from version $oldVersion to $newVersion")
     }
@@ -143,7 +152,7 @@ class SQLiteDB(context: Context?) :
         const val CREATE_TABLE_TRANSACTION =
             "CREATE TABLE IF NOT EXISTS " + TABLE_TRANSACTIONS + " ( " +
                     COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                    COLUMN_INCOME + " INTEGER NOT NULL, " +  // SQLite non ha BOOLEAN, si usa INTEGER con 0 (false) e 1 (true)
+                    COLUMN_INCOME + " INTEGER NOT NULL, " +
                     COLUMN_AMOUNT + " REAL NOT NULL, " +
                     COLUMN_DATE + " TEXT NOT NULL, " +
                     COLUMN_CITY_ID + " INTEGER, " +

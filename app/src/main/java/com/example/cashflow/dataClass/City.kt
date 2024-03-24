@@ -3,11 +3,11 @@ package com.example.cashflow.dataClass
 import java.io.Serializable
 
 class City : Serializable {
-    var id = 0
+    var id: Int = -1
         private set
-    var nameCity: String?
-    var latitude: Double
-    var longitude: Double
+    var nameCity: String? = null
+    var latitude: Double = 0.0
+    var longitude: Double = 0.0
 
     constructor() {
         nameCity = "Bologna"
@@ -22,17 +22,26 @@ class City : Serializable {
     }
 
     constructor(id: Int, cityName: String?, latitude: Double, longitude: Double) {
-        this.id = id
+        setId(id)
         nameCity = cityName
         this.latitude = latitude
         this.longitude = longitude
     }
 
+    fun setId(id: Int) {
+        if (id > 0) {
+            this.id = id
+        } else {
+            this.id = -1 // Oppure lascia il valore predefinito se id non è valido.
+        }
+    }
+
     override fun toString(): String {
         return "City{" +
-                "nameCity='" + nameCity + '\'' +
-                ", latitude=" + latitude +
-                ", longitude=" + longitude +
+                "id=$id" +
+                ", nameCity='$nameCity'" +
+                ", latitude=$latitude" +
+                ", longitude=$longitude" +
                 '}'
     }
 

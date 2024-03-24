@@ -121,11 +121,11 @@ class WriteSQL(private val db: SQLiteDatabase) {
 
         if (newRowId == -1L) {
             Log.e("SQLiteDB", "Failed to insert new transaction")
+            return -1L
         } else {
             Log.d("SQLiteDB", "Transaction inserted successfully with ID: $newRowId")
+            return  newRowId
         }
-
-        return newRowId
     }
 
     fun insertTemplateTransaction(template: TemplateTransaction): Long {

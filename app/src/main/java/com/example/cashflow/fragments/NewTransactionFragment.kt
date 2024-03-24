@@ -127,6 +127,7 @@ class NewTransactionFragment(
 
         accounts = readSQL.getAccounts()
 
+
         selectedDate = Calendar.getInstance()
         val timestamp = selectedDate?.timeInMillis
         val formattedDate =
@@ -134,6 +135,9 @@ class NewTransactionFragment(
         selectedTimeTextView?.setText(formattedDate)
         if (cityPosition != null && cityPosition.nameCity != null) {
             locationEditText?.setText(cityPosition.printOnApp())
+            Log.d("NewTransactionFragment", "City: $cityPosition")
+            Log.d("NewTransactionFragment S", "City: ${cityPosition.toString()}")
+
         } else {
             locationEditText?.setText("Nessun nome di città disponibile")
             Log.e("NewTransactionFragment", "Nessuna città disponibile")
@@ -143,7 +147,7 @@ class NewTransactionFragment(
             if (isChecked) {
                 accountLayout3?.setVisibility(View.VISIBLE)
                 endTimeTextView?.setVisibility(View.VISIBLE)
-                selectedTimeTextView?.setVisibility(View.VISIBLE)
+                selectedTimeTextView?.visibility = if (isChecked) View.VISIBLE else View.GONE
                 templateCheckBox?.setVisibility(View.GONE)
                 Log.d("NewTransactionFragment", "Ripetizione selezionata")
             } else {
@@ -151,6 +155,7 @@ class NewTransactionFragment(
                 endTimeTextView?.setVisibility(View.GONE)
                 selectedTimeTextView?.setVisibility(View.GONE)
                 templateCheckBox?.setVisibility(View.VISIBLE)
+                Log.d("NewTransactionFragment", "Ripetizione non selezionata")
             }
         })
         val repeatOptions = arrayOf("Ogni giorno", "Ogni settimana", "Ogni mese", "Ogni anno")
@@ -316,7 +321,7 @@ class NewTransactionFragment(
 
         templateCheckBox?.setOnCheckedChangeListener(CompoundButton.OnCheckedChangeListener { buttonView, isChecked ->
             if (isChecked) {
-                setNameTemplate?.setVisibility(View.VISIBLE)
+                setNameTemplate?.visibility = if (isChecked) View.VISIBLE else View.GONE
                 ripetizioneCheckBox?.setVisibility(View.GONE)
             } else {
                 setNameTemplate?.setVisibility(View.GONE)
@@ -325,11 +330,20 @@ class NewTransactionFragment(
         })
         // Add OnClickListener for the "DONE" button
         doneButton?.setOnClickListener {
-            Log.d("NewTransactionFragment", "Done clicked, girocontoButton isSelected: ${girocontoButton?.isSelected}")
+            Log.d(
+                "NewTransactionFragment",
+                "Done clicked, girocontoButton isSelected: ${girocontoButton?.isSelected}"
+            )
             try {
                 if (girocontoButton?.isSelected == true) {
                     Log.d("NewTransactionFragment", "Handling Giroconto")
                     handleGiroconto()
+                } else if (ripetizioneCheckBox?.isChecked == true) {
+                    Log.d("NewTransactionFragment", "Handling Ripetizione")
+                    handleRipetizione()
+                } else if (templateCheckBox?.isChecked == true) {
+                    Log.d("NewTransactionFragment", "Handling Template")
+                    handleTemplate()
                 } else {
                     Log.d("NewTransactionFragment", "Saving regular transaction")
                     saveTransaction()
@@ -482,6 +496,11 @@ class NewTransactionFragment(
     }
 
     private fun saveCity(city: City): Int {
+        if (city.nameCity == null) {
+            Log.e("NewTransactionFragment", "City name is null")
+            Toast.makeText(context, "Nome della città non valido", Toast.LENGTH_LONG).show()
+            return -1
+        }
         // Check if the city already exists
         val existingCityId = readSQL.getIdByCityName(city.nameCity ?: "")
         Log.d("NewTransactionFragment", "Existing city ID: $existingCityId")
@@ -501,6 +520,7 @@ class NewTransactionFragment(
     }
 
     private fun saveTransaction() {
+        Log.d("NewTransactionFragment", "Saving transaction")
         val isIncome = incomeButton?.isSelected ?: false
         val rawNumberText = numberEditText?.text.toString()
         val accountName = accountSpinner?.selectedItem.toString()
@@ -557,128 +577,231 @@ class NewTransactionFragment(
             categoryId = categoryId,
             accountId = accountId
         )
-        // Logica per Giroconto
-        if (girocontoButton?.isSelected == true) {
-            handleGiroconto()
-        } else if (!isTemplate) {
-            // Salva la transazione base
-            writeSQL.insertTransaction(newTrans)
-        } else {
-            // Salva la transazione come template
-            handleTemplate(newTrans)
-        }
-        // Logica per Ripetizione
-        if (isRipetizione) {
-            handleRipetizione(newTrans)
-        }
+
+        writeSQL.insertTransaction(newTrans)
+
 
         Toast.makeText(context, "Transazione salvata", Toast.LENGTH_SHORT).show()
-        Log.d("saveTransaction", "Transazione salvata "  + newTrans.toString())
+        Log.d("saveTransaction", "Transazione salvata " + newTrans.toString())
         val intent = Intent(activity, MainActivity::class.java)
         startActivity(intent)
         activity?.finish()
     }
 
     private fun handleGiroconto() {
-        // Estrai gli ID degli account di provenienza e arrivo dai loro nomi selezionati negli Spinner.
+        Log.d("handleGiroconto", "Handling Giroconto")
+
         val accountProvName = accountSpinnerProv?.selectedItem.toString()
         val accountArrivoName = accountSpinnerArrivo?.selectedItem.toString()
 
         val accountProvId = accounts.firstOrNull { it.name == accountProvName }?.id ?: -1
         val accountArrivoId = accounts.firstOrNull { it.name == accountArrivoName }?.id ?: -1
 
-        Log.d("handleGiroconto", "Account di provenienza: $accountProvId")
-        Log.d("handleGiroconto", "Account di arrivo: $accountArrivoId")
-
         if (accountProvId == -1 || accountArrivoId == -1) {
-            Toast.makeText(context, "Assicurati di aver selezionato entrambi gli account.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                context,
+                "Assicurati di aver selezionato entrambi gli account.",
+                Toast.LENGTH_SHORT
+            ).show()
+            Log.e("handleGiroconto", "Account di provenienza o di arrivo non trovato.")
             return
         }
 
         val amountText = numberEditText?.text.toString()
-        if (amountText.isEmpty()) {
-            Toast.makeText(context, "Inserisci un importo per il giroconto.", Toast.LENGTH_SHORT).show()
-            return
-        }
         val amount = amountText.toDoubleOrNull()
         if (amount == null || amount <= 0) {
-            Toast.makeText(context, "L'importo deve essere maggiore di 0.", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "L'importo deve essere maggiore di 0.", Toast.LENGTH_SHORT)
+                .show()
+            Log.e("handleGiroconto", "Importo non valido.")
             return
         }
 
-        // Creazione della transazione di uscita per l'account di provenienza
+        val cityId = cityPosition?.nameCity?.let { cityName ->
+            readSQL.getCityIdByName(cityName)
+        } ?: -1
+
+        val validCategoryId = categories?.firstOrNull()?.id ?: -1
+
+
+        Log.d("handleGiroconto", "City ID: $cityId, Category ID: $validCategoryId")
+        if (cityId == -1 || validCategoryId == -1) {
+            Toast.makeText(context, "Città o Categoria non valida.", Toast.LENGTH_SHORT).show()
+            Log.e("handleGiroconto", "Città o Categoria non valida.")
+            return
+        }
+
         val exitTransaction = Transactions(
             income = false,
             amount = amount,
             date = selectedDate ?: Calendar.getInstance(),
-            cityId = cityPosition?.id ?: -1,
-            categoryId = -1, // Assumi un valore appropriato per categoryId
+            cityId = cityId,
+            categoryId = validCategoryId,
             accountId = accountProvId
         )
-        Log.d("handleGiroconto", "Transazione di uscita: $exitTransaction")
 
-        // Creazione della transazione di entrata per l'account di arrivo
         val entryTransaction = Transactions(
             income = true,
             amount = amount,
             date = selectedDate ?: Calendar.getInstance(),
-            cityId = cityPosition?.id ?: -1,
-            categoryId = -1, // Assumi un valore appropriato per categoryId
+            cityId = cityId,
+            categoryId = validCategoryId,
             accountId = accountArrivoId
         )
-        Log.d("handleGiroconto", "Transazione di entrata: $entryTransaction")
 
-        // Inserimento delle transazioni nel database
-        writeSQL.insertTransaction(exitTransaction)
-        writeSQL.insertTransaction(entryTransaction)
+        Log.d("handleGiroconto", "Exit Transaction: $exitTransaction")
+        Log.d("handleGiroconto", "Entry Transaction: $entryTransaction")
 
-        Toast.makeText(context, "Giroconto completato con successo.", Toast.LENGTH_SHORT).show()
-        Log.d("handleGiroconto", "Giroconto completato con successo.")
-        val intent = Intent(activity, MainActivity::class.java)
-        startActivity(intent)
-        activity?.finish()
+        if (writeSQL.insertTransaction(exitTransaction) != -1L && writeSQL.insertTransaction(entryTransaction) != -1L) {
+            Toast.makeText(context, "Giroconto completato con successo.", Toast.LENGTH_SHORT).show()
+            val intent = Intent(activity, MainActivity::class.java)
+            startActivity(intent)
+            activity?.finish()
+        } else {
+            Toast.makeText(context, "Errore durante il completamento del giroconto.", Toast.LENGTH_SHORT).show()
+        }
     }
 
 
-    private fun handleRipetizione(transaction: Transactions) {
-        // Ottieni i dettagli della ripetizione, come la data di fine e la frequenza
-        val endDate = dateEndRepButton?.text.toString()
+    private fun handleRipetizione() {
+
+        Log.d("handleRipetizione", "Handling Ripetizione")
+        val isIncome = incomeButton?.isSelected ?: false
+        val rawNumberText = numberEditText?.text.toString()
+        val accountName = accountSpinner?.selectedItem.toString()
+        val accountId = readSQL.getIdByAccountName(accountName)
+        val categoryName = categorySpinner?.selectedItem.toString()
+        val categoryId = categories?.firstOrNull { it.name == categoryName }?.id ?: -1
+        val cityId = cityPosition?.id ?: -1
+        val amount = rawNumberText.toDoubleOrNull() ?: 0.0
+        val isIncomeSelected = incomeButton?.isSelected ?: false
+        val isExpenseSelected = expenseButton?.isSelected ?: false
+
+        // Preparazione dei parametri per le transazioni ripetute
         val repetition = timeSpinner?.selectedItem.toString()
+        val endDateString = endTimeTextView?.text.toString()
+        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        val endDate: Calendar = Calendar.getInstance()
 
-        var nextDate = transaction.date.clone() as Calendar
+        try {
+            endDate.time = dateFormat.parse(endDateString) ?: return
+        } catch (e: ParseException) {
+            Toast.makeText(context, "Formato data non valido", Toast.LENGTH_LONG).show()
+            return
+        }
 
-        while (nextDate.before(endDate)) {
+        var nextDate = dateEndRepButton?.text.toString().toLongOrNull()?.let {
+            val calendar = Calendar.getInstance()
+            calendar.timeInMillis = it
+            calendar
+        } ?: selectedDate?.clone() as Calendar
+        nextDate.add(Calendar.DATE, 1) // Inizia il giorno successivo alla transazione originale
+
+        while (nextDate.before(endDate) || nextDate == endDate) {
+            val newTransaction = Transactions(
+                income = isIncome,
+                amount = amount,
+                date = nextDate.clone() as Calendar,
+                cityId = cityId,
+                categoryId = categoryId,
+                accountId = accountId
+            )
+
+            // Inserimento della transazione ripetuta nel database
+            val insertResult = writeSQL.insertTransaction(newTransaction)
+            if (insertResult == -1L) {
+                Log.e(
+                    "NewTransactionFragment",
+                    "Errore nell'inserimento della transazione ripetuta per la data: ${
+                        dateFormat.format(nextDate.time)
+                    }"
+                )
+            }
+
+            // Calcolo della prossima data di ripetizione
             when (repetition) {
                 "Ogni giorno" -> nextDate.add(Calendar.DAY_OF_MONTH, 1)
                 "Ogni settimana" -> nextDate.add(Calendar.WEEK_OF_YEAR, 1)
                 "Ogni mese" -> nextDate.add(Calendar.MONTH, 1)
                 "Ogni anno" -> nextDate.add(Calendar.YEAR, 1)
+                else -> break // Se la ripetizione non corrisponde, interrompi il ciclo
             }
-            val newTransaction = Transactions(
-                income = transaction.isIncome,
-                amount = transaction.amountValue,
-                date = nextDate.clone() as Calendar,
-                cityId = transaction.cityId,
-                categoryId = transaction.categoryId,
-                accountId = transaction.accountId
+        }
+
+        Toast.makeText(
+            context,
+            "Transazioni ripetute inserite correttamente fino al $endDateString.",
+            Toast.LENGTH_LONG
+        ).show()
+    }
+
+    private fun handleTemplate() {
+        Log.d("NewTransactionFragment", "Handling Template")
+        // Assumi che questi valori siano stati già raccolti dall'interfaccia utente
+        val templateName = setNameTemplate?.text.toString()
+        val isIncome = incomeButton?.isSelected ?: false
+        val amount = numberEditText?.text.toString().toDoubleOrNull() ?: 0.0
+        val categoryId = (categorySpinner?.selectedItem as? Category)?.id ?: -1
+        val accountId = (accountSpinner?.selectedItem as? Account)?.id ?: -1
+        val date = selectedDate ?: Calendar.getInstance()
+
+        // Verifica la validità dei dati inseriti
+        if (templateName.isBlank()) {
+            Toast.makeText(context, "Inserisci un nome per il template.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (amount <= 0.0) {
+            Toast.makeText(context, "Inserisci un importo valido.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (categoryId == -1) {
+            Toast.makeText(context, "Seleziona una categoria.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (accountId == -1) {
+            Toast.makeText(context, "Seleziona un account.", Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        // Creazione del template
+        val templateTransaction = TemplateTransaction(
+            id = 0, // L'ID sarà generato dal database
+            name = templateName,
+            isIncome = isIncome,
+            amount = amount,
+            categoryId = categoryId,
+            accountId = accountId
+        )
+
+        // Salva il template nel database
+        val templateId = writeSQL.insertTemplateTransaction(templateTransaction)
+
+        // Utilizza il template per creare una transazione effettiva
+        if (templateId != -1L) {
+            val transaction = Transactions(
+                income = isIncome,
+                amount = amount,
+                date = date,
+                cityId = cityPosition?.id
+                    ?: 0, // Assumi un valore di default o permetti all'utente di sceglierlo
+                categoryId = categoryId,
+                accountId = accountId
             )
-            writeSQL.insertTransaction(newTransaction)
+
+            writeSQL.insertTransaction(transaction)
+            Toast.makeText(
+                context,
+                "Template e transazione salvati con successo.",
+                Toast.LENGTH_SHORT
+            ).show()
+        } else {
+            Toast.makeText(context, "Errore nel salvataggio del template.", Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
-    private fun handleTemplate(transaction: Transactions) {
-        // Salva i dettagli della transazione come template per utilizzo futuro
-        val template = TemplateTransaction(
-            id = 0, // Assumiamo che l'ID venga generato dal DB
-            name = setNameTemplate?.text.toString(),
-            isIncome = transaction.isIncome,
-            amount = transaction.amountValue,
-            categoryId = transaction.categoryId,
-            accountId = transaction.accountId
-        )
-        // Assumi di avere un metodo writeSQL.insertTemplateTransaction() per salvare il template
-        writeSQL.insertTemplateTransaction(template)
-    }
 
     private fun showDatePickerDialog(textView: TextView?) {
         val calendar = Calendar.getInstance()

@@ -55,6 +55,7 @@ class MenuManagerFragment() : Fragment() {
     private fun loadFragmentBasedOnMenuId() {
         Log.d("MenuManagerFragment", "Caricamento fragment basato sul menuId $selectedMenuId")
         val fragment = when (selectedMenuId) {
+
             R.id.nav_home -> {
                 val intent = Intent(activity, MainActivity::class.java)
                 startActivity(intent)
@@ -77,7 +78,9 @@ class MenuManagerFragment() : Fragment() {
                 )
                 null
             }
+
         }
+        Log.d("MenuManagerFragment", "Caricamento fragment city ${city.toString()}")
 
         fragment?.let {
             childFragmentManager.beginTransaction().apply {

@@ -29,6 +29,30 @@ class ReadSQL(private val db: SQLiteDatabase?) {
         return cityName
     }
 
+    fun getCityIdByName(cityName: String): Int {
+        var cityId = -1 // Default value if city is not found
+        db?.let { database ->
+            val cursor = database.query(
+                TABLE_CITY, // The table to query
+                arrayOf(COLUMN_ID), // The columns to return
+                "$COLUMN_CITY_NAME = ?", // The columns for the WHERE clause
+                arrayOf(cityName), // The values for the WHERE clause
+                null, // group by
+                null, // having
+                null // order by
+            )
+            if (cursor.moveToFirst()) {
+                val idIndex = cursor.getColumnIndex(COLUMN_ID)
+                if (idIndex != -1) {
+                    cityId = cursor.getInt(idIndex)
+                }
+            }
+            cursor.close()
+        }
+        return cityId
+    }
+
+
     fun getCategoryNameById(categoryId: Int): String? {
         var categoryName: String? = null
         val cursor = db!!.query(

@@ -68,14 +68,13 @@ class Transactions {
 
     fun printOnApp(): String {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-        return "Transactions{" +
-                "id=" + id +
-                ", income=" + (if (isIncome) "Income" else "Expense") +
-                ", amount=" + amountValue +
-                ", date=" + dateFormat.format(date.time) +
-                ", cityId=" + cityId +
-                ", categoryId=" + categoryId +
-                ", accountId=" + accountId +
-                '}'
+        return "Transactions" +
+                "id= " + id +
+                ", IsIncome= " + (if (isIncome) "Income" else "Expense") +
+                ", amount= " + amountValue +
+                ", date= " + dateFormat.format(date.time) +
+                ", cityId= " + cityId +
+                ", categoryId= " + categoryId +
+                ", accountId= " + accountId
     }
 }
