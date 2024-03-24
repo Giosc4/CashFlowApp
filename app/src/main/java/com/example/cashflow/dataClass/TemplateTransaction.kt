@@ -5,10 +5,10 @@ import java.util.Calendar
 class TemplateTransaction(
     val id: Int,
     val name: String,
-    val isIncome: Boolean,
+    val income: Boolean,
     val amount: Double,
-    val categoryId: Int,
-    val accountId: Int
+    val category_id: Int,
+    val account_id: Int
 ) {
 
 //    fun createTransaction(date: Calendar, cityId: Int): Transactions {
@@ -24,6 +24,6 @@ class TemplateTransaction(
 //    }
 
     override fun toString(): String {
-        return "TemplateTransaction(id=$id, name='$name', isIncome=$isIncome, amount=$amount, categoryId=$categoryId, accountId=$accountId)"
+        return "TemplateTransaction(id=$id, name='$name', isIncome=$income, amount=$amount, categoryId=$category_id, accountId=$account_id)"
     }
 }

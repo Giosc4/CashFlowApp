@@ -131,9 +131,11 @@ class WriteSQL(private val db: SQLiteDatabase) {
     fun insertTemplateTransaction(template: TemplateTransaction): Long {
         val values = ContentValues().apply {
             put("name", template.name)
-            put("isIncome", if (template.isIncome) 1 else 0)
+            put("income", if (template.income) 1 else 0)
             put("amount", template.amount)
-            put("categoryId", template.categoryId)
+            put("category_id", template.category_id)
+            put("account_id", template.account_id)
+
         }
 
 

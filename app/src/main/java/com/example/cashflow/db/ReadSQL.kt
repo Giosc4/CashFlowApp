@@ -25,7 +25,6 @@ class ReadSQL(private val db: SQLiteDatabase?) {
             }
         }
         cursor.close()
-        db.close()
         return cityName
     }
 
@@ -69,7 +68,6 @@ class ReadSQL(private val db: SQLiteDatabase?) {
             }
         }
         cursor.close()
-        db.close()
         return categoryName
     }
 
@@ -104,10 +102,47 @@ class ReadSQL(private val db: SQLiteDatabase?) {
     }
 
     fun getAllTemplateTransactions(): List<TemplateTransaction> {
-        val templatesList = mutableListOf<TemplateTransaction>()
-        // Esegue la query SQL per selezionare tutti i template
-        // Aggiungi i risultati alla lista templatesList
-        return templatesList
+        val templateTransactionsList = mutableListOf<TemplateTransaction>()
+        db?.let { database ->
+            val cursor = database.query(
+                TABLE_TEMPLATE_TRANSACTIONS, // The table to query
+                null, // Passing null will return all columns
+                null, // No WHERE clause, returning all rows
+                null, // No WHERE clause values
+                null, // No GROUP BY
+                null, // No HAVING
+                null  // No ORDER BY
+            )
+
+            while (cursor.moveToNext()) {
+                val idIndex = cursor.getColumnIndexOrThrow(COLUMN_ID)
+                val nameIndex = cursor.getColumnIndexOrThrow(COLUMN_NAME)
+                val incomeIndex = cursor.getColumnIndexOrThrow(COLUMN_INCOME)
+                val amountIndex = cursor.getColumnIndexOrThrow(COLUMN_AMOUNT)
+                val categoryIdIndex = cursor.getColumnIndexOrThrow(COLUMN_CATEGORY_ID)
+                val accountIdIndex = cursor.getColumnIndexOrThrow(COLUMN_ACCOUNT_ID)
+
+                val id = cursor.getInt(idIndex)
+                val name = cursor.getString(nameIndex)
+                val income = cursor.getInt(incomeIndex) > 0 // Convert to Boolean
+                val amount = cursor.getDouble(amountIndex)
+                val categoryId = cursor.getInt(categoryIdIndex)
+                val accountId = cursor.getInt(accountIdIndex)
+
+                templateTransactionsList.add(
+                    TemplateTransaction(
+                        id = id,
+                        name = name,
+                        income = income,
+                        amount = amount,
+                        category_id = categoryId,
+                        account_id = accountId
+                    )
+                )
+            }
+            cursor.close()
+        }
+        return templateTransactionsList
     }
 
 
@@ -717,22 +752,25 @@ class ReadSQL(private val db: SQLiteDatabase?) {
     }
 
     fun getCategoryIdByName(categoryName: String): Int {
-        var categoryId = -1 // Valore di default se la categoria non viene trovata
-        val cursor = db!!.query(
-            "Categories", arrayOf("ID"),  // Colonne da restituire
-            "Name = ?", arrayOf(categoryName),  // Valori per la clausola WHERE
-            null, null, null
-        )
-        if (cursor.moveToFirst()) {
-            val columnIndex = cursor.getColumnIndex("ID")
-            if (columnIndex >= 0) { // Controlla che l'indice della colonna sia valido
-                categoryId = cursor.getInt(columnIndex)
+        var categoryId = -1
+        db?.let { database ->
+            val cursor = database.query(
+                "Category",
+                arrayOf("id"),
+                "name = ?", arrayOf(categoryName),
+                null, null, null
+            )
+            if (cursor.moveToFirst()) {
+                val columnIndex = cursor.getColumnIndex("id")
+                if (columnIndex != -1) {
+                    categoryId = cursor.getInt(columnIndex)
+                }
             }
+            cursor.close()
         }
-        cursor.close()
-        db.close()
         return categoryId
     }
+
 
     fun getIdByAccountName(accountName: String): Int {
         val cursor = db!!.query(
