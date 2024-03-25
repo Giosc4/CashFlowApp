@@ -13,6 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import com.example.cashflow.EditManagerFragment
 import com.example.cashflow.MainActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
@@ -20,7 +21,7 @@ import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.WriteSQL
 
-class AccountDetailsFragment(id: Int) : Fragment() {
+class AccountDetailsFragment : Fragment() {
     private var accountId: Int = -1
     private lateinit var db: SQLiteDB
     private lateinit var readSql: ReadSQL
@@ -36,7 +37,25 @@ class AccountDetailsFragment(id: Int) : Fragment() {
     private var account: Account? = null
     private var transactions: List<Transactions>? = null
 
+    companion object {
+        private const val ARG_ACCOUNT_ID = "account_id"
 
+        fun newInstance(accountId: Int): AccountDetailsFragment {
+            val fragment = AccountDetailsFragment()
+            val args = Bundle().apply {
+                putInt(ARG_ACCOUNT_ID, accountId)
+            }
+            fragment.arguments = args
+            return fragment
+        }
+    }
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        arguments?.let {
+            accountId = it.getInt(ARG_ACCOUNT_ID)
+        }
+        // Rest of your code...
+    }
     override fun onCreateView(
         inflater: LayoutInflater,
         container: ViewGroup?,
@@ -53,12 +72,11 @@ class AccountDetailsFragment(id: Int) : Fragment() {
         readSql = ReadSQL(db.writableDatabase)
         writeSql = WriteSQL(db.writableDatabase)
 
+        account = readSql.getAccountById(accountId)
+        transactions = readSql.getTransactionsByAccountId(accountId)
         arguments?.let {
             accountId = it.getInt(ARG_ACCOUNT_ID)
         }
-        account = readSql.getAccountById(accountId)
-        transactions = readSql.getTransactionsByAccountId(accountId)
-
 
         if (account != null && account!!.isNotEmpty()) {
             nameEditText?.setText(account!!.name)
@@ -79,18 +97,7 @@ class AccountDetailsFragment(id: Int) : Fragment() {
         deleteButton?.setOnClickListener(View.OnClickListener { showDeleteConfirmationDialog() })
         return view
     }
-    companion object {
-        private const val ARG_ACCOUNT_ID = "account_id"
 
-        fun newInstance(accountId: Int): AccountDetailsFragment {
-            val fragment = AccountDetailsFragment(accountId)
-            val args = Bundle().apply {
-                putInt(ARG_ACCOUNT_ID, accountId)
-            }
-            fragment.arguments = args
-            return fragment
-        }
-    }
     private fun changeName() {
         val newName = nameEditText!!.text.toString()
         if (newName.isNotEmpty()) {
@@ -117,26 +124,6 @@ class AccountDetailsFragment(id: Int) : Fragment() {
         }
     }
 
-
-    private fun doesAccountExist(accounts: ArrayList<Account>, name: String): Boolean {
-        for (account in accounts) {
-            if (account.name == name) {
-                return true
-            }
-        }
-        return false
-    }
-
-    private fun findAccountIndex(accounts: ArrayList<Account>, oldName: String): Int {
-        for (i in accounts.indices) {
-            if (accounts[i].name == oldName) {
-                return i
-            }
-        }
-        return -1
-    }
-
-    // Method to show a delete confirmation dialog
     private fun showDeleteConfirmationDialog() {
         AlertDialog.Builder(requireContext())
             .setTitle("Delete Account")
@@ -145,7 +132,6 @@ class AccountDetailsFragment(id: Int) : Fragment() {
             .setNegativeButton(android.R.string.no, null).show()
     }
 
-    // Method to delete the account
     private fun deleteAccount() {
         try {
             writeSql.deleteAccount(accountId)
@@ -163,7 +149,6 @@ class AccountDetailsFragment(id: Int) : Fragment() {
     }
 
 
-    // Custom RecyclerView.Adapter for displaying transactions with a "Detail" button
     private inner class TransactionListAdapter internal constructor(private val transactions: ArrayList<Transactions>) :
         RecyclerView.Adapter<TransactionListAdapter.ViewHolder>() {
         init {
@@ -195,19 +180,18 @@ class AccountDetailsFragment(id: Int) : Fragment() {
                 transactionDetailTextView = itemView.findViewById(R.id.transactionDetailTextView)
                 detailButton = itemView.findViewById(R.id.detailButton)
                 detailButton.setOnClickListener {
-                    val editTransactionFragment =
-                        account?.let { it1 ->
-                            EditTransactionFragment(transactions[getAdapterPosition()],
-                                it1
-                            )
-                        }
-                    val fragmentManager = requireActivity().supportFragmentManager
-                    val fragmentTransaction = fragmentManager.beginTransaction()
-                    if (editTransactionFragment != null) {
-                        fragmentTransaction.replace(R.id.linearContainer, editTransactionFragment)
+                    // Ottieni l'ID della transazione.
+                    val transactionId = transactions[adapterPosition].id // Assicurati che Transactions abbia un campo id.
+
+                    // Crea l'istanza di EditManagerFragment con l'ID della transazione.
+                    val editManagerFragmentForTransaction = EditManagerFragment.newInstance(transactionId = transactionId)
+
+                    // Avvia il Fragment.
+                    requireActivity().supportFragmentManager.beginTransaction().apply {
+                        replace(R.id.linearContainer, editManagerFragmentForTransaction) // Sostituisci 'your_container_id' con l'ID del contenitore del Fragment.
+                        addToBackStack(null) // Opzionale, se vuoi aggiungere il fragment al backstack.
+                        commit()
                     }
-                    fragmentTransaction.addToBackStack(null)
-                    fragmentTransaction.commit()
                 }
             }
         }

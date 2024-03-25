@@ -219,6 +219,30 @@ class ReadSQL(private val db: SQLiteDatabase?) {
         return budgetList
     }
 
+    fun getCategoryAmountCategory(categoryId: Int): Double {
+        var amountCategory = 0.0 // Valore di default se non trovato
+
+        db?.let { database ->
+            val cursor = database.query(
+                TABLE_CATEGORY, // La tabella da interrogare
+                arrayOf("amount_category"), // La colonna da restituire
+                "$COLUMN_ID = ?", // La clausola WHERE
+                arrayOf(categoryId.toString()), // I valori per la clausola WHERE
+                null, // group by
+                null, // having
+                null // order by
+            )
+            if (cursor.moveToFirst()) {
+                val amountCategoryIndex = cursor.getColumnIndex("amount_category")
+                if (amountCategoryIndex != -1) {
+                    amountCategory = cursor.getDouble(amountCategoryIndex)
+                }
+            }
+            cursor.close()
+        }
+        return amountCategory
+    }
+
 
 
     fun getAllCredits(): List<Credito> {
@@ -390,31 +414,6 @@ class ReadSQL(private val db: SQLiteDatabase?) {
 
         return incomeTransactionsList
     }
-
-    fun getAccountBalanceById(accountId: Int): Double {
-        db?.let { database ->
-            val cursor = database.query(
-                TABLE_ACCOUNT,
-                arrayOf(COLUMN_BALANCE), // Seleziona solo la colonna del saldo
-                "$COLUMN_ID = ?", // Usa l'ID dell'account per filtrare la riga corretta
-                arrayOf(accountId.toString()), // Valori per la clausola WHERE
-                null,
-                null,
-                null
-            )
-            if (cursor != null && cursor.moveToFirst()) {
-                val balanceIndex = cursor.getColumnIndex(COLUMN_BALANCE)
-                if (balanceIndex != -1) {
-                    val balance = cursor.getDouble(balanceIndex)
-                    cursor.close()
-                    return balance
-                }
-            }
-            cursor?.close()
-        }
-        return 0.0 // Ritorna 0.0 se l'account non viene trovato o in caso di errore
-    }
-
 
     fun getCategoryById(categoryId: Int): Category? {
         val cursor = db!!.query(

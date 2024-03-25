@@ -35,6 +35,7 @@ class SQLiteDB(context: Context?) :
         db.execSQL(CREATE_TABLE_TRANSACTION)
         db.execSQL(CREATE_TABLE_PLANNING)
         db.execSQL(CREATE_TRIGGER_UPDATE_BALANCE)
+        db.execSQL(UPDATE_CATEGORY_AMOUNT_TRIGGER)
         Log.d("SQLiteDB", "Database created")
     }
 
@@ -102,6 +103,7 @@ class SQLiteDB(context: Context?) :
         private const val COLUMN_CITY_ID = "city_id"
         private const val COLUMN_CATEGORY_ID = "category_id"
         private const val COLUMN_ACCOUNT_ID = "account_id"
+        private const val COLUMN_AMOUNT_CATEGORY = "amount_category"
 
         // Category Table - column names
         private const val COLUMN_DESCRIPTION = "description"
@@ -130,6 +132,42 @@ class SQLiteDB(context: Context?) :
         END;
     """.trimIndent()
 
+        val UPDATE_CATEGORY_AMOUNT_TRIGGER = """
+        CREATE TRIGGER UpdateCategoryAmountAfterInsert
+        AFTER INSERT ON Transactions
+        FOR EACH ROW
+        BEGIN
+            UPDATE Category
+            SET amount_category = (SELECT SUM(amount) FROM Transactions WHERE category_id = NEW.category_id)
+            WHERE id = NEW.category_id;
+        END;
+
+        CREATE TRIGGER UpdateCategoryAmountAfterUpdate
+        AFTER UPDATE ON Transactions
+        FOR EACH ROW
+        BEGIN
+            -- Aggiorna per la vecchia categoria, se cambiata
+            IF OLD.category_id != NEW.category_id THEN
+                UPDATE Category
+                SET amount_category = (SELECT SUM(amount) FROM Transactions WHERE category_id = OLD.category_id)
+                WHERE id = OLD.category_id;
+            END IF;
+            
+            -- Aggiorna per la nuova categoria
+            UPDATE Category
+            SET amount_category = (SELECT SUM(amount) FROM Transactions WHERE category_id = NEW.category_id)
+            WHERE id = NEW.category_id;
+        END;
+
+        CREATE TRIGGER UpdateCategoryAmountAfterDelete
+        AFTER DELETE ON Transactions
+        FOR EACH ROW
+        BEGIN
+            UPDATE Category
+            SET amount_category = (SELECT SUM(amount) FROM Transactions WHERE category_id = OLD.category_id)
+            WHERE id = OLD.category_id;
+        END;
+    """.trimIndent()
 
         const val CREATE_TABLE_ACCOUNT = "CREATE TABLE IF NOT EXISTS " + TABLE_ACCOUNT + " ( " +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
@@ -143,6 +181,7 @@ class SQLiteDB(context: Context?) :
         const val CREATE_TABLE_CATEGORY = "CREATE TABLE IF NOT EXISTS " + TABLE_CATEGORY + " ( " +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_NAME + " TEXT NOT NULL, " +
+                COLUMN_AMOUNT_CATEGORY + " REAL, " +
                 COLUMN_DESCRIPTION + " TEXT );"
         const val CREATE_TABLE_TRANSACTION =
             "CREATE TABLE IF NOT EXISTS " + TABLE_TRANSACTIONS + " ( " +

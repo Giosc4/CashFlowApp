@@ -41,7 +41,7 @@ import java.util.Calendar
 import java.util.Locale
 
 class EditTransactionFragment(//CONSTRUCTOR
-    private val transactionOriginal: Transactions, private val accountOriginal: Account
+    private val transactionOriginal: Transactions, private val accountOriginal: Account, private val readSql: ReadSQL, private val writeSql: WriteSQL
 ) : Fragment() {
     private var expenseButton: Button? = null
     private var incomeButton: Button? = null
@@ -59,9 +59,6 @@ class EditTransactionFragment(//CONSTRUCTOR
     private var deleteButton: Button? = null
     private var categories: ArrayList<Category>? = null
 
-    private var db: SQLiteDB
-    private var readSql: ReadSQL
-    private var writeSql: WriteSQL
 
     private var accounts: ArrayList<Account>? = null
 
@@ -69,11 +66,6 @@ class EditTransactionFragment(//CONSTRUCTOR
     private var originalTransactionIndex = 0
     private var originalAccountIndex = 0
 
-    init {
-        db = SQLiteDB(context)
-        readSql = ReadSQL(db.writableDatabase)
-        writeSql = WriteSQL(db.writableDatabase)
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,

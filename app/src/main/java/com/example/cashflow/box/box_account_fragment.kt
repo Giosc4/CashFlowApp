@@ -10,6 +10,7 @@ import android.widget.Button
 import android.widget.GridLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.example.cashflow.EditManagerFragment
 import com.example.cashflow.fragments.AccountDetailsFragment
 import com.example.cashflow.R
 import java.math.BigDecimal
@@ -69,13 +70,13 @@ class box_account_fragment(private val readSQL: ReadSQL, private val writeSQL: W
                         }
                         setOnClickListener {
                             Log.d("AccountFragment", "Button clicked: " + account.name)
-                            val accountDetailsFragment =
-                                AccountDetailsFragment.newInstance(account.id)
-                            parentFragmentManager.beginTransaction()
-                                .replace(R.id.linearContainer, accountDetailsFragment)
-                                .addToBackStack(null) // Optional: Aggiunge la transazione al back stack
-                                .commit()
 
+                            val editManagerFragmentForAccount = EditManagerFragment.newInstance(accountId = account.id)
+                            parentFragmentManager.beginTransaction().apply {
+                                replace(R.id.linearContainer, editManagerFragmentForAccount)
+                                addToBackStack(null)
+                                commit()
+                            }
                         }
                     }
                     gridLayout.addView(button)
@@ -83,7 +84,9 @@ class box_account_fragment(private val readSQL: ReadSQL, private val writeSQL: W
             }
         }
         return view
+
     }
+
     override fun onResume() {
         super.onResume()
     }

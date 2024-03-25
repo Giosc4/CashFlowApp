@@ -5,8 +5,9 @@ class Category {
     var id = 0
     var name: String? = null
     var description: String? = null
+    val amountCategory: Double = 0.0 // get from Transaction table with Trigger
 
-    constructor()
+
     constructor(name: String?, description: String?) {
         this.name = name
         this.description = description

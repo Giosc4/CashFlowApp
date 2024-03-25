@@ -67,29 +67,28 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
         chart?.setPinchZoom(true)
     }
 
+
     private fun createBarCharts(budgetDataList: List<Budget>) {
-        val chartList = listOf(
-            horizontalBarChart1,
-            horizontalBarChart2,
-            horizontalBarChart3,
-        )
+        val chartList = listOf(horizontalBarChart1, horizontalBarChart2, horizontalBarChart3)
 
         for ((index, budgetData) in budgetDataList.withIndex()) {
             if (index < chartList.size) {
                 val chart = chartList[index]
                 val entries = ArrayList<BarEntry>()
 
-                val transactionsSum = readSQL.getTransactionsSumForCategory(budgetData.categoryId)
-                entries.add(BarEntry(index.toFloat(), transactionsSum))
+                // Assume che readSQL.getCategoryAmountCategory(categoryId: Int) sia un metodo che
+                // restituisce l'amountCategory per la data categoria.
+                // Devi implementare questo metodo nel tuo ReadSQL se non esiste già.
+                val amountCategory = readSQL.getCategoryAmountCategory(budgetData.categoryId)
 
-                val dataSet = BarDataSet(
-                    entries,
-                    budgetData.name
-                )
-                if (transactionsSum > budgetData.amount) {
-                    dataSet.setColor(Color.RED)
+                // Usa l'indice del grafico come l'etichetta sull'asse X (potresti voler usare una etichetta più significativa)
+                entries.add(BarEntry(index.toFloat(), amountCategory.toFloat()))
+
+                val dataSet = BarDataSet(entries, budgetData.name)
+                if (amountCategory > budgetData.amount) {
+                    dataSet.setColor(Color.RED) // Spesa supera il budget
                 } else {
-                    dataSet.setColor(Color.GREEN)
+                    dataSet.setColor(Color.GREEN) // Spesa entro il budget
                 }
                 dataSet.setValueTextColor(Color.BLACK)
                 dataSet.setDrawValues(false)
@@ -98,11 +97,7 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
                 val barData = BarData(dataSet)
                 chart?.data = barData
                 chart?.setFitBars(true)
-
-                val legend = chart?.legend
-                legend?.isEnabled = true // Abilita la legenda
-
-                chart?.invalidate()
+                chart?.invalidate() // Aggiorna il grafico con i nuovi dati
             }
         }
     }

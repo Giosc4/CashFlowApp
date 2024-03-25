@@ -1,5 +1,6 @@
 package com.example.cashflow
 
+import android.content.Intent
 import android.content.pm.PackageManager
 import android.os.Bundle
 import android.util.Log
@@ -27,16 +28,13 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
-
-        var posizione: Posizione? = null
-
         val drawerLayout: DrawerLayout = findViewById(R.id.drawer_layout)
         val navigationView: NavigationView = findViewById(R.id.nav_view)
         val myToolbar = findViewById<Toolbar>(R.id.my_toolbar)
         val hamburgerMenu: ImageButton = findViewById(R.id.menu_hamburger)
         val btnHome: ImageView = findViewById(R.id.logo)
 
-
+        var posizione: Posizione? = null
         db = SQLiteDB(this)
         readSQL = ReadSQL(db.writableDatabase)
         writeSQL = WriteSQL(db.writableDatabase)
@@ -50,7 +48,6 @@ class MainActivity : AppCompatActivity() {
 //        }
 
         accounts = readSQL.getAccounts()
-
 
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -74,24 +71,19 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
-
-
-
         setSupportActionBar(myToolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
         navigationView.setNavigationItemSelectedListener { menuItem ->
-            city?.let {
-                loadMenuManagerFragment(menuItem.itemId, it)
-                Log.d("MainActivity", "City: $it")
-            } ?: run {
-                loadMenuManagerFragment(menuItem.itemId, city!!)
-                Log.e("MainActivity", "City: $city")
-            }
+//            city?.let {
+//                loadMenuManagerFragment(menuItem.itemId, it)
+//                Log.d("MainActivity", "City: $it")
+//            } ?: run {
+            loadMenuManagerFragment(menuItem.itemId, city!!)
+            Log.e("MainActivity", "City: $city")
+//            }
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
-
-
 
         hamburgerMenu.setOnClickListener {
             drawerLayout.openDrawer(GravityCompat.START)
@@ -103,7 +95,9 @@ class MainActivity : AppCompatActivity() {
         }
 
         btnHome.setOnClickListener {
-            loadBoxManagerFragment()
+            val intent = Intent(this, MainActivity::class.java)
+            startActivity(intent)
+            null
         }
         loadBoxManagerFragment()
     }
