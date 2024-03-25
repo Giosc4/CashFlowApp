@@ -21,11 +21,9 @@ class WriteSQL(private val db: SQLiteDatabase) {
 
     fun createBudget(budgetName: String, budgetAmount: Double, categoryName: String): Boolean {
         val values = ContentValues().apply {
-            put(
-                "budget_name",
-                budgetName
-            )
-            put("budget_amount", budgetAmount)
+            put("name", budgetName)
+            put("amount", budgetAmount)
+
             val categoryId = getCategoryIdByName(categoryName)
             if (categoryId == null) {
                 Log.e("SQLiteDB", "Categoria non trovata: $categoryName")
@@ -77,7 +75,10 @@ class WriteSQL(private val db: SQLiteDatabase) {
         val values = ContentValues().apply {
             put(COLUMN_INCOME, planning.income)
             put(COLUMN_AMOUNT, planning.amount)
-            put(COLUMN_DATE, planning.date) // Assicurati che il formato della data sia coerente con quello del database
+            put(
+                COLUMN_DATE,
+                planning.date
+            ) // Assicurati che il formato della data sia coerente con quello del database
             put(COLUMN_CITY_ID, planning.cityId)
             put(COLUMN_CATEGORY_ID, planning.categoryId)
             put(COLUMN_ACCOUNT_ID, planning.accountId)
@@ -96,7 +97,6 @@ class WriteSQL(private val db: SQLiteDatabase) {
 
         return newRowId
     }
-
 
 
     fun createCategory(name: String?, description: String?): Boolean {
@@ -150,7 +150,7 @@ class WriteSQL(private val db: SQLiteDatabase) {
             return -1L
         } else {
             Log.d("SQLiteDB", "Transaction inserted successfully with ID: $newRowId")
-            return  newRowId
+            return newRowId
         }
     }
 

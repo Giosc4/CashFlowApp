@@ -9,24 +9,6 @@ import java.util.Calendar
 import java.util.Locale
 
 class ReadSQL(private val db: SQLiteDatabase?) {
-    fun getCityNameById(cityId: Int): String? {
-        var cityName: String? = null
-        val cursor = db!!.query(
-            "Cities", arrayOf("Name"),  // Colonna da restituire
-            "ID = ?", arrayOf(cityId.toString()),  // Valori per la clausola WHERE
-            null, null, null
-        )
-        if (cursor.moveToFirst()) {
-            val columnIndex = cursor.getColumnIndex("Name")
-            if (columnIndex != -1) {
-                cityName = cursor.getString(columnIndex)
-            } else {
-                // Handle the case where the column doesn't exist in the cursor
-            }
-        }
-        cursor.close()
-        return cityName
-    }
 
     fun getCityIdByName(cityName: String): Int {
         var cityId = -1 // Default value if city is not found
@@ -49,26 +31,6 @@ class ReadSQL(private val db: SQLiteDatabase?) {
             cursor.close()
         }
         return cityId
-    }
-
-
-    fun getCategoryNameById(categoryId: Int): String? {
-        var categoryName: String? = null
-        val cursor = db!!.query(
-            "Categories", arrayOf("Name"),  // Colonna da restituire
-            "ID = ?", arrayOf(categoryId.toString()),  // Valori per la clausola WHERE
-            null, null, null
-        )
-        if (cursor.moveToFirst()) {
-            val columnIndex = cursor.getColumnIndex("Name")
-            if (columnIndex != -1) {
-                categoryName = cursor.getString(columnIndex)
-            } else {
-                // Handle the case where the column doesn't exist in the cursor
-            }
-        }
-        cursor.close()
-        return categoryName
     }
 
 
@@ -227,7 +189,9 @@ class ReadSQL(private val db: SQLiteDatabase?) {
         return debitsList
     }
 
-    fun getBudgetData(categoryId: Int? = null): Budget? {
+    fun getBudgetData(categoryId: Int? = null): List<Budget> {
+        val budgetList = mutableListOf<Budget>()
+
         db?.let { database ->
             // Costruisci la query basata sulla presenza o assenza di categoryId
             val selectionArgs = categoryId?.toString()?.let { arrayOf(it) }
@@ -243,17 +207,18 @@ class ReadSQL(private val db: SQLiteDatabase?) {
                 null
             )
             cursor.use { cur ->
-                if (cur.moveToFirst()) {
+                while (cur.moveToNext()) {
                     val id = cur.getInt(cur.getColumnIndexOrThrow(COLUMN_ID))
                     val categoryId = cur.getInt(cur.getColumnIndexOrThrow(COLUMN_CATEGORY_ID))
                     val amount = cur.getDouble(cur.getColumnIndexOrThrow(COLUMN_AMOUNT))
                     val name = cur.getString(cur.getColumnIndexOrThrow(COLUMN_NAME))
-                    return Budget(id, categoryId, amount, name)
+                    budgetList.add(Budget(id, categoryId, amount, name))
                 }
             }
         }
-        return null
+        return budgetList
     }
+
 
 
     fun getAllCredits(): List<Credito> {
@@ -293,30 +258,6 @@ class ReadSQL(private val db: SQLiteDatabase?) {
 
         // Restituisce la lista di debiti
         return debitsList
-    }
-
-    fun getCityByName(newCityName: String): City? {
-        // Usa i placeholder '?' per evitare SQL Injection
-        val cursor = db!!.rawQuery(
-            "SELECT * FROM " + TABLE_CITY + " WHERE " + COLUMN_CITY_NAME + " = ?",
-            arrayOf(newCityName)
-        )
-        if (cursor.moveToFirst()) {
-            val idIndex = cursor.getColumnIndex(COLUMN_ID)
-            val cityNameIndex = cursor.getColumnIndex(COLUMN_CITY_NAME)
-            val latitudeIndex = cursor.getColumnIndex(COLUMN_LATITUDE)
-            val longitudeIndex = cursor.getColumnIndex(COLUMN_LONGITUDE)
-            if (idIndex != -1 && cityNameIndex != -1 && latitudeIndex != -1 && longitudeIndex != -1) {
-                val id = cursor.getInt(idIndex)
-                val cityName = cursor.getString(cityNameIndex)
-                val latitude = cursor.getDouble(latitudeIndex)
-                val longitude = cursor.getDouble(longitudeIndex)
-                cursor.close() // Chiudi il cursor prima del return
-                return City(id, cityName, latitude, longitude)
-            }
-        }
-        cursor.close() // Assicurati di chiudere il cursor anche se non ci sono risultati
-        return null
     }
 
     fun getExpenseTransactionsByAccount(accountId: Int): ArrayList<Transactions> {
@@ -791,6 +732,73 @@ class ReadSQL(private val db: SQLiteDatabase?) {
             -1 // or any default value
         }
     }
+
+    fun getTransactionsSumForCategory(categoryId: Int): Float {
+        var sum = 0.0f
+
+        val transactions = getTransactionsByCategoryId(categoryId)
+        for (transaction in transactions) {
+            sum += if (transaction.isIncome) transaction.amountValue.toFloat() else -transaction.amountValue.toFloat()
+        }
+
+        return sum
+    }
+
+
+    fun getTransactionsByCategoryId(categoryId: Int): List<Transactions> {
+        val transactionsList = ArrayList<Transactions>()
+        val cursor = db?.query(
+            TABLE_TRANSACTIONS,
+            arrayOf(
+                COLUMN_ID,
+                COLUMN_INCOME,
+                COLUMN_AMOUNT,
+                COLUMN_DATE,
+                COLUMN_CITY_ID,
+                COLUMN_CATEGORY_ID,
+                COLUMN_ACCOUNT_ID
+            ),
+            "$COLUMN_CATEGORY_ID = ?",
+            arrayOf(categoryId.toString()),
+            null, null, null
+        )
+        val sdf = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault())
+        while (cursor != null && cursor.moveToNext()) {
+            val idIndex = cursor.getColumnIndex(COLUMN_ID)
+            val incomeIndex = cursor.getColumnIndex(COLUMN_INCOME)
+            val amountIndex = cursor.getColumnIndex(COLUMN_AMOUNT)
+            val dateIndex = cursor.getColumnIndex(COLUMN_DATE)
+            val cityIdIndex = cursor.getColumnIndex(COLUMN_CITY_ID)
+            val accountIdIndex = cursor.getColumnIndex(COLUMN_ACCOUNT_ID)
+
+            if (idIndex != -1 && incomeIndex != -1 && amountIndex != -1 && dateIndex != -1 && cityIdIndex != -1 && accountIdIndex != -1) {
+                val id = cursor.getInt(idIndex)
+                val income = cursor.getInt(incomeIndex) > 0
+                val amount = cursor.getDouble(amountIndex)
+                val timestamp = cursor.getLong(cursor.getColumnIndexOrThrow(COLUMN_DATE))
+                val date = Calendar.getInstance()
+                date.timeInMillis = timestamp
+
+                val cityId = cursor.getInt(cityIdIndex)
+                val accountId = cursor.getInt(accountIdIndex)
+                transactionsList.add(
+                    Transactions(
+                        id,
+                        income,
+                        amount,
+                        date,
+                        cityId,
+                        categoryId,
+                        accountId
+                    )
+                )
+            }
+        }
+
+        cursor?.close()
+        return transactionsList
+    }
+
 
     fun getTransactionsByAccountIdAndCategory(
         accountId: Int,
