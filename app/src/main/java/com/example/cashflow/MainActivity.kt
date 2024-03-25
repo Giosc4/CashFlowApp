@@ -7,6 +7,8 @@ import android.widget.ImageButton
 import android.widget.ImageView
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
 import com.google.android.material.navigation.NavigationView
@@ -49,6 +51,18 @@ class MainActivity : AppCompatActivity() {
 
         accounts = readSQL.getAccounts()
 
+
+        if (ContextCompat.checkSelfPermission(
+                this,
+                android.Manifest.permission.ACCESS_FINE_LOCATION
+            ) != PackageManager.PERMISSION_GRANTED
+        ) {
+            ActivityCompat.requestPermissions(
+                this,
+                arrayOf(android.Manifest.permission.ACCESS_FINE_LOCATION),
+                PERMISSION_REQUEST_CODE
+            )
+        }
         posizione = Posizione(this)
         posizione!!.requestDeviceLocation(object : Posizione.DeviceLocationCallback {
             override fun onLocationFetched(city: City?) {
@@ -60,14 +74,23 @@ class MainActivity : AppCompatActivity() {
             }
         })
 
+
+
+
         setSupportActionBar(myToolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
         navigationView.setNavigationItemSelectedListener { menuItem ->
-            // Passa l'ID dell'elemento del menu a MenuManagerFragment
-            loadMenuManagerFragment(menuItem.itemId, city!!)
+            city?.let {
+                loadMenuManagerFragment(menuItem.itemId, it)
+                Log.d("MainActivity", "City: $it")
+            } ?: run {
+                loadMenuManagerFragment(menuItem.itemId, city!!)
+                Log.e("MainActivity", "City: $city")
+            }
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }
+
 
 
         hamburgerMenu.setOnClickListener {

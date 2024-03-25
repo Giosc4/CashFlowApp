@@ -242,14 +242,14 @@ class NewTransactionFragment(
             expenseButton?.setSelected(true)
             expenseButton?.setBackgroundColor(Color.parseColor("#00cc44")) // Verde quando selezionato
             incomeButton?.setSelected(false)
-            incomeButton?.setBackgroundColor(Color.parseColor("#a7c5f9")) // azzurro quando non selezionato
+            incomeButton?.setBackgroundColor(Color.parseColor("#FF6464")) // rosso quando non selezionato
         })
         incomeButton?.setOnClickListener(View.OnClickListener {
             // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
             incomeButton?.setSelected(true)
             incomeButton?.setBackgroundColor(Color.parseColor("#00cc44")) // Verde quando selezionato
             expenseButton?.setSelected(false)
-            expenseButton?.setBackgroundColor(Color.parseColor("#a7c5f9")) // azzurro quando non selezionato
+            expenseButton?.setBackgroundColor(Color.parseColor("#FF6464")) // rosso quando non selezionato
         })
 
         categories = readSQL.getCategories()

@@ -32,7 +32,6 @@ class SQLiteDB(context: Context?) :
         db.execSQL(CREATE_TABLE_DEBITO)
         db.execSQL(CREATE_TABLE_CREDITO)
         db.execSQL(CREATE_TABLE_BUDGET)
-        db.execSQL(CREATE_TABLE_SAVING)
         db.execSQL(CREATE_TABLE_TRANSACTION)
         db.execSQL(CREATE_TABLE_PLANNING)
         db.execSQL(CREATE_TRIGGER_UPDATE_BALANCE)
@@ -44,7 +43,6 @@ class SQLiteDB(context: Context?) :
         db.execSQL("DELETE FROM " + TABLE_CITY)
         db.execSQL("DELETE FROM " + TABLE_TRANSACTIONS)
         db.execSQL("DELETE FROM " + TABLE_CATEGORY)
-        db.execSQL("DELETE FROM " + TABLE_SAVING)
         db.execSQL("DELETE FROM " + TABLE_BUDGET)
         db.execSQL("DELETE FROM " + TABLE_PLANNING)
         db.execSQL("DELETE FROM " + TABLE_TEMPLATE_TRANSACTIONS)
@@ -59,7 +57,6 @@ class SQLiteDB(context: Context?) :
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CITY)
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_TRANSACTIONS)
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_CATEGORY)
-        db.execSQL("DROP TABLE IF EXISTS " + TABLE_SAVING)
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_BUDGET)
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_PLANNING)
         db.execSQL("DROP TABLE IF EXISTS " + TABLE_TEMPLATE_TRANSACTIONS)
@@ -79,7 +76,6 @@ class SQLiteDB(context: Context?) :
         private const val TABLE_CITY = "City"
         private const val TABLE_TRANSACTIONS = "Transactions"
         private const val TABLE_CATEGORY = "Category"
-        private const val TABLE_SAVING = "Risparmio"
         private const val TABLE_BUDGET = "Budget"
         private const val TABLE_PLANNING = "Pianificazione"
         private const val TABLE_TEMPLATE_TRANSACTIONS = "Template_Transazioni"
@@ -110,13 +106,10 @@ class SQLiteDB(context: Context?) :
         // Category Table - column names
         private const val COLUMN_DESCRIPTION = "description"
 
-        // Saving Table - column names
-        private const val COLUMN_START_DATE = "Data_Inizio"
-        private const val COLUMN_END_DATE = "Data_Fine"
-
         // Budget Table - column names
         // Note: Uses COLUMN_AMOUNT, COLUMN_NAME from Transactions
         // Planning Table - column names
+        private const val COLUMN_END_DATE = "Data_Fine"
         private const val COLUMN_TEMPLATE_ID = "Template_ID"
         private const val COLUMN_REPETITION = "Ripetizione"
 
@@ -164,14 +157,6 @@ class SQLiteDB(context: Context?) :
                     "FOREIGN KEY (" + COLUMN_CATEGORY_ID + ") REFERENCES " + TABLE_CATEGORY + "(" + COLUMN_ID + "), " +
                     "FOREIGN KEY (" + COLUMN_ACCOUNT_ID + ") REFERENCES " + TABLE_ACCOUNT + "(" + COLUMN_ID + ") ON DELETE CASCADE);"
 
-        // Modifica le variabili esistenti per utilizzare le nuove costanti
-        const val CREATE_TABLE_SAVING = "CREATE TABLE IF NOT EXISTS " + TABLE_SAVING + " ( " +
-                COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
-                COLUMN_AMOUNT + " REAL NOT NULL, " +
-                COLUMN_ACCOUNT_ID + " INTEGER, " +
-                COLUMN_START_DATE + " TEXT, " +
-                COLUMN_END_DATE + " TEXT, " +
-                "FOREIGN KEY (" + COLUMN_ACCOUNT_ID + ") REFERENCES " + TABLE_ACCOUNT + "(" + COLUMN_ID + ") ON DELETE CASCADE);"
         const val CREATE_TABLE_BUDGET = "CREATE TABLE IF NOT EXISTS " + TABLE_BUDGET + " ( " +
                 COLUMN_ID + " INTEGER PRIMARY KEY AUTOINCREMENT, " +
                 COLUMN_CATEGORY_ID + " INTEGER, " +

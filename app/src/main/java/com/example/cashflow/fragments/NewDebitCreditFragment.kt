@@ -150,7 +150,7 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
             buttonNewDebit?.setSelected(true)
             buttonNewDebit?.setBackgroundColor(Color.parseColor("#00cc44")) // Verde quando selezionato
             buttonNewCredit?.setSelected(false)
-            buttonNewCredit?.setBackgroundColor(Color.parseColor("#a7c5f9")) // azzurro quando non selezionato
+            buttonNewCredit?.setBackgroundColor(Color.parseColor("#FF6464")) // rosso quando non selezionato
             Log.d("saveDebitCredit", "Debito Selezionato")
         })
         buttonNewCredit?.setOnClickListener(View.OnClickListener {
@@ -158,7 +158,7 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
             buttonNewCredit?.setSelected(true)
             buttonNewCredit?.setBackgroundColor(Color.parseColor("#00cc44")) // Verde quando selezionato
             buttonNewDebit?.setSelected(false)
-            buttonNewDebit?.setBackgroundColor(Color.parseColor("#a7c5f9")) // azzurro quando non selezionato
+            buttonNewDebit?.setBackgroundColor(Color.parseColor("#FF6464")) // rosso quando non selezionato
             Log.d("saveDebitCredit", "Credito Selezionato")
         })
 

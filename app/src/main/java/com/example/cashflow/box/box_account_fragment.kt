@@ -84,18 +84,7 @@ class box_account_fragment(private val readSQL: ReadSQL, private val writeSQL: W
         }
         return view
     }
-
     override fun onResume() {
         super.onResume()
     }
-
-
-    private val subtotal: String
-        get() {
-            var sum = BigDecimal.ZERO
-            accounts?.forEach { account ->
-                sum = sum.add(BigDecimal.valueOf(account.balance))
-            }
-            return sum.setScale(2, BigDecimal.ROUND_HALF_UP).toString()
-        }
 }

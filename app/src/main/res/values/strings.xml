@@ -7,7 +7,6 @@
     <string name="item2">Item 2</string>
 
     <string name="total_template">Total: </string>
-    <string name="no_accounts">0 Conti</string>
 
     <string name="home">Home</string>
     <string name="mapbox_access_token" translatable="false" tools:ignore="UnusedResources">pk.eyJ1IjoiZ2lvc2NhIiwiYSI6ImNsdHgwaTR5aTAxN20ybGtueWt6ZXk2anEifQ.2hZa0HuzocuJLUtFecpGrg</string>

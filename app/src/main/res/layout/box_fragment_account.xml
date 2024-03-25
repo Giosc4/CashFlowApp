@@ -12,7 +12,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:gravity="center"
-        android:text="Account"
+        android:text="Conti"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -43,5 +43,5 @@
         android:alignmentMode="alignMargins"
         android:columnCount="2"
         android:columnOrderPreserved="false"
-        android:rowCount="2"></GridLayout>
+        android:padding="8dp" />
 </LinearLayout>

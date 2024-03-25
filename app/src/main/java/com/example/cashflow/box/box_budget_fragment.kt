@@ -80,15 +80,13 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
                 val entries = ArrayList<BarEntry>()
 
                 val transactionsSum = readSQL.getTransactionsSumForCategory(budgetData.categoryId)
-                val percentage = transactionsSum / budgetData.amount * 100
-
                 entries.add(BarEntry(index.toFloat(), transactionsSum))
 
                 val dataSet = BarDataSet(
                     entries,
                     budgetData.name
                 )
-                if (percentage > 100) {
+                if (transactionsSum > budgetData.amount) {
                     dataSet.setColor(Color.RED)
                 } else {
                     dataSet.setColor(Color.GREEN)
