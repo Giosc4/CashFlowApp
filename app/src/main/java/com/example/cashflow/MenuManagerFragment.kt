@@ -10,6 +10,7 @@ import android.view.ViewGroup
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 import com.example.cashflow.fragments.*
+
 import com.example.cashflow.statistics.*
 
 class MenuManagerFragment() : Fragment() {
@@ -68,8 +69,8 @@ class MenuManagerFragment() : Fragment() {
             R.id.new_debit_credit -> NewDebitCreditFragment(readSQL, writeSQL)
             R.id.line_chart -> Line_chart(readSQL, writeSQL)
             R.id.maps -> MapFragment(readSQL, writeSQL)
-            R.id.income_chart -> Income_expense(true, readSQL, writeSQL)
-            R.id.expense_chart -> Income_expense(false, readSQL, writeSQL)
+            R.id.income_chart -> IncomeExpenseFragment(true, readSQL, writeSQL)
+            R.id.expense_chart -> IncomeExpenseFragment(false, readSQL, writeSQL)
             R.id.new_category -> NewCategoryFragment(readSQL, writeSQL)
             else -> {
                 Log.d(

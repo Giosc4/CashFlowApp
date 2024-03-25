@@ -10,9 +10,7 @@ import android.widget.Button
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.example.cashflow.R
-import com.example.cashflow.statistics.Income_expense
-import com.example.cashflow.statistics.Line_chart
-import com.example.cashflow.statistics.MapFragment
+import com.example.cashflow.statistics.*
 import java.io.File
 import java.io.FileWriter
 import java.io.IOException
@@ -64,13 +62,13 @@ class StatisticsFragment(private val accounts: ArrayList<Account>) : Fragment() 
                 .commit()
         })
         incomeButton?.setOnClickListener(View.OnClickListener {
-            val incomeExpense = Income_expense(true, readSql, writeSql)
+            val incomeExpense = IncomeExpenseFragment(true, readSql, writeSql)
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.linearContainer, incomeExpense)
                 .commit()
         })
         expenseButton?.setOnClickListener(View.OnClickListener {
-            val incomeExpense = Income_expense(false, readSql, writeSql)
+            val incomeExpense = IncomeExpenseFragment(false, readSql, writeSql)
             requireActivity().supportFragmentManager.beginTransaction()
                 .replace(R.id.linearContainer, incomeExpense)
                 .commit()

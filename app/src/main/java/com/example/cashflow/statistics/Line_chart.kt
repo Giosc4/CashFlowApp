@@ -29,7 +29,6 @@ import com.example.cashflow.db.*
 class Line_chart(private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  : Fragment() {
     private var openStartDatePickerButton: Button? = null
     private var openEndDatePickerButton: Button? = null
-    private var generateChartButton: Button? = null
     private var startDateTextView: TextView? = null
     private var endDateTextView: TextView? = null
     private var startDate: Calendar? = null
@@ -45,7 +44,6 @@ class Line_chart(private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_line_chart, container, false)
-        generateChartButton = view.findViewById(R.id.generateChartButton)
         openStartDatePickerButton = view.findViewById(R.id.openStartDatePickerButton)
         openEndDatePickerButton = view.findViewById(R.id.openEndDatePickerButton)
         startDateTextView = view.findViewById(R.id.startDateTextView)
@@ -61,12 +59,10 @@ class Line_chart(private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  
         endDateTextView?.setText(formatDateKey(endDate))
         openStartDatePickerButton?.setOnClickListener(View.OnClickListener { openStartDatePicker() })
         openEndDatePickerButton?.setOnClickListener(View.OnClickListener { openEndDatePicker() })
-        generateChartButton?.setOnClickListener(View.OnClickListener { createLineChart() })
-
 
         accounts = readSQL.getAccounts()
 
-
+        createLineChart()
         return view
     }
 
@@ -84,6 +80,8 @@ class Line_chart(private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  
             }
         }, year, month, day)
         datePickerDialog.show()
+        createLineChart()
+
     }
 
     private fun openEndDatePicker() {
@@ -100,6 +98,7 @@ class Line_chart(private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  
             }
         }, year, month, day)
         datePickerDialog.show()
+        createLineChart()
     }
 
     private fun createLineChart() {

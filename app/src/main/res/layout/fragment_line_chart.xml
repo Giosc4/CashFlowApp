@@ -15,64 +15,48 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:text="Seleziona Data Inizio" />
+            android:text="Seleziona\n Data Inizio" />
 
         <Button
             android:id="@+id/openEndDatePickerButton"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_margin="10dp"
-            android:text="Seleziona Data Fine" />
+            android:text="Seleziona\n Data Fine" />
 
 
     </LinearLayout>
 
     <LinearLayout
-        android:id="@+id/viewDate"
-        android:layout_width="wrap_content"
+        android:id="@+id/startDateLinearLayout"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_below="@+id/getDate"
-        android:layout_centerHorizontal="true"
-        android:layout_marginTop="-10dp"
+        android:layout_alignParentEnd="true"
+        android:gravity="center"
         android:orientation="horizontal">
 
-        <LinearLayout
-            android:id="@+id/startDateLinearLayout"
+        <TextView
+            android:id="@+id/startDateTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginEnd="16dp"
-            android:orientation="horizontal">
+            android:layout_marginRight="30dp"
+            android:text="Data Selezionata Inizio" />
 
-            <TextView
-                android:id="@+id/startDateTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:text="Data Selezionata Inizio" />
-
-
-            <TextView
-                android:id="@+id/endDateTextView"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginLeft="50dp"
-                android:text="Data Selezionata Fine" />
-        </LinearLayout>
+        <TextView
+            android:id="@+id/endDateTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginLeft="30dp"
+            android:text="Data Selezionata Fine" />
     </LinearLayout>
 
-    <Button
-        android:id="@+id/generateChartButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_below="@+id/viewDate"
-        android:layout_centerHorizontal="true"
-        android:layout_margin="20dp"
-        android:text="Genera Grafico" />
 
     <com.github.mikephil.charting.charts.LineChart
         android:id="@+id/lineChart"
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:layout_below="@+id/generateChartButton"
+        android:layout_height="500dp"
+        android:layout_below="@+id/startDateLinearLayout"
         android:layout_marginStart="16dp"
         android:layout_marginTop="16dp"
         android:layout_marginEnd="16dp"
