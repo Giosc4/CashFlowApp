@@ -286,6 +286,48 @@ class WriteSQL(private val db: SQLiteDatabase) {
         )
     }
 
+    fun insertCredito(credito: Credito): Long {
+        val values = ContentValues()
+        values.put(COLUMN_NAME, credito.name)
+        values.put(COLUMN_AMOUNT, credito.amount)
+        values.put(COLUMN_CONCESSION_DATE, credito.concessionDate)
+        values.put(COLUMN_EXTINCTION_DATE, credito.extinctionDate)
+        values.put(COLUMN_ACCOUNT_ID, credito.accountId)
+
+        // Inserisce il nuovo credito nel database e ritorna l'ID della nuova riga inserita, oppure -1 in caso di errore
+        val newRowId = db.insert(TABLE_CREDITO, null, values)
+
+        if (newRowId == -1L) {
+            Log.e("SQLiteDB", "Failed to insert new credito")
+        } else {
+            Log.d("SQLiteDB", "Credito inserted successfully with ID: $newRowId")
+        }
+
+        return newRowId
+    }
+
+    fun insertDebito(debito: Debito): Long {
+        val values = ContentValues()
+        values.put(COLUMN_NAME, debito.name)
+        values.put(COLUMN_AMOUNT, debito.amount)
+        values.put(COLUMN_CONCESSION_DATE, debito.concessionDate)
+        values.put(COLUMN_EXTINCTION_DATE, debito.extinctionDate)
+        values.put(COLUMN_ACCOUNT_ID, debito.accountId)
+
+        // Inserisce il nuovo debito nel database e ritorna l'ID della nuova riga inserita, oppure -1 in caso di errore
+        val newRowId = db.insert(TABLE_DEBITO, null, values)
+
+        if (newRowId == -1L) {
+            Log.e("SQLiteDB", "Failed to insert new debito")
+        } else {
+            Log.d("SQLiteDB", "Debito inserted successfully with ID: $newRowId")
+        }
+
+        return newRowId
+    }
+
+
+
     companion object {
         // Table Names
         private const val TABLE_ACCOUNT = "Account"

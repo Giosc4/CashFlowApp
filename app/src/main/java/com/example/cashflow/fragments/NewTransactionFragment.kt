@@ -826,16 +826,6 @@ class NewTransactionFragment(
         datePickerDialog.show()
     }
 
-    private fun prepareSelectedDate() {
-        val timestamp = selectedTimeTextView?.text.toString().toLongOrNull()
-        if (timestamp != null) {
-            val calendar = Calendar.getInstance()
-            calendar.timeInMillis = timestamp
-            selectedDate = calendar
-        } else {
-            Toast.makeText(context, "Formato data non valido", Toast.LENGTH_LONG).show()
-        }
-    }
 
     companion object {
         private const val PERMISSION_CAMERA = 1

@@ -1,7 +1,11 @@
 package com.example.cashflow.fragments
 
+import android.app.DatePickerDialog
+import android.content.Intent
+import android.graphics.Color
 import android.os.Bundle
 import android.text.InputFilter
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,21 +14,28 @@ import android.widget.ArrayAdapter
 import android.widget.Button
 import android.widget.EditText
 import android.widget.Spinner
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import com.example.cashflow.MainActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.WriteSQL
+import java.text.SimpleDateFormat
+import java.util.Calendar
 
-class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
+class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+    Fragment() {
     private var editTextName: EditText? = null
     private var editTextAmount: EditText? = null
     private var editTextContact: EditText? = null
     private var editTextDescription: EditText? = null
     private var accountSpinner: Spinner? = null
     private var buttonStartDate: Button? = null
+    private var textViewStartDate: TextView? = null
     private var buttonEndDate: Button? = null
+    private var textViewEndDate: TextView? = null
     private var buttonNewDebit: Button? = null
     private var buttonNewCredit: Button? = null
     private var doneButton: Button? = null
@@ -45,10 +56,23 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
         editTextDescription = view.findViewById(R.id.editTextDescription)
         accountSpinner = view.findViewById(R.id.accountSpinner)
         buttonStartDate = view.findViewById(R.id.buttonStartDate)
+        textViewStartDate = view.findViewById(R.id.textViewStartDate)
         buttonEndDate = view.findViewById(R.id.buttonEndDate)
+        textViewEndDate = view.findViewById(R.id.textViewEndDate)
         buttonNewDebit = view.findViewById(R.id.buttonNewDebit)
         buttonNewCredit = view.findViewById(R.id.buttonNewCredit)
         doneButton = view.findViewById(R.id.doneButton)
+
+        val calendar = Calendar.getInstance()
+        val today = String.format(
+            "%d-%02d-%02d",
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH) + 1,
+            calendar.get(Calendar.DAY_OF_MONTH)
+        )
+        textViewStartDate?.text = today
+
+
         editTextAmount?.setFilters(arrayOf(
             InputFilter { source, start, end, dest, dstart, dend -> // Check if the input contains a decimal point
                 var hasDecimalSeparator = dest.toString().contains(".")
@@ -119,21 +143,33 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
             }
         })
 
-        // Set click listeners for date buttons
-        buttonStartDate?.setOnClickListener(View.OnClickListener {
-            selectDate("Start Date")
-        })
-        buttonEndDate?.setOnClickListener(View.OnClickListener {
-            selectDate("End Date")
-        })
 
-        // Set click listeners for new debit and credit buttons
+        // Imposta OnClickListener per i pulsanti "EXPENSE" e "INCOME"
         buttonNewDebit?.setOnClickListener(View.OnClickListener {
-            addNewDebit()
+            // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
+            buttonNewDebit?.setSelected(true)
+            buttonNewDebit?.setBackgroundColor(Color.parseColor("#00cc44")) // Verde quando selezionato
+            buttonNewCredit?.setSelected(false)
+            buttonNewCredit?.setBackgroundColor(Color.parseColor("#a7c5f9")) // azzurro quando non selezionato
+            Log.d("saveDebitCredit", "Debito Selezionato")
         })
         buttonNewCredit?.setOnClickListener(View.OnClickListener {
-            addNewCredit()
+            // Cambia il colore del pulsante e imposta la sua proprietà "selected" a true
+            buttonNewCredit?.setSelected(true)
+            buttonNewCredit?.setBackgroundColor(Color.parseColor("#00cc44")) // Verde quando selezionato
+            buttonNewDebit?.setSelected(false)
+            buttonNewDebit?.setBackgroundColor(Color.parseColor("#a7c5f9")) // azzurro quando non selezionato
+            Log.d("saveDebitCredit", "Credito Selezionato")
         })
+
+        buttonStartDate?.setOnClickListener {
+            selectDate("Start Date")
+        }
+
+        buttonEndDate?.setOnClickListener {
+            selectDate("End Date")
+        }
+
 
         doneButton?.setOnClickListener(View.OnClickListener {
             saveDebitCredit()
@@ -141,32 +177,96 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
         return view
     }
 
+
     // Method to open a calendar for selecting date
     private fun selectDate(dateType: String) {
-        // You can implement your logic here to open a calendar and select a date
-        // For example, you can use DatePickerDialog
-        // This is just a placeholder method
-        Toast.makeText(context, "Select $dateType from calendar", Toast.LENGTH_SHORT).show()
-    }
+        val calendar = Calendar.getInstance()
+        val year = calendar.get(Calendar.YEAR)
+        val month = calendar.get(Calendar.MONTH)
+        val day = calendar.get(Calendar.DAY_OF_MONTH)
 
-    // Method to add new debit
-    private fun addNewDebit() {
-        // You can implement your logic here to add a new debit
-        // This is just a placeholder method
-        Toast.makeText(context, "Add new debit", Toast.LENGTH_SHORT).show()
-    }
+        val dpd = DatePickerDialog(requireContext(), { view, year, monthOfYear, dayOfMonth ->
+            // Use the selected date. You can format it as needed.
+            val selectedDate = String.format("%d-%02d-%02d", year, monthOfYear + 1, dayOfMonth)
 
-    // Method to add new credit
-    private fun addNewCredit() {
-        // You can implement your logic here to add a new credit
-        // This is just a placeholder method
-        Toast.makeText(context, "Add new credit", Toast.LENGTH_SHORT).show()
-    }
+            // Set the selected date to the corresponding TextView based on the button clicked
+            when (dateType) {
+                "Start Date" -> {
+                    textViewStartDate?.text = selectedDate
+                }
 
+                "End Date" -> {
+                    val startDateString = textViewStartDate?.text.toString()
+                    val startDate = SimpleDateFormat("yyyy-MM-dd").parse(startDateString)
+                    val endDate = SimpleDateFormat("yyyy-MM-dd").parse(selectedDate)
+
+                    if (endDate.before(startDate)) {
+                        Toast.makeText(
+                            context,
+                            "La data di fine non può essere prima della data di inizio",
+                            Toast.LENGTH_SHORT
+                        ).show()
+                    } else {
+                        textViewEndDate?.text = selectedDate
+                    }
+                }
+            }
+        }, year, month, day)
+
+        dpd.show()
+    }
 
     private fun saveDebitCredit() {
-        // You can implement your logic here to save the transaction
-        // This is just a placeholder method
-        Toast.makeText(context, "Save transaction", Toast.LENGTH_SHORT).show()
+        val name = editTextName?.text.toString()
+        val amount = editTextAmount?.text.toString().toDoubleOrNull()
+        val contact = editTextContact?.text.toString()
+        val description = editTextDescription?.text.toString()
+        val accountId = accounts?.get(accountSpinner?.selectedItemPosition ?: 0)?.id ?: 0
+        val concessionDate = textViewStartDate?.text.toString()
+        val extinctionDate = textViewEndDate?.text.toString()
+
+        if (name.isEmpty() || amount == null) {
+            Toast.makeText(context, "Nome e importo sono campi obbligatori", Toast.LENGTH_SHORT)
+                .show()
+            return
+        }
+
+        // Supponendo che tu abbia un metodo nel tuo WriteSQL per inserire un debito o credito
+        if (buttonNewDebit?.isSelected == true) {
+            val debito = Debito(
+                id = 0, // Suppongo che l'ID venga generato dal database
+                amount = amount,
+                name = name,
+                concessionDate = concessionDate,
+                extinctionDate = extinctionDate,
+                accountId = accountId
+            )
+            writeSQL.insertDebito(debito)
+            Log.d("saveDebitCredit", "Debito inserito: $debito")
+            val intent = Intent(activity, MainActivity::class.java)
+            startActivity(intent)
+            activity?.finish()
+        } else if (buttonNewCredit?.isSelected == true) {
+            val credito = Credito(
+                id = 0, // Suppongo che l'ID venga generato dal database
+                amount = amount,
+                name = name,
+                concessionDate = concessionDate,
+                extinctionDate = extinctionDate,
+                accountId = accountId
+            )
+            writeSQL.insertCredito(credito)
+            Log.d("saveDebitCredit", "Credito inserito: $credito")
+            val intent = Intent(activity, MainActivity::class.java)
+            startActivity(intent)
+            activity?.finish()
+        } else {
+            Toast.makeText(context, "Selezionare se è un debito o un credito", Toast.LENGTH_SHORT)
+                .show()
+        }
+
+        Toast.makeText(context, "Transazione salvata", Toast.LENGTH_SHORT).show()
     }
+
+
 }

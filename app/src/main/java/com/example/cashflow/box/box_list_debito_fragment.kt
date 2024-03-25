@@ -55,7 +55,7 @@ class box_list_debito_fragment(private val readSQL: ReadSQL, private val writeSQ
                 text = "${debito.name}: €${debito.amount}"
                 gravity = Gravity.CENTER
                 setBackgroundColor(
-                    if (index % 2 == 0) Color.parseColor("#FFEBEE") else Color.parseColor(
+                    if (index % 2 == 0) Color.parseColor("#7ad95f") else Color.parseColor(
                         "#ECEFF1"
                     )
                 )
@@ -74,10 +74,10 @@ class box_list_debito_fragment(private val readSQL: ReadSQL, private val writeSQ
 
             // Crea un TextView per la data di estinzione del debito
             val textViewDate = TextView(context).apply {
-                text = debito.extinctionDate
+                text = "Da: ${debito.concessionDate}\nA: ${debito.extinctionDate}"
                 gravity = Gravity.CENTER
                 setBackgroundColor(
-                    if (index % 2 == 0) Color.parseColor("#FFEBEE") else Color.parseColor(
+                    if (index % 2 == 0) Color.parseColor("#7ad95f") else Color.parseColor(
                         "#ECEFF1"
                     )
                 )

@@ -59,12 +59,12 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
     }
 
     private fun setupChart(chart: HorizontalBarChart?) {
-        chart?.description?.isEnabled = false // Disable chart description
-        chart?.setDrawGridBackground(false) // Disable grid background
-        chart?.setTouchEnabled(true) // Enable touch gestures
-        chart?.isDragEnabled = true // Enable drag gestures
-        chart?.setScaleEnabled(true) // Enable scaling and dragging
-        chart?.setPinchZoom(true) // Enable pinch zoom
+        chart?.description?.isEnabled = false
+        chart?.setDrawGridBackground(false)
+        chart?.setTouchEnabled(true)
+        chart?.isDragEnabled = true
+        chart?.setScaleEnabled(true)
+        chart?.setPinchZoom(true)
     }
 
     private fun createBarCharts(budgetDataList: List<Budget>) {
@@ -87,26 +87,24 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
                 val dataSet = BarDataSet(
                     entries,
                     budgetData.name
-                ) // Usa il nome del Budget come label per il dataSet.
+                )
                 if (percentage > 100) {
                     dataSet.setColor(Color.RED)
                 } else {
                     dataSet.setColor(Color.GREEN)
                 }
                 dataSet.setValueTextColor(Color.BLACK)
-                dataSet.setDrawValues(false) // Continua a non mostrare i valori sopra le barre.
+                dataSet.setDrawValues(false)
                 dataSet.setDrawIcons(false)
 
                 val barData = BarData(dataSet)
                 chart?.data = barData
                 chart?.setFitBars(true)
 
-                // Configura la legenda
                 val legend = chart?.legend
                 legend?.isEnabled = true // Abilita la legenda
-                // Qui puoi aggiungere altre configurazioni per la legenda, se necessario
 
-                chart?.invalidate() // Aggiorna il grafico
+                chart?.invalidate()
             }
         }
     }
