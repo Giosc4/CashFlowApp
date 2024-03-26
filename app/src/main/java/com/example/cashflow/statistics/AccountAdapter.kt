@@ -6,6 +6,7 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.R
+import com.example.cashflow.dataClass.Account
 
 class AccountsAdapter(private val accountNames: List<String>) :
     RecyclerView.Adapter<AccountsAdapter.ViewHolder>() {
@@ -32,23 +33,36 @@ class AccountsAdapter(private val accountNames: List<String>) :
         return selectedAccounts[position]
     }
 
+    // Seleziona o deseleziona tutti i checkbox
+    fun selectAll(isSelected: Boolean) {
+        for (i in selectedAccounts.indices) {
+            selectedAccounts[i] = isSelected
+        }
+        notifyDataSetChanged()
+
+    }
+
+    // Ottiene gli account selezionati in base ai checkbox selezionati
+    fun getSelectedAccounts(accounts: List<Account>): ArrayList<Account> {
+        return ArrayList(accounts.filterIndexed { index, _ ->
+            selectedAccounts[index]
+        })
+    }
+
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
         val context = parent.context
         val inflater = LayoutInflater.from(context)
-        val accountView = inflater.inflate(R.layout.item_account, parent, false)
+        val accountView = inflater.inflate(R.layout.account_sel, parent, false)
         return ViewHolder(accountView)
     }
 
     override fun onBindViewHolder(holder: ViewHolder, position: Int) {
         val accountName = accountNames[position]
         holder.accountCheckBox.text = accountName
-        holder.accountCheckBox.setChecked(selectedAccounts[position])
+        holder.accountCheckBox.isChecked = selectedAccounts[position]
 
-        holder.accountCheckBox.setOnClickListener { view: View? ->
-            val isChecked = holder.accountCheckBox.isChecked
+        holder.accountCheckBox.setOnCheckedChangeListener { _, isChecked ->
             selectedAccounts[position] = isChecked
-            notifyDataSetChanged()
-
             onItemClickListener?.invoke(position)
         }
     }
@@ -63,8 +77,7 @@ class AccountsAdapter(private val accountNames: List<String>) :
     }
 }
 
-    // Interfaccia per il gestore di eventi di clic personalizzato
-    interface OnItemClickListener {
-        fun onItemClick(position: Int)
-    }
-
+// Interfaccia per il gestore di eventi di clic personalizzato
+interface OnItemClickListener {
+    fun onItemClick(position: Int)
+}

@@ -1,15 +1,20 @@
 package com.example.cashflow.statistics
 
+import android.graphics.Color
 import android.os.Bundle
-import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
+import android.widget.CompoundButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.R
+import com.example.cashflow.dataClass.Account
+import com.example.cashflow.db.ReadSQL
+import com.example.cashflow.db.WriteSQL
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Legend
@@ -19,91 +24,83 @@ import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.data.PieData
 import com.github.mikephil.charting.data.PieDataSet
 import com.github.mikephil.charting.data.PieEntry
-import com.example.cashflow.dataClass.*
-import com.example.cashflow.db.*
 
-
-class Income_expense(private val isIncome: Boolean, private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  :
-    Fragment() {
+class IncomeExpenseFragment(
+    private val isIncome: Boolean,
+    private val readSQL: ReadSQL
+) : Fragment() {
     private var title: TextView? = null
     private var accountsCheckBox: CheckBox? = null
     private var accountsRecyclerView: RecyclerView? = null
     private var accountsAdapter: AccountsAdapter? = null
-    private var noDataTextView: TextView? = null
-    private val selectedAccounts: ArrayList<Account>
     private var pieChart: PieChart? = null
     private var barChart: BarChart? = null
-    
-    private val accounts: ArrayList<Account> = readSQL.getAccounts()
-
-    init {
-        selectedAccounts = ArrayList()
-    }
+    private lateinit var accounts: ArrayList<Account>
 
     override fun onCreateView(
-        inflater: LayoutInflater,
-        container: ViewGroup?,
-        savedInstanceState: Bundle?
+        inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_income_expense, container, false)
-        accountsCheckBox = view.findViewById(R.id.accountsCheckBox)
-        accountsRecyclerView = view.findViewById(R.id.accountsRecyclerView)
-        noDataTextView = view.findViewById(R.id.noDataTextView)
-
-        pieChart = view.findViewById(R.id.pieChart)
-        barChart = view.findViewById(R.id.barChart)
-
-        title = view.findViewById(R.id.title)
-        if (isIncome) {
-            title?.setText("INCOME")
-        } else {
-            title?.setText("EXPENSE")
-        }
-
-        val accountNames = ArrayList<String>()
-        for (account in accounts) {
-            account.name?.let { accountNames.add(it) }
-        }
-
-        val localNoDataTextView = noDataTextView
-        if (hasData(selectedAccounts)) {
-            pieChart?.visibility = View.VISIBLE
-            barChart?.visibility = View.VISIBLE
-            accountsRecyclerView?.visibility = View.VISIBLE
-            accountsCheckBox?.visibility = View.VISIBLE
-            localNoDataTextView?.visibility = View.GONE
-            initPieChart(selectedAccounts)
-            initBarChart(selectedAccounts)
-        } else {
-            pieChart?.visibility = View.GONE
-            barChart?.visibility = View.GONE
-            accountsRecyclerView?.visibility = View.GONE
-            accountsCheckBox?.visibility = View.GONE
-            localNoDataTextView?.visibility = View.VISIBLE
-            val noDataMessage = "Non ci sono dati disponibili."
-            Log.d(
-                "IncomeExpenseFragment",
-                noDataMessage
-            )
-        }
+        initializeViews(view)
+        setupTitle()
+        setupAccountsCheckBox()
+        loadAccounts()
+        setupAccountsRecyclerView()
+        initializeCharts()
         return view
     }
 
-    private fun updateSelectedAccounts() {
-        selectedAccounts.clear()
-        for (i in 0 until accountsAdapter!!.itemCount) {
-            if (accountsAdapter!!.isSelected(i)) {
-                selectedAccounts.add(accounts[i])
+    private fun initializeViews(view: View) {
+        title = view.findViewById(R.id.title)
+        accountsCheckBox = view.findViewById(R.id.accountsCheckBox)
+        accountsRecyclerView = view.findViewById(R.id.accountsRecyclerView)
+        pieChart = view.findViewById(R.id.pieChart)
+        barChart = view.findViewById(R.id.barChart)
+    }
+
+    private fun setupTitle() {
+        title?.text = if (isIncome) "INCOME" else "EXPENSE"
+    }
+
+    private fun setupAccountsCheckBox() {
+        accountsCheckBox?.setOnCheckedChangeListener { _, isChecked ->
+            accountsAdapter?.selectAll(isChecked)
+            updateCharts()
+        }
+    }
+
+    private fun loadAccounts() {
+        accounts = readSQL.getAccounts() // Implementa questo metodo nel tuo ReadSQL
+    }
+
+    private fun setupAccountsRecyclerView() {
+        val accountNames = accounts.map { it.name ?: "" }
+        accountsAdapter = AccountsAdapter(accountNames).apply {
+            setOnItemClickListener {
+                updateCharts()
             }
         }
+        accountsRecyclerView?.adapter = accountsAdapter
+        accountsRecyclerView?.layoutManager = LinearLayoutManager(context)
+    }
+
+    private fun initializeCharts() {
+            accountsCheckBox?.isChecked = true
+            updateCharts()
+    }
+
+    private fun updateCharts() {
+        val selectedAccounts = accountsAdapter?.getSelectedAccounts(accounts) ?: accounts
+        initPieChart(selectedAccounts)
+        initBarChart(selectedAccounts)
     }
 
     private fun hasData(selectedAccounts: ArrayList<Account>): Boolean {
         for (account in selectedAccounts) {
             if (isIncome) {
-                if (readSQL.getIncomeTransactionsByAccount(account.id).isNotEmpty()) return true
+                if (readSQL.getTransactionsByAccountId(account.id).isNotEmpty()) return true
             } else {
-                if (readSQL.getExpenseTransactionsByAccount(account.id).isNotEmpty()) return true
+                if (readSQL.getTransactionsByAccountId(account.id).isNotEmpty()) return true
             }
         }
         return false

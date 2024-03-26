@@ -69,8 +69,8 @@ class MenuManagerFragment() : Fragment() {
             R.id.new_debit_credit -> NewDebitCreditFragment(readSQL, writeSQL)
             R.id.line_chart -> Line_chart(readSQL, writeSQL)
             R.id.maps -> MapFragment(readSQL, writeSQL)
-            R.id.income_chart -> IncomeExpenseFragment(true, readSQL, writeSQL)
-            R.id.expense_chart -> IncomeExpenseFragment(false, readSQL, writeSQL)
+            R.id.income_chart -> IncomeExpenseFragment(true, readSQL)
+            R.id.expense_chart -> IncomeExpenseFragment(false, readSQL)
             R.id.new_category -> NewCategoryFragment(readSQL, writeSQL)
             else -> {
                 Log.d(

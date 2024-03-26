@@ -246,13 +246,13 @@ class ReadSQL(private val db: SQLiteDatabase?) {
 
 
     fun getAllCredits(): List<Credito> {
-        val debitsList = mutableListOf<Credito>()
+        val creditsList = mutableListOf<Credito>()
 
         // Assicurati che il database non sia nullo
         db?.let { database ->
             // Esegue la query per selezionare tutti i debiti
             val cursor = database.query(
-                TABLE_DEBITO,
+                TABLE_CREDITO,
                 null, // Seleziona tutte le colonne
                 null, // Nessuna clausola WHERE, quindi seleziona tutte le righe
                 null,
@@ -273,7 +273,7 @@ class ReadSQL(private val db: SQLiteDatabase?) {
                 val accountId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ACCOUNT_ID))
 
                 // Crea un nuovo oggetto Debito con i valori recuperati e aggiungilo alla lista
-                debitsList.add(Credito(id, amount, name, concessionDate, extinctionDate, accountId))
+                creditsList.add(Credito(id, amount, name, concessionDate, extinctionDate, accountId))
             }
 
             // Chiudi il cursore dopo aver finito di utilizzarlo
@@ -281,7 +281,7 @@ class ReadSQL(private val db: SQLiteDatabase?) {
         }
 
         // Restituisce la lista di debiti
-        return debitsList
+        return creditsList
     }
 
     fun getCategoryById(categoryId: Int): Category? {
