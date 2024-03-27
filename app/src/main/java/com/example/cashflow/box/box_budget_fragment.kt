@@ -1,12 +1,15 @@
 package com.example.cashflow.box
 
+import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import com.example.cashflow.DetailsActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.Budget
 import com.github.mikephil.charting.charts.HorizontalBarChart
@@ -24,6 +27,7 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
     private var horizontalBarChart2: HorizontalBarChart? = null
     private var horizontalBarChart3: HorizontalBarChart? = null
     private var noDataTextView: TextView? = null
+    private var viewBudgetBtn: Button? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,6 +40,7 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
         horizontalBarChart2 = view.findViewById(R.id.barraOrizzontale2)
         horizontalBarChart3 = view.findViewById(R.id.barraOrizzontale3)
         noDataTextView = view.findViewById(R.id.noDataTextView)
+        viewBudgetBtn = view.findViewById(R.id.viewBudgetBtn)
 
         setupChart(horizontalBarChart1)
         setupChart(horizontalBarChart2)
@@ -53,6 +58,12 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
             horizontalBarChart2?.visibility = View.VISIBLE
             horizontalBarChart3?.visibility = View.VISIBLE
             createBarCharts(budgetDataList)
+        }
+
+        viewBudgetBtn?.setOnClickListener {
+            val intent = Intent(context, DetailsActivity::class.java)
+            intent.putExtra("FRAGMENT_ID", 6)
+            context?.startActivity(intent)
         }
 
         return view

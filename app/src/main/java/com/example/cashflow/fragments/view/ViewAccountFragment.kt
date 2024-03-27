@@ -1,4 +1,4 @@
-package com.example.cashflow.fragments.modify
+package com.example.cashflow.fragments.view
 
 import android.content.Intent
 import android.os.Bundle
@@ -13,7 +13,7 @@ import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import com.example.cashflow.EditManagerFragment
+import com.example.cashflow.DetailsActivity
 import com.example.cashflow.MainActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
@@ -62,11 +62,11 @@ class ViewAccountFragment : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_edit_account, container, false)
-        nameEditText = view.findViewById(R.id.name_edit_text)
-        balanceTextView = view.findViewById(R.id.balance_text_view)
-        transactionsRecyclerView = view.findViewById(R.id.transactions_recycler_view)
-        saveButton = view.findViewById(R.id.save_button)
-        deleteButton = view.findViewById(R.id.delete_button)
+        nameEditText = view.findViewById(R.id.nameEditText)
+        balanceTextView = view.findViewById(R.id.balanceTextView)
+        transactionsRecyclerView = view.findViewById(R.id.transactionsRecyclerView)
+        saveButton = view.findViewById(R.id.saveButton)
+        deleteButton = view.findViewById(R.id.deleteButton)
 
         db = SQLiteDB(context)
         readSql = ReadSQL(db.writableDatabase)
@@ -181,17 +181,12 @@ class ViewAccountFragment : Fragment() {
                 detailButton = itemView.findViewById(R.id.detailButton)
                 detailButton.setOnClickListener {
                     // Ottieni l'ID della transazione.
-                    val transactionId = transactions[adapterPosition].id // Assicurati che Transactions abbia un campo id.
+                    val transactionId = transactions[adapterPosition].id
 
-                    // Crea l'istanza di EditManagerFragment con l'ID della transazione.
-                    val editManagerFragmentForTransaction = EditManagerFragment.newInstance(transactionId = transactionId)
-
-                    // Avvia il Fragment.
-                    requireActivity().supportFragmentManager.beginTransaction().apply {
-                        replace(R.id.linearContainer, editManagerFragmentForTransaction) // Sostituisci 'your_container_id' con l'ID del contenitore del Fragment.
-                        addToBackStack(null) // Opzionale, se vuoi aggiungere il fragment al backstack.
-                        commit()
-                    }
+                    val intent = Intent(context, DetailsActivity::class.java)
+                    intent.putExtra("FRAGMENT_ID", 2)
+                    intent.putExtra("TRANSACTION_ID", transactionId)
+                    context?.startActivity(intent)
                 }
             }
         }

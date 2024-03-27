@@ -10,7 +10,7 @@
         android:layout_height="wrap_content"
         android:layout_gravity="center_horizontal"
         android:gravity="center"
-        android:text="Visualizza i Budgets"
+        android:text="Transazioni"
         android:textSize="24sp"
         android:textStyle="bold" />
 
@@ -25,16 +25,10 @@
         android:visibility="gone"
         app:layout_constraintTop_toBottomOf="@+id/textViewTitle" />
 
-    <ScrollView
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/transactionsRecyclerView"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginTop="10dp">
+        android:layout_height="match_parent"/>
 
-        <LinearLayout
-            android:id="@+id/chartsContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical" />
-    </ScrollView>
 
 </LinearLayout>

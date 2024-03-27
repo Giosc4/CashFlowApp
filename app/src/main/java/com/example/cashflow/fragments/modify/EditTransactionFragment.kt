@@ -26,7 +26,6 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.example.cashflow.EditManagerFragment
 import com.example.cashflow.OCRManager
 import com.example.cashflow.OCRManager.OCRListener
 import com.example.cashflow.R
@@ -64,7 +63,6 @@ class EditTransactionFragment : Fragment() {
     private lateinit var transactionOriginal: Transactions
     private lateinit var accountOriginal: Account
     private var accountOriginalId = -1
-    private lateinit var editManagerFragment: EditManagerFragment
 
 
     //CHANGE ACCCOUNT TRANS
@@ -123,13 +121,6 @@ class EditTransactionFragment : Fragment() {
             // Handle error or invalid transaction ID case
         }
 
-
-        // Open AccountDetailsFragment once the view has been created and is ready
-        if (accountOriginalId != -1) {
-            editManagerFragment.openAccountDetails(accountOriginalId)
-        } else if (transactionId != -1) {
-            editManagerFragment.openEditTransaction(transactionId)
-        }
 
         var str = ""
         if (transactionOriginal.amountValue < 0) {

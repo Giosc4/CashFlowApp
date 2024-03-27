@@ -1,5 +1,6 @@
 package com.example.cashflow.box
 
+import android.content.Intent
 import android.os.Bundle
 import android.util.Log
 import android.view.LayoutInflater
@@ -9,7 +10,7 @@ import android.widget.Button
 import android.widget.GridLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
-import com.example.cashflow.EditManagerFragment
+import com.example.cashflow.DetailsActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
@@ -67,13 +68,11 @@ class box_account_fragment(private val readSQL: ReadSQL, private val writeSQL: W
                         }
                         setOnClickListener {
                             Log.d("AccountFragment", "Button clicked: " + account.name)
-
-                            val editManagerFragmentForAccount = EditManagerFragment.newInstance(accountId = account.id)
-                            parentFragmentManager.beginTransaction().apply {
-                                replace(R.id.linearContainer, editManagerFragmentForAccount)
-                                addToBackStack(null)
-                                commit()
-                            }
+                            val intent = Intent(requireContext(), DetailsActivity::class.java)
+                            intent.putExtra("FRAGMENT_ID", 1)
+                            Log.d("DetailsActivity", "Account ID: " + account.id)
+                            intent.putExtra("ACCOUNT_ID", account.id)
+                            startActivity(intent)
                         }
                     }
                     gridLayout.addView(button)

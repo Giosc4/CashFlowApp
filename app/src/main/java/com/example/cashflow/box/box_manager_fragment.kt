@@ -47,12 +47,12 @@ class box_manager_fragment(private val readSQL: ReadSQL, private val writeSQL: W
             "box_budget_fragment"
         )
         addBoxFragment(
-            box_list_debito_fragment(readSQL, writeSQL),
+            BoxDebitCreditFragment(readSQL, writeSQL, true),
             linearContainer,
             "box_list_debito_fragment"
         )
         addBoxFragment(
-            box_list_credito_fragment(readSQL, writeSQL),
+            BoxDebitCreditFragment(readSQL, writeSQL, false),
             linearContainer,
             "box_list_credito_fragment"
         )
