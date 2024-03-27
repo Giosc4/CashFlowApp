@@ -6,7 +6,6 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.CheckBox
-import android.widget.CompoundButton
 import android.widget.TextView
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -14,7 +13,6 @@ import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.Account
 import com.example.cashflow.db.ReadSQL
-import com.example.cashflow.db.WriteSQL
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
 import com.github.mikephil.charting.components.Legend
@@ -85,8 +83,8 @@ class IncomeExpenseFragment(
     }
 
     private fun initializeCharts() {
-            accountsCheckBox?.isChecked = true
-            updateCharts()
+        accountsCheckBox?.isChecked = true
+        updateCharts()
     }
 
     private fun updateCharts() {
@@ -117,6 +115,7 @@ class IncomeExpenseFragment(
         val pieDataSet = PieDataSet(getIncomeOrExpensePieData(selectedAccounts), "")
         pieDataSet.setDrawValues(false)
 
+
         // Configura la legenda
         val legend = pieChart!!.legend
         legend.verticalAlignment = Legend.LegendVerticalAlignment.TOP
@@ -125,6 +124,9 @@ class IncomeExpenseFragment(
         legend.isWordWrapEnabled = true
         val pieData = PieData(pieDataSet)
         pieChart!!.setData(pieData)
+        pieDataSet.setColors(colors.toList())
+        pieDataSet.setDrawValues(false)
+
     }
 
     // Inizializza il grafico a barre
@@ -136,7 +138,22 @@ class IncomeExpenseFragment(
         val barDataSet = BarDataSet(getIncomeOrExpenseBarData(selectedAccounts), "")
         val barData = BarData(barDataSet)
         barChart!!.setData(barData)
+        barDataSet.setColors(colors.toList())
+
     }
+
+    private val colors = arrayOf(
+        Color.RED,
+        Color.GREEN,
+        Color.BLUE,
+        Color.YELLOW,
+        Color.CYAN,
+        Color.MAGENTA,
+        Color.LTGRAY,
+        Color.DKGRAY,
+        Color.BLACK,
+        Color.WHITE
+    )
 
     fun getIncomeOrExpensePieData(accounts: ArrayList<Account>): List<PieEntry> {
         val entries: MutableList<PieEntry> = ArrayList()

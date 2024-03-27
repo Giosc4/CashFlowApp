@@ -76,13 +76,13 @@ class MainActivity : AppCompatActivity() {
         setSupportActionBar(myToolbar)
         supportActionBar?.setDisplayShowTitleEnabled(false)
         navigationView.setNavigationItemSelectedListener { menuItem ->
-//            city?.let {
-//                loadMenuManagerFragment(menuItem.itemId, it)
-//                Log.d("MainActivity", "City: $it")
-//            } ?: run {
-            loadMenuManagerFragment(menuItem.itemId, city!!)
-            Log.e("MainActivity", "City: $city")
-//            }
+            city?.let {
+                loadMenuManagerFragment(menuItem.itemId, it)
+                Log.d("MainActivity", "City: $it")
+            } ?: run {
+                loadMenuManagerFragment(menuItem.itemId, city!!)
+                Log.e("MainActivity", "City: $city")
+            }
             drawerLayout.closeDrawer(GravityCompat.START)
             true
         }

@@ -1,9 +1,9 @@
 <!-- fragment_box_manager.xml -->
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/linearContainer"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
-    android:id="@+id/linearContainer">
+    android:orientation="vertical">
 
     <!-- Il menu verrà aggiunto qui dinamicamente -->
 

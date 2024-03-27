@@ -9,27 +9,23 @@ import androidx.fragment.app.FragmentManager
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.WriteSQL
-import com.example.cashflow.fragments.AccountDetailsFragment
-import com.example.cashflow.fragments.EditTransactionFragment
+import com.example.cashflow.fragments.modify.AccountDetailsFragment
+import com.example.cashflow.fragments.modify.EditTransactionFragment
 
 class EditManagerFragment : Fragment() {
     private lateinit var db: SQLiteDB
     private lateinit var readSQL: ReadSQL
     private lateinit var writeSQL: WriteSQL
     private var accountId: Int = -1
+    private var transactionId: Int = -1
 
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         arguments?.let {
             accountId = it.getInt(ARG_ACCOUNT_ID, -1)
-            val transactionId = it.getInt(ARG_TRANSACTION_ID, -1)
+            transactionId = it.getInt(ARG_TRANSACTION_ID, -1)
 
-            if (accountId != -1) {
-                // Gestisci caso account
-            } else if (transactionId != -1) {
-                // Gestisci caso transazione
-            }
         }
 
         context?.let {
@@ -52,10 +48,12 @@ class EditManagerFragment : Fragment() {
         // Open AccountDetailsFragment once the view has been created and is ready
         if (accountId != -1) {
             openAccountDetails(accountId)
+        } else if (transactionId != -1) {
+            openEditTransaction(transactionId)
         }
     }
 
-    private fun openAccountDetails(accountId: Int) {
+    fun openAccountDetails(accountId: Int) {
         // Clear all previous fragments/boxes
         clearFragments()
 
@@ -68,18 +66,20 @@ class EditManagerFragment : Fragment() {
         }
     }
 
-//    private fun openEditTransaction(transactionId: Int?) {
-//        // Clear all previous fragments/boxes
-//        clearFragments()
-//
-//        // Load AccountDetailsFragment passing the account ID
-//        val accountDetailsFragment = EditTransactionFragment.newInstance(transactionId)
-//        requireActivity().supportFragmentManager.beginTransaction().apply {
-//            replace(R.id.linearContainer, accountDetailsFragment)
-//            addToBackStack(null) // Add to back stack for back navigation
-//            commit()
-//        }
-//    }
+    fun openEditTransaction(transactionId: Int?) {
+        // Clear all previous fragments/boxes
+        clearFragments()
+
+        // Load AccountDetailsFragment passing the account ID
+        val accountDetailsFragment = transactionId?.let { EditTransactionFragment.newInstance(it) }
+        requireActivity().supportFragmentManager.beginTransaction().apply {
+            if (accountDetailsFragment != null) {
+                replace(R.id.linearContainer, accountDetailsFragment)
+            }
+            addToBackStack(null) // Add to back stack for back navigation
+            commit()
+        }
+    }
 
     private fun clearFragments() {
         requireActivity().supportFragmentManager.popBackStack(

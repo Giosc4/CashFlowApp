@@ -1,4 +1,4 @@
-package com.example.cashflow.fragments
+package com.example.cashflow.fragments.create
 
 import android.content.Intent
 import android.os.Bundle

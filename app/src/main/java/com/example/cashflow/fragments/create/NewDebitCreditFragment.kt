@@ -1,4 +1,4 @@
-package com.example.cashflow.fragments
+package com.example.cashflow.fragments.create
 
 import android.app.DatePickerDialog
 import android.content.Intent

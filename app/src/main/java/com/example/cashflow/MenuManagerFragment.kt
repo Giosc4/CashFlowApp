@@ -9,7 +9,11 @@ import android.view.View
 import android.view.ViewGroup
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
-import com.example.cashflow.fragments.*
+import com.example.cashflow.fragments.create.NewAccountFragment
+import com.example.cashflow.fragments.create.NewBudgetFragment
+import com.example.cashflow.fragments.create.NewCategoryFragment
+import com.example.cashflow.fragments.create.NewDebitCreditFragment
+import com.example.cashflow.fragments.create.NewTransactionFragment
 
 import com.example.cashflow.statistics.*
 

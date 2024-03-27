@@ -1,4 +1,4 @@
-package com.example.cashflow.fragments
+package com.example.cashflow.fragments.modify
 
 import android.Manifest
 import android.app.Activity
@@ -26,12 +26,13 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import com.example.cashflow.EditManagerFragment
 import com.example.cashflow.OCRManager
 import com.example.cashflow.OCRManager.OCRListener
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
-import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.ReadSQL
+import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.WriteSQL
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
@@ -40,9 +41,7 @@ import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
 
-class EditTransactionFragment(//CONSTRUCTOR
-    private val transactionOriginal: Transactions, private val accountOriginal: Account, private val readSql: ReadSQL, private val writeSql: WriteSQL
-) : Fragment() {
+class EditTransactionFragment : Fragment() {
     private var expenseButton: Button? = null
     private var incomeButton: Button? = null
     private var categorySpinner: Spinner? = null
@@ -62,10 +61,33 @@ class EditTransactionFragment(//CONSTRUCTOR
 
     private var accounts: ArrayList<Account>? = null
 
+    private lateinit var transactionOriginal: Transactions
+    private lateinit var accountOriginal: Account
+    private var accountOriginalId = -1
+    private lateinit var editManagerFragment: EditManagerFragment
+
+
     //CHANGE ACCCOUNT TRANS
     private var originalTransactionIndex = 0
     private var originalAccountIndex = 0
 
+    private lateinit var db: SQLiteDB
+    private lateinit var readSql: ReadSQL
+    private lateinit var writeSql: WriteSQL
+
+    companion object {
+        private const val PERMISSION_CAMERA = 1
+        const val REQUEST_IMAGE_PICK = 123
+        private const val ARG_TRANSACTION_ID = "transaction_id"
+
+        fun newInstance(transactionId: Int): EditTransactionFragment {
+            val fragment = EditTransactionFragment()
+            val args = Bundle()
+            args.putInt(ARG_TRANSACTION_ID, transactionId)
+            fragment.arguments = args
+            return fragment
+        }
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -86,6 +108,29 @@ class EditTransactionFragment(//CONSTRUCTOR
         calendar = transactionOriginal.date
         cameraButton = view.findViewById(R.id.cameraButton)
         ocrManager = OCRManager(requireContext())
+
+        db = SQLiteDB(context)
+        readSql = ReadSQL(db.writableDatabase)
+        writeSql = WriteSQL(db.writableDatabase)
+
+
+        val transactionId = arguments?.getInt(ARG_TRANSACTION_ID) ?: -1
+        if (transactionId != -1) {
+            transactionOriginal = readSql.getTransactionById(transactionId)!!
+            accountOriginal = readSql.getAccountByTransactionId(transactionId)!!
+            accountOriginalId = accountOriginal.id
+        } else {
+            // Handle error or invalid transaction ID case
+        }
+
+
+        // Open AccountDetailsFragment once the view has been created and is ready
+        if (accountOriginalId != -1) {
+            editManagerFragment.openAccountDetails(accountOriginalId)
+        } else if (transactionId != -1) {
+            editManagerFragment.openEditTransaction(transactionId)
+        }
+
         var str = ""
         if (transactionOriginal.amountValue < 0) {
             str = transactionOriginal.amountValue.toString()
@@ -411,8 +456,4 @@ class EditTransactionFragment(//CONSTRUCTOR
         datePickerDialog.show()
     }
 
-    companion object {
-        private const val PERMISSION_CAMERA = 1
-        const val REQUEST_IMAGE_PICK = 123
-    }
 }

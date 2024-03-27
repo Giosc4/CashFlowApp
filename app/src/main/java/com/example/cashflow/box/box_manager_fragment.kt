@@ -32,6 +32,11 @@ class box_manager_fragment(private val readSQL: ReadSQL, private val writeSQL: W
             "box_transaction_fragment"
         )
         addBoxFragment(
+            BoxCategoryFragment(readSQL, writeSQL),
+            linearContainer,
+            "box_category_fragment"
+        )
+        addBoxFragment(
             box_template_fragment(readSQL, writeSQL),
             linearContainer,
             "box_template_fragment"

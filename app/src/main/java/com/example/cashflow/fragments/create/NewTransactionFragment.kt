@@ -1,12 +1,8 @@
-package com.example.cashflow.fragments
+package com.example.cashflow.fragments.create
 
-import android.Manifest
 import android.app.Activity
 import android.app.DatePickerDialog
-import android.content.ContentValues
-import android.content.DialogInterface
 import android.content.Intent
-import android.content.pm.PackageManager
 import android.graphics.Color
 import android.net.Uri
 import android.os.Bundle
@@ -23,14 +19,11 @@ import android.widget.Button
 import android.widget.CheckBox
 import android.widget.CompoundButton
 import android.widget.EditText
-import android.widget.FrameLayout
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import com.example.cashflow.MainActivity
@@ -49,7 +42,6 @@ import java.io.File
 import java.text.ParseException
 import java.util.Date
 import java.util.Locale
-import kotlin.math.log
 
 class NewTransactionFragment(
     private val readSQL: ReadSQL, private val writeSQL: WriteSQL, private val cityPosition: City?

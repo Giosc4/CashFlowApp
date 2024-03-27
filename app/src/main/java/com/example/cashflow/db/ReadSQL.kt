@@ -244,7 +244,6 @@ class ReadSQL(private val db: SQLiteDatabase?) {
     }
 
 
-
     fun getAllCredits(): List<Credito> {
         val creditsList = mutableListOf<Credito>()
 
@@ -273,7 +272,16 @@ class ReadSQL(private val db: SQLiteDatabase?) {
                 val accountId = cursor.getInt(cursor.getColumnIndexOrThrow(COLUMN_ACCOUNT_ID))
 
                 // Crea un nuovo oggetto Debito con i valori recuperati e aggiungilo alla lista
-                creditsList.add(Credito(id, amount, name, concessionDate, extinctionDate, accountId))
+                creditsList.add(
+                    Credito(
+                        id,
+                        amount,
+                        name,
+                        concessionDate,
+                        extinctionDate,
+                        accountId
+                    )
+                )
             }
 
             // Chiudi il cursore dopo aver finito di utilizzarlo
@@ -500,6 +508,42 @@ class ReadSQL(private val db: SQLiteDatabase?) {
             }
         }
         return null
+    }
+
+    fun getAccountByTransactionId(transactionId: Int): Account? {
+        // First, fetch the transaction to get the accountId
+        val transaction = getTransactionById(transactionId) ?: return null
+        val accountId = transaction.accountId
+
+        // Now fetch the account by its ID
+        return getAccountById(accountId)
+    }
+
+    fun getTransactionById(transactionId: Int): Transactions? {
+        val cursor = db?.query(
+            TABLE_TRANSACTIONS,
+            null, // Fetching all columns
+            "$COLUMN_ID = ?", // Where clause
+            arrayOf(transactionId.toString()), // Where parameters
+            null, null, null
+        )
+
+        return cursor?.use {
+            if (it.moveToFirst()) {
+                val id = it.getInt(it.getColumnIndexOrThrow(COLUMN_ID))
+                val income = it.getInt(it.getColumnIndexOrThrow(COLUMN_INCOME)) > 0
+                val amount = it.getDouble(it.getColumnIndexOrThrow(COLUMN_AMOUNT))
+                val dateMillis = it.getLong(it.getColumnIndexOrThrow(COLUMN_DATE))
+                val calendar = Calendar.getInstance().apply {
+                    timeInMillis = dateMillis
+                }
+                val cityId = it.getInt(it.getColumnIndexOrThrow(COLUMN_CITY_ID))
+                val categoryId = it.getInt(it.getColumnIndexOrThrow(COLUMN_CATEGORY_ID))
+                val accountId = it.getInt(it.getColumnIndexOrThrow(COLUMN_ACCOUNT_ID))
+
+                Transactions(id, income, amount, calendar, cityId, categoryId, accountId)
+            } else null
+        }
     }
 
 

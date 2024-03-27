@@ -1,4 +1,4 @@
-package com.example.cashflow.fragments
+package com.example.cashflow.fragments.modify
 
 import android.content.Intent
 import android.os.Bundle
@@ -80,7 +80,7 @@ class AccountDetailsFragment : Fragment() {
 
         if (account != null && account!!.isNotEmpty()) {
             nameEditText?.setText(account!!.name)
-            balanceTextView?.setText("Balance Account: " + account!!.balance.toString())
+            balanceTextView?.setText("Totale Conto: €" + account!!.balance.toString())
         }
 
         // Set up RecyclerView with transactions
@@ -157,7 +157,7 @@ class AccountDetailsFragment : Fragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val itemView = LayoutInflater.from(parent.context)
-                .inflate(R.layout.list_transaction, parent, false)
+                .inflate(R.layout.list_details_accounts, parent, false)
             return ViewHolder(itemView)
         }
 
@@ -177,7 +177,7 @@ class AccountDetailsFragment : Fragment() {
 
 
             init {
-                transactionDetailTextView = itemView.findViewById(R.id.transactionDetailTextView)
+                transactionDetailTextView = itemView.findViewById(R.id.detailTextView)
                 detailButton = itemView.findViewById(R.id.detailButton)
                 detailButton.setOnClickListener {
                     // Ottieni l'ID della transazione.
