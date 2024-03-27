@@ -2,7 +2,7 @@
     <item
         android:id="@+id/nav_home"
         android:icon="@drawable/cashflowapp_logo_bordo"
-        android:title="Home" />
+        android:title="CASH FLOW APP" />
 
     <item
         android:id="@+id/group_new"
@@ -43,6 +43,9 @@
             <item
                 android:id="@+id/expense_chart"
                 android:title="Grafico sulle uscrite" />
+            <item
+                android:id="@+id/save_csv"
+                android:title="Salva in CSV" />
         </menu>
     </item>
 

@@ -5,7 +5,7 @@ class Category {
     var id = 0
     var name: String? = null
     var description: String? = null
-    val amountCategory: Double = 0.0 // get from Transaction table with Trigger
+    var amountCategory: Double = 0.0 // get from Transaction table with Trigger
 
 
     constructor(name: String?, description: String?) {
@@ -13,7 +13,7 @@ class Category {
         this.description = description
     }
 
-    constructor(id: Int, name: String?, description: String?) {
+    constructor(id: Int, name: String?, description: String?, amountCategory: Double) {
         this.id = id
         this.name = name
         this.description = description

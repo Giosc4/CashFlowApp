@@ -26,8 +26,8 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
-import com.example.cashflow.OCRManager
-import com.example.cashflow.OCRManager.OCRListener
+import com.example.cashflow.utils.OCRManager
+import com.example.cashflow.utils.OCRManager.OCRListener
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.ReadSQL

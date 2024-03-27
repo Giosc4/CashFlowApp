@@ -1,4 +1,4 @@
-package com.example.cashflow.statistics
+package com.example.cashflow.fragments.statistics
 
 import android.annotation.SuppressLint
 import android.app.DatePickerDialog

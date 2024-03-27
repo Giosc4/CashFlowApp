@@ -1,4 +1,4 @@
-package com.example.cashflow
+package com.example.cashflow.utils
 
 import android.Manifest
 import android.content.Context

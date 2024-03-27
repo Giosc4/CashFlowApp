@@ -1,5 +1,8 @@
 package com.example.cashflow.dataClass
 
+import com.example.cashflow.db.ReadSQL
+import com.example.cashflow.db.SQLiteDB
+import com.example.cashflow.db.WriteSQL
 import java.text.SimpleDateFormat
 import java.util.Calendar
 import java.util.Locale
@@ -69,11 +72,11 @@ class Transactions {
     fun printOnApp(): String {
         val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
         return "Transactions" +
-                "id= " + id +
+
                 ", IsIncome= " + (if (isIncome) "Income" else "Expense") +
                 ", amount= " + amountValue +
                 ", date= " + dateFormat.format(date.time) +
-                ", cityId= " + cityId +
+                ", city= " + cityId +
                 ", categoryId= " + categoryId +
                 ", accountId= " + accountId
     }

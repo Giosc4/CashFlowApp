@@ -3,6 +3,7 @@ package com.example.cashflow.fragments.view
 import android.content.Intent
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -13,6 +14,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.DetailsActivity
+import com.example.cashflow.ModifyActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.Transactions
 import com.example.cashflow.db.*
@@ -45,7 +47,6 @@ class ViewTransactionsFragment(private val readSQL: ReadSQL, private val writeSQ
         transactionsRecyclerView?.adapter = adapter
     }
 
-
     private inner class TransactionListAdapter internal constructor(private val transactions: ArrayList<Transactions>) :
         RecyclerView.Adapter<TransactionListAdapter.ViewHolder>() {
         init {
@@ -62,9 +63,22 @@ class ViewTransactionsFragment(private val readSQL: ReadSQL, private val writeSQ
             val transaction = transactions[position]
             holder.transactionDetailTextView.text = transaction.printOnApp()
             if (position % 2 == 0) {
-                holder.itemView.setBackgroundColor(ContextCompat.getColor(holder.itemView.context, R.color.green_light_background))
+                holder.itemView.setBackgroundColor(
+                    ContextCompat.getColor(
+                        holder.itemView.context,
+                        R.color.green_light_background
+                    )
+                )
+                holder.detailButton.setBackgroundColor(Color.WHITE)
+                holder.detailButton.setTextColor(Color.BLACK)
             } else {
                 holder.itemView.setBackgroundColor(Color.TRANSPARENT)
+                holder.detailButton.setBackgroundColor(
+                    ContextCompat.getColor(
+                        holder.itemView.context,
+                        R.color.green_light_background
+                    )
+                )
             }
         }
 
@@ -80,10 +94,11 @@ class ViewTransactionsFragment(private val readSQL: ReadSQL, private val writeSQ
                 transactionDetailTextView = itemView.findViewById(R.id.detailTextView)
                 detailButton = itemView.findViewById(R.id.detailButton)
                 detailButton.setOnClickListener {
-                    // Creazione dell'intent per avviare DetailsActivity
-                    val intent = Intent(context, DetailsActivity::class.java)
+                    // Creazione dell'intent per avviare ModifyActivity
+                    val intent = Intent(context, ModifyActivity::class.java)
                     intent.putExtra("FRAGMENT_ID", 1)
-                    intent.putExtra("TRANSACTION_ID", transactions[adapterPosition].id)
+                    Log.d("TRANSACTION_ID", transactions[adapterPosition].id.toString())
+//                    intent.putExtra("TRANSACTION_ID", transactions[adapterPosition].id)
                     context?.startActivity(intent)
                 }
 

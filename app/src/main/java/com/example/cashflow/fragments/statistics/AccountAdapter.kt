@@ -1,4 +1,4 @@
-package com.example.cashflow.statistics
+package com.example.cashflow.fragments.statistics
 
 import android.view.LayoutInflater
 import android.view.View

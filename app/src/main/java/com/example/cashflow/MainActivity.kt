@@ -17,6 +17,7 @@ import com.google.android.material.navigation.NavigationView
 import com.example.cashflow.box.*
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
+import com.example.cashflow.utils.Posizione
 
 
 class MainActivity : AppCompatActivity() {

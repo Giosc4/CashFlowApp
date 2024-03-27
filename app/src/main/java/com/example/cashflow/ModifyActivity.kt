@@ -13,10 +13,11 @@ import androidx.drawerlayout.widget.DrawerLayout
 import androidx.fragment.app.FragmentActivity
 import com.example.cashflow.box.ViewDebitCreditFragment
 import com.example.cashflow.db.*
+import com.example.cashflow.fragments.modify.EditTransactionFragment
 import com.example.cashflow.fragments.view.*
 import com.google.android.material.navigation.NavigationView
 
-class DetailsActivity : AppCompatActivity() {
+class ModifyActivity : AppCompatActivity() {
 
     private lateinit var db: SQLiteDB
     private lateinit var readSQL: ReadSQL
@@ -37,19 +38,16 @@ class DetailsActivity : AppCompatActivity() {
         readSQL = ReadSQL(db.writableDatabase)
         writeSQL = WriteSQL(db.writableDatabase)
 
-        val fragmentId = intent.getIntExtra("FRAGMENT_ID", 1)
-        val accountId = intent.getIntExtra("ACCOUNT_ID", 1)
+        val fragmentId = intent.getIntExtra("FRAGMENT_ID", -1)
+        val accountId = intent.getIntExtra("ACCOUNT_ID", -1)
 
 
         val fragment = when (fragmentId) {
-            1 -> ViewAccountFragment.newInstance(accountId)
-            2 -> ViewTransactionsFragment(readSQL, writeSQL)
-            3 -> ViewCategoryFragment(readSQL, writeSQL)
-            4 -> ViewBudgetFragment(readSQL)
-            5 -> ViewTemplateFragment(readSQL)
-            6 -> ViewBudgetFragment(readSQL)
-            7 -> ViewDebitCreditFragment(readSQL, true)
-            8 -> ViewDebitCreditFragment(readSQL, false)
+            1 -> EditTransactionFragment.newInstance(accountId)
+//            2 -> EditCategoryFragment(readSQL, writeSQL)
+//            3 -> EditTemplateFragment(readSQL, writeSQL)
+//            4 -> EditBudgetFragment(readSQL, writeSQL)
+//            5 -> EditDebitCreditFragment(readSQL, writeSQL)
             else -> null
         }
 

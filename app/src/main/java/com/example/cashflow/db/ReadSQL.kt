@@ -295,7 +295,7 @@ class ReadSQL(private val db: SQLiteDatabase?) {
     fun getCategoryById(categoryId: Int): Category? {
         val cursor = db!!.query(
             TABLE_CATEGORY,
-            arrayOf(COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPTION),
+            arrayOf(COLUMN_ID, COLUMN_NAME, COLUMN_AMOUNT_CATEGORY , COLUMN_DESCRIPTION),
             COLUMN_ID + " = ?",
             arrayOf(categoryId.toString()),
             null,
@@ -306,13 +306,15 @@ class ReadSQL(private val db: SQLiteDatabase?) {
             val idIndex = cursor.getColumnIndex(COLUMN_ID)
             val nameIndex = cursor.getColumnIndex(COLUMN_NAME)
             val descriptionIndex = cursor.getColumnIndex(COLUMN_DESCRIPTION)
+            val amountCategoryIndex = cursor.getColumnIndex(COLUMN_AMOUNT_CATEGORY)
             if (idIndex != -1 && nameIndex != -1 && descriptionIndex != -1) {
                 val id = cursor.getInt(idIndex)
                 val name = cursor.getString(nameIndex)
                 val description =
                     if (cursor.isNull(descriptionIndex)) null else cursor.getString(descriptionIndex)
+                val amountCategory = cursor.getDouble(amountCategoryIndex)
                 cursor.close()
-                return Category(id, name, description)
+                return Category(id, name, description, amountCategory)
             }
         }
         Log.d("getCategoryById", "Searching for categoryId: $categoryId")
@@ -430,7 +432,7 @@ class ReadSQL(private val db: SQLiteDatabase?) {
         db?.let { database ->
             val cursor = database.query(
                 TABLE_CATEGORY, // Tabella da cui selezionare
-                arrayOf(COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPTION), // Colonne da restituire
+                arrayOf(COLUMN_ID, COLUMN_NAME, COLUMN_AMOUNT_CATEGORY, COLUMN_DESCRIPTION), // Colonne da restituire
                 null, // Clausola WHERE, null per selezionare tutte le righe
                 null, // Valori per la clausola WHERE
                 null, // groupBy
@@ -441,11 +443,14 @@ class ReadSQL(private val db: SQLiteDatabase?) {
                 val idIndex = cursor.getColumnIndex(COLUMN_ID)
                 val nameIndex = cursor.getColumnIndex(COLUMN_NAME)
                 val descriptionIndex = cursor.getColumnIndex(COLUMN_DESCRIPTION)
+                val amountCategoryIndex = cursor.getColumnIndex(COLUMN_AMOUNT_CATEGORY)
                 if (idIndex != -1 && nameIndex != -1 && descriptionIndex != -1) {
                     val id = cursor.getInt(idIndex)
                     val name = cursor.getString(nameIndex)
                     val description = cursor.getString(descriptionIndex)
-                    categories.add(Category(id, name, description))
+                    val amountCategory = cursor.getDouble(amountCategoryIndex)
+                    categories.add(Category(id, name, description, amountCategory))
+                    Log.d("getCategories", "Category amountCategory: $amountCategory")
                 }
             }
             cursor.close()
@@ -485,7 +490,7 @@ class ReadSQL(private val db: SQLiteDatabase?) {
         db?.let { database ->
             val cursor = database.query(
                 TABLE_CATEGORY,
-                arrayOf(COLUMN_ID, COLUMN_NAME, COLUMN_DESCRIPTION),
+                arrayOf(COLUMN_ID, COLUMN_NAME, COLUMN_AMOUNT_CATEGORY ,COLUMN_DESCRIPTION),
                 "$COLUMN_ID = ?",
                 arrayOf(categoryId.toString()),
                 null,
@@ -498,11 +503,13 @@ class ReadSQL(private val db: SQLiteDatabase?) {
                     val idIndex = cursor.getColumnIndex(COLUMN_ID)
                     val nameIndex = cursor.getColumnIndex(COLUMN_NAME)
                     val descriptionIndex = cursor.getColumnIndex(COLUMN_DESCRIPTION)
+                    val amountCategoryIndex = cursor.getColumnIndex(COLUMN_AMOUNT_CATEGORY)
                     if (idIndex != -1 && nameIndex != -1 && descriptionIndex != -1) {
                         val id = cursor.getInt(idIndex)
                         val name = cursor.getString(nameIndex)
                         val description = cursor.getString(descriptionIndex)
-                        return Category(id, name, description)
+                        val amountCategory = cursor.getDouble(amountCategoryIndex)
+                        return Category(id, name, description, amountCategory)
                     }
                 }
             }
@@ -764,6 +771,7 @@ class ReadSQL(private val db: SQLiteDatabase?) {
 
         // Category Table - column names
         private const val COLUMN_DESCRIPTION = "description"
+        private const val COLUMN_AMOUNT_CATEGORY = "amount_category"
 
         // Saving Table - column names
         private const val COLUMN_START_DATE = "Data_Inizio"

@@ -27,8 +27,8 @@ import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
 import com.example.cashflow.MainActivity
-import com.example.cashflow.OCRManager
-import com.example.cashflow.OCRManager.OCRListener
+import com.example.cashflow.utils.OCRManager
+import com.example.cashflow.utils.OCRManager.OCRListener
 import com.example.cashflow.R
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage

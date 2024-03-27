@@ -1,7 +1,8 @@
-package com.example.cashflow.statistics
+package com.example.cashflow.fragments.statistics
 
 import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -91,17 +92,6 @@ class IncomeExpenseFragment(
         val selectedAccounts = accountsAdapter?.getSelectedAccounts(accounts) ?: accounts
         initPieChart(selectedAccounts)
         initBarChart(selectedAccounts)
-    }
-
-    private fun hasData(selectedAccounts: ArrayList<Account>): Boolean {
-        for (account in selectedAccounts) {
-            if (isIncome) {
-                if (readSQL.getTransactionsByAccountId(account.id).isNotEmpty()) return true
-            } else {
-                if (readSQL.getTransactionsByAccountId(account.id).isNotEmpty()) return true
-            }
-        }
-        return false
     }
 
     private fun initPieChart(selectedAccounts: ArrayList<Account>) {
