@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
@@ -14,13 +15,14 @@
             android:layout_height="wrap_content"
             android:gravity="center"
             android:text="Income / Expense"
-            android:textSize="15sp"
+            android:textSize="20dp"
             android:textStyle="bold" />
 
         <LinearLayout
             android:id="@+id/accountsLayout"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_below="@+id/title"
             android:gravity="center_vertical"
             android:orientation="horizontal"
             android:padding="8dp">
@@ -29,11 +31,11 @@
                 android:id="@+id/noDataTextView"
                 android:layout_width="match_parent"
                 android:layout_height="50dp"
+                android:layout_margin="50dp"
+                android:gravity="center"
                 android:text="Non ci sono dati disponibili"
                 android:textColor="@color/colorNavigationViewItemSelected"
                 android:textSize="20sp"
-                android:layout_margin="50dp"
-                android:gravity="center"
                 android:visibility="gone" />
 
             <androidx.recyclerview.widget.RecyclerView
@@ -51,7 +53,6 @@
                 android:layout_marginEnd="10dp"
                 android:text="Seleziona tutti \n gli account" />
         </LinearLayout>
-
 
         <com.github.mikephil.charting.charts.PieChart
             android:id="@+id/pieChart"

@@ -316,9 +316,15 @@ class NewTransactionFragment(
             if (isChecked) {
                 setNameTemplate?.visibility = if (isChecked) View.VISIBLE else View.GONE
                 pianificazioneCheckBox?.setVisibility(View.GONE)
+                dateButton?.setVisibility(View.GONE)
+                selectedTimeTextView?.setVisibility(View.GONE)
+                locationEditText?.setVisibility(View.GONE)
             } else {
                 setNameTemplate?.setVisibility(View.GONE)
                 pianificazioneCheckBox?.setVisibility(View.VISIBLE)
+                dateButton?.setVisibility(View.VISIBLE)
+                selectedTimeTextView?.setVisibility(View.VISIBLE)
+                locationEditText?.setVisibility(View.VISIBLE)
             }
         })
         // Add OnClickListener for the "DONE" button

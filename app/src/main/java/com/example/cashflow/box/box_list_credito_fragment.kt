@@ -6,6 +6,7 @@ import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Button
 import android.widget.GridLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
@@ -14,9 +15,11 @@ import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_list_credito_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
+class box_list_credito_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+    Fragment() {
     var gridLayout: GridLayout? = null
     var textViewTitle: TextView? = null
+    var viewDebitoCreditotBtn: Button? = null
 
     private var noDataTextView: TextView? = null
 
@@ -29,9 +32,10 @@ class box_list_credito_fragment(private val readSQL: ReadSQL, private val writeS
         gridLayout = view.findViewById(R.id.gridLayout)
         textViewTitle = view.findViewById(R.id.textViewTitle)
         noDataTextView = view.findViewById(R.id.noDataTextView)
+        viewDebitoCreditotBtn = view.findViewById(R.id.viewDebitoCreditotBtn)
+
         textViewTitle?.setText("Credito (da ricevere)")
-
-
+        viewDebitoCreditotBtn?.setText("Vedi Credito")
 
         val credits = readSQL.getAllCredits()
 
@@ -46,12 +50,10 @@ class box_list_credito_fragment(private val readSQL: ReadSQL, private val writeS
     }
 
     private fun addCreditsList(view: View, credits: List<Credito>) {
-        // Imposta il numero di colonne per il GridLayout. Ad esempio, 2 per id e importo.
-        gridLayout?.columnCount = 2
+        gridLayout?.columnCount = 3
 
-        // Per ogni debito nella lista, crea una nuova riga nel GridLayout
         credits.forEachIndexed { index, credito ->
-            // Crea un TextView per l'id del debito o il nome
+            // Aggiungi TextView per il nome/ID del credito
             val textViewName = TextView(context).apply {
                 text = "${credito.name}: €${credito.amount}"
                 gravity = Gravity.CENTER
@@ -64,7 +66,7 @@ class box_list_credito_fragment(private val readSQL: ReadSQL, private val writeS
                     GridLayout.spec(index, 1),
                     GridLayout.spec(0, 1f)
                 ).apply {
-                    width = 0 // Usare GridLayout.LayoutParams per assegnare peso
+                    width = 0 // Assicura che occupi lo spazio correttamente
                     bottomMargin = 2
                     topMargin = 2
                     leftMargin = 2
@@ -73,7 +75,7 @@ class box_list_credito_fragment(private val readSQL: ReadSQL, private val writeS
             }
             gridLayout?.addView(textViewName)
 
-            // Crea un TextView per la data di estinzione del debito
+            // Aggiungi TextView per la data
             val textViewDate = TextView(context).apply {
                 text = "Da: ${credito.concessionDate}\nA: ${credito.extinctionDate}"
                 gravity = Gravity.CENTER
@@ -86,7 +88,7 @@ class box_list_credito_fragment(private val readSQL: ReadSQL, private val writeS
                     GridLayout.spec(index, 1),
                     GridLayout.spec(1, 1f)
                 ).apply {
-                    width = 0 // Usare GridLayout.LayoutParams per assegnare peso
+                    width = 0
                     bottomMargin = 2
                     topMargin = 2
                     leftMargin = 2
@@ -94,7 +96,33 @@ class box_list_credito_fragment(private val readSQL: ReadSQL, private val writeS
                 }
             }
             gridLayout?.addView(textViewDate)
+
+            // Crea e aggiungi un Button per ogni credito
+            val button = Button(context).apply {
+                text = "Fine"
+                val pixels = (5 * resources.displayMetrics.density + 0.5f).toInt()
+
+                layoutParams = GridLayout.LayoutParams(
+                    GridLayout.spec(index, 1),
+                    GridLayout.spec(2, 1f)
+                ).apply {
+                    width = pixels
+                    height = GridLayout.LayoutParams.WRAP_CONTENT
+                    gravity = Gravity.CENTER
+                    bottomMargin = 2
+                    topMargin = 2
+                    leftMargin = 2
+                    rightMargin = 2
+                }
+
+                // Imposta un listener per il clic, se necessario
+                setOnClickListener {
+                    // Agisci quando il pulsante viene premuto, ad esempio mostrare dettagli
+                }
+            }
+            gridLayout?.addView(button)
         }
     }
+
 
 }

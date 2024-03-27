@@ -36,11 +36,12 @@
             android:text="Nuovo Credito" />
 
     </LinearLayout>
+
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="horizontal"
-        android:gravity="center">
+        android:gravity="center"
+        android:orientation="horizontal">
 
         <TextView
             android:layout_width="wrap_content"
@@ -63,12 +64,31 @@
         android:layout_margin="10dp"
         android:hint="Nome debito/credito" />
 
-    <EditText
-        android:id="@+id/editTextAmount"
-        android:layout_width="match_parent"
+    <LinearLayout
+        android:id="@+id/accountLayout"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:layout_margin="10dp"
-        android:hint="Importo" />
+        android:orientation="horizontal">
+
+        <EditText
+            android:id="@+id/numberEditText"
+            android:layout_width="300dp"
+            android:layout_height="wrap_content"
+            android:hint="Aggiungi un prezzo!"
+            android:inputType="numberDecimal"
+            android:paddingTop="16dp"
+            android:paddingBottom="16dp" />
+
+        <ImageView
+            android:id="@+id/cameraButton"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:layout_gravity="center_vertical"
+            android:layout_marginStart="8dp"
+            android:contentDescription="Icona della fotocamera"
+            android:src="@drawable/fotocamera" />
+    </LinearLayout>
+
 
     <Spinner
         android:id="@+id/accountSpinner"
@@ -137,6 +157,13 @@
         android:layout_height="wrap_content"
         android:layout_margin="10dp"
         android:hint="Note/descrizione" />
+
+    <Button
+        android:id="@+id/deleteButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:text="ELIMINA CATEGORIA" />
 
     <Button
         android:id="@+id/doneButton"

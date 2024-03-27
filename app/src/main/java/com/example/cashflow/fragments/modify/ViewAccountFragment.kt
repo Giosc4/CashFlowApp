@@ -21,7 +21,7 @@ import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.WriteSQL
 
-class AccountDetailsFragment : Fragment() {
+class ViewAccountFragment : Fragment() {
     private var accountId: Int = -1
     private lateinit var db: SQLiteDB
     private lateinit var readSql: ReadSQL
@@ -40,8 +40,8 @@ class AccountDetailsFragment : Fragment() {
     companion object {
         private const val ARG_ACCOUNT_ID = "account_id"
 
-        fun newInstance(accountId: Int): AccountDetailsFragment {
-            val fragment = AccountDetailsFragment()
+        fun newInstance(accountId: Int): ViewAccountFragment {
+            val fragment = ViewAccountFragment()
             val args = Bundle().apply {
                 putInt(ARG_ACCOUNT_ID, accountId)
             }
@@ -61,12 +61,12 @@ class AccountDetailsFragment : Fragment() {
         container: ViewGroup?,
         savedInstanceState: Bundle?
     ): View? {
-        val view = inflater.inflate(R.layout.fragment_account_details, container, false)
-        nameEditText = view.findViewById(R.id.nameEditText)
-        balanceTextView = view.findViewById(R.id.balanceTextView)
-        transactionsRecyclerView = view.findViewById(R.id.transactionsRecyclerView)
-        saveButton = view.findViewById(R.id.saveButton)
-        deleteButton = view.findViewById(R.id.deleteButton)
+        val view = inflater.inflate(R.layout.fragment_edit_account, container, false)
+        nameEditText = view.findViewById(R.id.name_edit_text)
+        balanceTextView = view.findViewById(R.id.balance_text_view)
+        transactionsRecyclerView = view.findViewById(R.id.transactions_recycler_view)
+        saveButton = view.findViewById(R.id.save_button)
+        deleteButton = view.findViewById(R.id.delete_button)
 
         db = SQLiteDB(context)
         readSql = ReadSQL(db.writableDatabase)
@@ -157,7 +157,7 @@ class AccountDetailsFragment : Fragment() {
 
         override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): ViewHolder {
             val itemView = LayoutInflater.from(parent.context)
-                .inflate(R.layout.list_details_accounts, parent, false)
+                .inflate(R.layout.list_view_accounts, parent, false)
             return ViewHolder(itemView)
         }
 

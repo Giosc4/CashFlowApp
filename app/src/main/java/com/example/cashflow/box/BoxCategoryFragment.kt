@@ -35,12 +35,12 @@ class BoxCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: Wr
     private fun loadCategories() {
         val categories = readSQL.getCategories()
 
-        val top6Categories = categories.take(6)
+        val top4Categories = categories.take(4)
 
-        categoriesGridLayout.rowCount = 3
+        categoriesGridLayout.rowCount = 2
         categoriesGridLayout.columnCount = 2
 
-        for (category in top6Categories) {
+        for (category in top4Categories) {
             addCategoryToGrid(category)
         }
     }
@@ -54,7 +54,12 @@ class BoxCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: Wr
         }
 
         val descriptionTextView = TextView(context).apply {
-            text = category.description ?: "No description"
+            if (category.description.isNullOrEmpty()) {
+                text = "Nessuna descrizione" + "\nTotale categoria €" + category.amountCategory
+            } else {
+                text = category.description + "\nTotale categoria €" + category.amountCategory
+            }
+
             setTypeface(null, Typeface.NORMAL)
             textSize = 16f
             // Configura layout e stile come desiderato
@@ -66,6 +71,7 @@ class BoxCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: Wr
             addView(categoryNameTextView)
             addView(descriptionTextView)
         }
+        val marginInPixels = (5 * resources.displayMetrics.density + 0.5f).toInt()
 
         // Aggiungi il LinearLayout al GridLayout
         categoriesGridLayout.addView(categoryLayout, GridLayout.LayoutParams().apply {
@@ -73,6 +79,8 @@ class BoxCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: Wr
             height = GridLayout.LayoutParams.WRAP_CONTENT
             columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
             rowSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f)
+            setMargins(marginInPixels, marginInPixels, marginInPixels, marginInPixels)
+
         })
     }
 }

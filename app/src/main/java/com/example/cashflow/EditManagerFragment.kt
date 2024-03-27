@@ -9,7 +9,7 @@ import androidx.fragment.app.FragmentManager
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.SQLiteDB
 import com.example.cashflow.db.WriteSQL
-import com.example.cashflow.fragments.modify.AccountDetailsFragment
+import com.example.cashflow.fragments.modify.ViewAccountFragment
 import com.example.cashflow.fragments.modify.EditTransactionFragment
 
 class EditManagerFragment : Fragment() {
@@ -58,7 +58,7 @@ class EditManagerFragment : Fragment() {
         clearFragments()
 
         // Load AccountDetailsFragment passing the account ID
-        val accountDetailsFragment = AccountDetailsFragment.newInstance(accountId)
+        val accountDetailsFragment = ViewAccountFragment.newInstance(accountId)
         requireActivity().supportFragmentManager.beginTransaction().apply {
             replace(R.id.linearContainer, accountDetailsFragment)
             addToBackStack(null) // Add to back stack for back navigation

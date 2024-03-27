@@ -46,4 +46,27 @@
         </menu>
     </item>
 
+    <item
+        android:id="@+id/group_view"
+        android:title="VISUALIZZA">
+        <menu>
+
+            <item
+                android:id="@+id/list_category"
+                android:title="Lista Categorie" />
+            <item
+                android:id="@+id/list_transaction"
+                android:title="Lista Transazioni" />
+            <item
+                android:id="@+id/list_template"
+                android:title="Lista Templates" />
+            <item
+                android:id="@+id/list_debit"
+                android:title="Lista Debiti" />
+            <item
+                android:id="@+id/list_credit"
+                android:title="Lista Crediti" />
+        </menu>
+    </item>
+
 </menu>

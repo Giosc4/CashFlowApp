@@ -10,7 +10,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:gravity="center"
-        android:text="Nuova Categoria"
+        android:text="Modifica Categoria"
         android:textSize="24sp"
         android:textStyle="bold" />
     <EditText
@@ -32,40 +32,18 @@
         android:minLines="4" />
 
 
-    <!-- Button centered horizontally -->
     <Button
-        android:id="@+id/btnCreateBufget"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="center_horizontal"
-        android:layout_marginTop="16dp"
-        android:text="Crea Budget" />
-
-    <!-- EditText centered horizontally -->
-    <EditText
-        android:id="@+id/editTextNome"
+        android:id="@+id/deleteButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_margin="16dp"
-        android:hint="Inserisci il nome Budget"
-        android:inputType="textPersonName" />
-
-    <!-- EditText centered horizontally -->
-    <EditText
-        android:id="@+id/editTextImporto"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginLeft="16dp"
-        android:layout_marginTop="8dp"
-        android:layout_marginRight="16dp"
-        android:hint="Inserisci importo Budget"
-        android:inputType="numberDecimal" />
+        android:layout_marginTop="20dp"
+        android:text="ELIMINA CATEGORIA" />
 
     <Button
-        android:id="@+id/btnCreateCategory"
+        android:id="@+id/doneButton"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="16dp"
-        android:text="Crea Categoria" />
+        android:layout_marginTop="10dp"
+        android:text="SALVA" />
 
 </LinearLayout>
