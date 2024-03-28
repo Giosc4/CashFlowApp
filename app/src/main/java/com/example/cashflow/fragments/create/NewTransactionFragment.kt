@@ -26,6 +26,7 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.FileProvider
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.MainActivity
 import com.example.cashflow.utils.OCRManager
 import com.example.cashflow.utils.OCRManager.OCRListener
@@ -43,9 +44,7 @@ import java.text.ParseException
 import java.util.Date
 import java.util.Locale
 
-class NewTransactionFragment(
-    private val readSQL: ReadSQL, private val writeSQL: WriteSQL, private val cityPosition: City?
-) : Fragment() {
+class NewTransactionFragment(private val cityPosition: City?) : Fragment() {
     private var expenseButton: Button? = null
     private var incomeButton: Button? = null
     private var doneButton: Button? = null
@@ -77,7 +76,12 @@ class NewTransactionFragment(
     private var selectedTimeTextView: TextView? = null
     private var ocrManager: OCRManager? = null
 
-    private var accounts: ArrayList<Account> = readSQL.getAccounts()
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
+
+    private var accounts: ArrayList<Account> = readSQL?.getAccounts() ?: ArrayList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -118,8 +122,10 @@ class NewTransactionFragment(
         deleteButton?.setVisibility(View.INVISIBLE)
         deleteButton?.setVisibility(View.GONE)
 
-        accounts = readSQL.getAccounts()
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
+        accounts = readSQL!!.getAccounts()
 
         selectedDate = Calendar.getInstance()
         val timestamp = selectedDate?.timeInMillis
@@ -244,7 +250,7 @@ class NewTransactionFragment(
             expenseButton?.setBackgroundColor(Color.parseColor("#FF6464")) // rosso quando non selezionato
         })
 
-        categories = readSQL.getCategories()
+        categories = readSQL!!.getCategories()
         val categoryNames = categories?.map { it.name }
         val categoryAdapter = ArrayAdapter(
             requireContext(),
@@ -494,14 +500,14 @@ class NewTransactionFragment(
         })
     }
 
-    private fun saveCity(city: City): Int {
+    private fun saveCity(city: City): Int? {
         if (city.nameCity == null) {
             Log.e("NewTransactionFragment", "City name is null")
             Toast.makeText(context, "Nome della città non valido", Toast.LENGTH_LONG).show()
             return -1
         }
         // Check if the city already exists
-        val existingCityId = readSQL.getIdByCityName(city.nameCity ?: "")
+        val existingCityId = readSQL?.getIdByCityName(city.nameCity ?: "")
         Log.d("NewTransactionFragment", "Existing city ID: $existingCityId")
 
         if (existingCityId != -1) {
@@ -511,7 +517,7 @@ class NewTransactionFragment(
         } else {
             // Save the new city and return its ID
             Log.d("NewTransactionFragment", "Saving new city: $city")
-            return writeSQL.insertCity(city)
+            return writeSQL?.insertCity(city)
         }
     }
 
@@ -520,7 +526,7 @@ class NewTransactionFragment(
         val isIncome = incomeButton?.isSelected ?: false
         val rawNumberText = numberEditText?.text.toString()
         val accountName = accountSpinner?.selectedItem.toString()
-        val accountId = readSQL.getIdByAccountName(accountName)
+        val accountId = readSQL?.getIdByAccountName(accountName)
         val categoryName = categorySpinner?.selectedItem.toString()
         val categoryId = categories?.firstOrNull { it.name == categoryName }?.id ?: -1
         val cityId = cityPosition?.id ?: -1
@@ -562,21 +568,25 @@ class NewTransactionFragment(
         }
         var valueCityId = cityId
         if (cityPosition != null) {
-            valueCityId = saveCity(cityPosition)
+            valueCityId = cityPosition?.let { saveCity(it) }!!
             Log.d("saveTransaction", "City ID: $valueCityId")
         }
 
         // Trasformazione dei dati in una Transazione
-        val newTrans = Transactions(
-            income = isIncome,
-            amount = amount,
-            date = selectedDate!!,
-            cityId = valueCityId,
-            categoryId = categoryId,
-            accountId = accountId
-        )
+        val newTrans = accountId?.let {
+            Transactions(
+                income = isIncome,
+                amount = amount,
+                date = selectedDate!!,
+                cityId = valueCityId,
+                categoryId = categoryId,
+                accountId = it
+            )
+        }
 
-        writeSQL.insertTransaction(newTrans)
+        if (newTrans != null) {
+            writeSQL?.insertTransaction(newTrans)
+        }
 
 
         Toast.makeText(context, "Transazione salvata", Toast.LENGTH_SHORT).show()
@@ -615,7 +625,7 @@ class NewTransactionFragment(
         }
 
         val cityId = cityPosition?.nameCity?.let { cityName ->
-            readSQL.getCityIdByName(cityName)
+            readSQL?.getCityIdByName(cityName)
         } ?: -1
 
         val validCategoryId = categories?.firstOrNull()?.id ?: -1
@@ -649,7 +659,7 @@ class NewTransactionFragment(
         Log.d("handleGiroconto", "Exit Transaction: $exitTransaction")
         Log.d("handleGiroconto", "Entry Transaction: $entryTransaction")
 
-        if (writeSQL.insertTransaction(exitTransaction) != -1L && writeSQL.insertTransaction(
+        if (writeSQL?.insertTransaction(exitTransaction) != -1L && writeSQL?.insertTransaction(
                 entryTransaction
             ) != -1L
         ) {
@@ -676,7 +686,7 @@ class NewTransactionFragment(
         val categorySelected = categorySpinner?.selectedItem.toString()
         val categoryId = categories?.firstOrNull { it.name == categorySelected }?.id ?: -1
         val accountSelected = accountSpinner?.selectedItem.toString()
-        val accountId = readSQL.getIdByAccountName(accountSelected)
+        val accountId = readSQL?.getIdByAccountName(accountSelected)
         val repetition = timeSpinner?.selectedItem.toString()
 
         // Utilizza SimpleDateFormat per formattare correttamente la data di inizio e fine
@@ -720,11 +730,13 @@ class NewTransactionFragment(
         )
 
         // Inserisci l'oggetto Planning nel database
-        if (writeSQL.insertPlanning(newPlanning) != -1L) {
-            Toast.makeText(context, "Pianificazione salvata con successo", Toast.LENGTH_SHORT).show()
+        if (writeSQL?.insertPlanning(newPlanning) != -1L) {
+            Toast.makeText(context, "Pianificazione salvata con successo", Toast.LENGTH_SHORT)
+                .show()
             // Potresti voler aggiungere qui codice per chiudere il frammento o aggiornare l'UI
         } else {
-            Toast.makeText(context, "Errore nel salvare la pianificazione", Toast.LENGTH_SHORT).show()
+            Toast.makeText(context, "Errore nel salvare la pianificazione", Toast.LENGTH_SHORT)
+                .show()
         }
     }
 
@@ -739,13 +751,13 @@ class NewTransactionFragment(
         val categoryName = categorySpinner?.selectedItem.toString()
         Log.d("handleTemplate", "Category name: $categoryName")
 
-        val categoryId = readSQL.getCategoryIdByName(categoryName)
+        val categoryId = readSQL?.getCategoryIdByName(categoryName)
         Log.d("handleTemplate", "Category ID: $categoryId")
 
         Log.d("handleTemplate", "categorySpinner name: ${categorySpinner?.selectedItem.toString()}")
 
         val accountName = accountSpinner?.selectedItem.toString()
-        val accountId = readSQL.getIdByAccountName(accountName)
+        val accountId = readSQL?.getIdByAccountName(accountName)
 
 
         // Verifica la validità dei dati inseriti
@@ -772,30 +784,32 @@ class NewTransactionFragment(
             Log.e("handleTemplate", "Account ID not found.")
             return
         }
+        if (categoryId != null && accountId != null && categoryId != -1 && accountId != -1) {
+            val templateTransaction = TemplateTransaction(
+                id = 0, // L'ID sarà generato dal database
+                name = templateName,
+                income = isIncome,
+                amount = amount,
+                category_id = categoryId,
+                account_id = accountId
+            )
 
-        // Creazione del template
-        val templateTransaction = TemplateTransaction(
-            id = 0, // L'ID sarà generato dal database
-            name = templateName,
-            income = isIncome,
-            amount = amount,
-            category_id = categoryId,
-            account_id = accountId
-        )
+            Log.d("handleTemplate", "Template Transaction: $templateTransaction")
 
-        Log.d("handleTemplate", "Template: $templateTransaction")
-
-        // Utilizza il template per creare una transazione effettiva
-        if (writeSQL.insertTemplateTransaction(templateTransaction) != -1L) {
-            Toast.makeText(context, "Template salvato correttamente.", Toast.LENGTH_SHORT).show()
-            Log.d("NewTransactionFragment", "Template saved: $templateTransaction")
-            val intent = Intent(activity, MainActivity::class.java)
-            startActivity(intent)
-            activity?.finish()
+            // Ora puoi inserire il templateTransaction nel database
+            val newRowId = writeSQL?.insertTemplateTransaction(templateTransaction) ?: -1L
+            if (newRowId != -1L) {
+                Toast.makeText(context, "Template salvato correttamente.", Toast.LENGTH_SHORT)
+                    .show()
+                activity?.finish()
+            } else {
+                Toast.makeText(context, "Errore nel salvataggio del template.", Toast.LENGTH_SHORT)
+                    .show()
+            }
         } else {
-            Toast.makeText(context, "Errore nel salvataggio del template.", Toast.LENGTH_SHORT)
+            // Gestisci il caso in cui categoryId o accountId siano null o -1
+            Toast.makeText(context, "Errore: Categoria o Account non validi.", Toast.LENGTH_SHORT)
                 .show()
-            Log.e("handleTemplate", "Error saving template: $templateTransaction")
         }
     }
 

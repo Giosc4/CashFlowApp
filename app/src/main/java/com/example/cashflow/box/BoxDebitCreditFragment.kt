@@ -12,21 +12,22 @@ import android.widget.GridLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.DetailsActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
 class BoxDebitCreditFragment(
-    private val readSQL: ReadSQL,
-    private val writeSQL: WriteSQL,
     private val isDebit: Boolean // true per debito, false per credito
 ) : Fragment() {
     private var gridLayout: GridLayout? = null
     private var textViewTitle: TextView? = null
     private var noDataTextView: TextView? = null
     private var viewDebitoCreditotBtn: Button? = null
-
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -37,10 +38,13 @@ class BoxDebitCreditFragment(
         noDataTextView = view.findViewById(R.id.noDataTextView)
         viewDebitoCreditotBtn = view.findViewById(R.id.viewDebitoCreditotBtn)
 
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
+
         if (isDebit) {
             textViewTitle?.setText("Debito (da dare)")
             viewDebitoCreditotBtn?.setText("Vedi Debito")
-            val debits = readSQL.getAllDebits()
+            val debits = readSQL!!.getAllDebits()
             if (debits.isEmpty()) {
                 noDataTextView?.visibility = View.VISIBLE
             } else {
@@ -56,7 +60,7 @@ class BoxDebitCreditFragment(
         } else {
             textViewTitle?.setText("Credito (da ricevere)")
             viewDebitoCreditotBtn?.setText("Vedi Credito")
-            val credits = readSQL.getAllCredits()
+            val credits = readSQL!!.getAllCredits()
             if (credits.isEmpty()) {
                 noDataTextView?.visibility = View.VISIBLE
             } else {

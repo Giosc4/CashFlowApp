@@ -13,18 +13,24 @@ import android.widget.EditText
 import android.widget.Spinner
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.MainActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.DataViewModel
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.WriteSQL
 
-class NewBudgetFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
+class NewBudgetFragment() : Fragment() {
     private var editTextNome: EditText? = null
     private var spinnerCategoria: Spinner? = null
     private var editTextImporto: EditText? = null
     private var buttonSalva: Button? = null
     private var categories: ArrayList<Category>? = null
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,8 +43,10 @@ class NewBudgetFragment(private val readSQL: ReadSQL, private val writeSQL: Writ
         editTextImporto = view.findViewById(R.id.editTextImporto)
         buttonSalva = view.findViewById(R.id.buttonSalva)
 
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
-        categories = readSQL.getCategories()
+        categories = readSQL!!.getCategories()
         val categoryNames = categories?.map { it.name }
         val categoryAdapter = ArrayAdapter(
             requireContext(),
@@ -106,7 +114,7 @@ class NewBudgetFragment(private val readSQL: ReadSQL, private val writeSQL: Writ
             Toast.makeText(context, "Inserisci un importo", Toast.LENGTH_SHORT).show()
             Log.d("NewBudgetFragment", "Importo vuoto")
         }
-        writeSQL.createBudget(nome, importo.toDouble(), categoria)
+        writeSQL?.createBudget(nome, importo.toDouble(), categoria)
 
         Toast.makeText(context, "Budget salvato", Toast.LENGTH_SHORT).show()
         val intent = Intent(activity, MainActivity::class.java)

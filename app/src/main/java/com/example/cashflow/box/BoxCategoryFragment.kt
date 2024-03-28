@@ -12,18 +12,25 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.DetailsActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.Category
+import com.example.cashflow.db.DataViewModel
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.WriteSQL
 
-class BoxCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+class BoxCategoryFragment() :
     Fragment() {
 
     private lateinit var categoriesGridLayout: GridLayout
     private var noDataTextView: TextView? = null
     private var viewCategoryBtn: View? = null
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -31,7 +38,8 @@ class BoxCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: Wr
         val view = inflater.inflate(R.layout.box_fragment_category, container, false)
         categoriesGridLayout = view.findViewById(R.id.categoriesGridLayout)
         viewCategoryBtn = view.findViewById(R.id.viewCategoryBtn)
-
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
         loadCategories()
 
         viewCategoryBtn?.setOnClickListener {
@@ -44,18 +52,20 @@ class BoxCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: Wr
     }
 
     private fun loadCategories() {
-        val categories = readSQL.getCategories()
-        if (categories.isEmpty()) {
-            noDataTextView?.visibility = View.VISIBLE
-        } else {
-            noDataTextView?.visibility = View.GONE
-            val top4Categories = categories.take(4)
+        val categories = readSQL?.getCategories()
+        if (categories != null) {
+            if (categories.isEmpty()) {
+                noDataTextView?.visibility = View.VISIBLE
+            } else {
+                noDataTextView?.visibility = View.GONE
+                val top4Categories = categories.take(4)
 
-            categoriesGridLayout.rowCount = 2
-            categoriesGridLayout.columnCount = 2
+                categoriesGridLayout.rowCount = 2
+                categoriesGridLayout.columnCount = 2
 
-            for (category in top4Categories) {
-                addCategoryToGrid(category)
+                for (category in top4Categories) {
+                    addCategoryToGrid(category)
+                }
             }
         }
     }

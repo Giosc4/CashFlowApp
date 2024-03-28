@@ -1,5 +1,6 @@
 package com.example.cashflow.fragments.view
 
+import android.content.Intent
 import android.graphics.Color
 import android.graphics.Typeface
 import android.os.Bundle
@@ -14,23 +15,34 @@ import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
+import com.example.cashflow.ModifyActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.Category
 import com.example.cashflow.dataClass.TemplateTransaction
+import com.example.cashflow.db.DataViewModel
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.WriteSQL
 
-class ViewCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+class ViewCategoryFragment() :
     Fragment() {
 
     private lateinit var categoriesGridLayout: GridLayout
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_view_category, container, false)
         categoriesGridLayout = view.findViewById(R.id.gridLayout)
-        val categories = readSQL.getCategories()
+
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
+
+        val categories = readSQL!!.getCategories()
 
         categoriesGridLayout.rowCount = (categories.size + 1) / 2
         categoriesGridLayout.columnCount = 2
@@ -89,15 +101,21 @@ class ViewCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: W
                 GridLayout.spec(1, GridLayout.FILL, 1f)
             ).also {
                 val widthInPixels = (60 * resources.displayMetrics.density).toInt()
-                val heightInPixels = (10 * resources.displayMetrics.density).toInt()
+                val heightInPixels = (5 * resources.displayMetrics.density).toInt()
                 it.width = widthInPixels
                 it.height = heightInPixels
                 val marginInPixels = (5 * resources.displayMetrics.density + 0.5f).toInt()
                 it.setMargins(marginInPixels, marginInPixels, marginInPixels, marginInPixels)
-            }
-            // Implementa la logica di modifica qui
-        }
 
+            }
+        }
+        modifyButton.setOnClickListener {
+            val intent = Intent(context, ModifyActivity::class.java).apply {
+                putExtra("FRAGMENT_ID", 2)
+                putExtra("CATEGORY_ID", category.id)
+            }
+            startActivity(intent)
+        }
         categoriesGridLayout.addView(categoryInfoLayout)
         categoriesGridLayout.addView(modifyButton)
     }

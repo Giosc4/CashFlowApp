@@ -6,6 +6,7 @@ import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
@@ -18,9 +19,9 @@ import com.google.android.material.navigation.NavigationView
 
 class DetailsActivity : AppCompatActivity() {
 
-    private lateinit var db: SQLiteDB
-    private lateinit var readSQL: ReadSQL
-    private lateinit var writeSQL: WriteSQL
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -33,23 +34,21 @@ class DetailsActivity : AppCompatActivity() {
         val btnHome: ImageView = findViewById(R.id.logo)
         val toolbarTitle: TextView = findViewById(R.id.toolbar_title)
 
-        db = SQLiteDB(this)
-        readSQL = ReadSQL(db.writableDatabase)
-        writeSQL = WriteSQL(db.writableDatabase)
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
         val fragmentId = intent.getIntExtra("FRAGMENT_ID", 1)
         val accountId = intent.getIntExtra("ACCOUNT_ID", 1)
 
-
         val fragment = when (fragmentId) {
             1 -> ViewAccountFragment.newInstance(accountId)
-            2 -> ViewTransactionsFragment(readSQL, writeSQL)
-            3 -> ViewCategoryFragment(readSQL, writeSQL)
-            4 -> ViewBudgetFragment(readSQL)
-            5 -> ViewTemplateFragment(readSQL)
-            6 -> ViewBudgetFragment(readSQL)
-            7 -> ViewDebitCreditFragment(readSQL, true)
-            8 -> ViewDebitCreditFragment(readSQL, false)
+            2 -> ViewTransactionsFragment()
+            3 -> ViewCategoryFragment()
+            4 -> ViewBudgetFragment()
+            5 -> ViewTemplateFragment()
+            6 -> ViewBudgetFragment()
+            7 -> ViewDebitCreditFragment(true)
+            8 -> ViewDebitCreditFragment(false)
             else -> null
         }
 

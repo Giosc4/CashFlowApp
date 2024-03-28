@@ -11,6 +11,7 @@ import android.widget.Button
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.DetailsActivity
@@ -19,12 +20,17 @@ import com.example.cashflow.R
 import com.example.cashflow.dataClass.Transactions
 import com.example.cashflow.db.*
 
-class ViewTransactionsFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+class ViewTransactionsFragment() :
     Fragment() {
 
     private var transactionsRecyclerView: RecyclerView? = null
     private lateinit var adapter: TransactionListAdapter
     private var transactions: ArrayList<Transactions>? = null
+
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -33,8 +39,10 @@ class ViewTransactionsFragment(private val readSQL: ReadSQL, private val writeSQ
         val view = inflater.inflate(R.layout.fragment_view_transactions, container, false)
 
         transactionsRecyclerView = view.findViewById(R.id.transactionsRecyclerView)
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
-        transactions = readSQL.getAllTransactions()
+        transactions = readSQL!!.getAllTransactions()
 
         setupRecyclerView()
 

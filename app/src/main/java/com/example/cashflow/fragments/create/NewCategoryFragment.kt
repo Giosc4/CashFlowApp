@@ -9,18 +9,23 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.EditText
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.MainActivity
 import com.example.cashflow.R
+import com.example.cashflow.db.DataViewModel
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.WriteSQL
 
-class NewCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
+class NewCategoryFragment() : Fragment() {
     private var edtNameCategory: EditText? = null
     private var editTextNome: EditText? = null
     private var editTextImporto: EditText? = null
     private var btnCreateBudget: Button? = null
     private var btnCreateCategory: Button? = null
     private var editTextDescription: EditText? = null
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -36,6 +41,9 @@ class NewCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: Wr
         btnCreateBudget = view.findViewById(R.id.btnCreateBufget)
         btnCreateCategory = view.findViewById(R.id.btnCreateCategory)
         editTextDescription = view.findViewById(R.id.editTextDescription)
+
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
         // Initially hide budget fields
         editTextNome?.setVisibility(View.GONE)
@@ -69,15 +77,15 @@ class NewCategoryFragment(private val readSQL: ReadSQL, private val writeSQL: Wr
                 "Category: $categoryName, Budget: $budgetName, Amount: $budgetAmount, Description: $description"
             )
 
-            writeSQL.createCategory(categoryName, description)
-            writeSQL.createBudget(budgetName, budgetAmount.toDouble(), categoryName)
+            writeSQL?.createCategory(categoryName, description)
+            writeSQL?.createBudget(budgetName, budgetAmount.toDouble(), categoryName)
 
             val intent = Intent(activity, MainActivity::class.java)
             startActivity(intent)
             activity?.finish()
         } else {
             Log.d("NewCategoryFragment category", "Category: $categoryName, Description: $description")
-            writeSQL.createCategory(categoryName, description)
+            writeSQL?.createCategory(categoryName, description)
             val intent = Intent(activity, MainActivity::class.java)
             startActivity(intent)
             activity?.finish()

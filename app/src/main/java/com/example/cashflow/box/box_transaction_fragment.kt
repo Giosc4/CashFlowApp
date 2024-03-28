@@ -12,18 +12,23 @@ import android.widget.Button
 import android.widget.GridLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.DetailsActivity
 import com.example.cashflow.R
 
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+class box_transaction_fragment() :
     Fragment() {
 
     private var noDataTextView: TextView? = null
     private var gridLayout: GridLayout? = null
     private var viewTransBtn: Button? = null
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,7 +45,10 @@ class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQ
         gridLayout = view.findViewById(R.id.gridLayout)
         viewTransBtn = view.findViewById(R.id.viewTransBtn)
 
-        val transactions = readSQL.getAllTransactions()
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
+
+        val transactions = readSQL!!.getAllTransactions()
         if (transactions == null || transactions.isEmpty()) {
             noDataTextView?.visibility = View.VISIBLE
             Log.d("Transactions", "No transactions found")
@@ -49,7 +57,7 @@ class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQ
 
             transactions?.forEachIndexed { index: Int, transaction: Transactions ->
                 val contoTextView = TextView(context).apply {
-                    text = readSQL.getAccountById(transaction.accountId)?.name
+                    text = readSQL!!.getAccountById(transaction.accountId)?.name
                     gravity = Gravity.CENTER
                     // Configurazione del layout
                     val params = GridLayout.LayoutParams()
@@ -60,7 +68,7 @@ class box_transaction_fragment(private val readSQL: ReadSQL, private val writeSQ
 
                 val nameTextView = TextView(context).apply {
                     text =
-                        "${readSQL.getCategoryById(transaction.categoryId)?.name}"
+                        "${readSQL!!.getCategoryById(transaction.categoryId)?.name}"
                     gravity = Gravity.CENTER
                     // Configurazione del layout
                     val params = GridLayout.LayoutParams()

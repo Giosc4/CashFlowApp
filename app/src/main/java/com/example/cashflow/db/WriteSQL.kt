@@ -161,7 +161,6 @@ class WriteSQL(private val db: SQLiteDatabase) {
             put("amount", template.amount)
             put("category_id", template.category_id)
             put("account_id", template.account_id)
-
         }
 
 
@@ -326,6 +325,22 @@ class WriteSQL(private val db: SQLiteDatabase) {
         return newRowId
     }
 
+    fun deleteCategory(categoryId: Int): Boolean {
+        val numberOfRowsDeleted = db.delete(
+            TABLE_CATEGORY,
+            "$COLUMN_ID = ?",
+            arrayOf(categoryId.toString())
+        )
+
+        // Log e verifica del risultato
+        if (numberOfRowsDeleted > 0) {
+            Log.d("WriteSQL", "Successfully deleted category with ID: $categoryId")
+            return true
+        } else {
+            Log.e("WriteSQL", "Failed to delete category with ID: $categoryId")
+            return false
+        }
+    }
 
 
     companion object {

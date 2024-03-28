@@ -17,15 +17,17 @@ import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.MainActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.DataViewModel
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.WriteSQL
 import java.text.SimpleDateFormat
 import java.util.Calendar
 
-class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+class NewDebitCreditFragment() :
     Fragment() {
     private var editTextName: EditText? = null
     private var editTextAmount: EditText? = null
@@ -40,6 +42,10 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
     private var buttonNewCredit: Button? = null
     private var doneButton: Button? = null
     private var accounts: ArrayList<Account>? = null
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -72,6 +78,8 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
         )
         textViewStartDate?.text = today
 
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
         editTextAmount?.setFilters(arrayOf(
             InputFilter { source, start, end, dest, dstart, dend -> // Check if the input contains a decimal point
@@ -113,7 +121,7 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
             }
         ))
 
-        accounts = readSQL.getAccounts()
+        accounts = readSQL!!.getAccounts()
 
         //SPINNER ACCOUNTS
         val accountNames = ArrayList<String>()
@@ -241,7 +249,7 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
                 extinctionDate = extinctionDate,
                 accountId = accountId
             )
-            writeSQL.insertDebito(debito)
+            writeSQL?.insertDebito(debito)
             Log.d("saveDebitCredit", "Debito inserito: $debito")
             val intent = Intent(activity, MainActivity::class.java)
             startActivity(intent)
@@ -255,7 +263,7 @@ class NewDebitCreditFragment(private val readSQL: ReadSQL, private val writeSQL:
                 extinctionDate = extinctionDate,
                 accountId = accountId
             )
-            writeSQL.insertCredito(credito)
+            writeSQL?.insertCredito(credito)
             Log.d("saveDebitCredit", "Credito inserito: $credito")
             val intent = Intent(activity, MainActivity::class.java)
             startActivity(intent)

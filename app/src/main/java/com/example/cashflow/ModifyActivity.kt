@@ -6,23 +6,22 @@ import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
-import androidx.fragment.app.FragmentActivity
-import com.example.cashflow.box.ViewDebitCreditFragment
+import com.example.cashflow.box.*
 import com.example.cashflow.db.*
-import com.example.cashflow.fragments.modify.EditTransactionFragment
+import com.example.cashflow.fragments.modify.*
 import com.example.cashflow.fragments.view.*
 import com.google.android.material.navigation.NavigationView
 
 class ModifyActivity : AppCompatActivity() {
 
-    private lateinit var db: SQLiteDB
-    private lateinit var readSQL: ReadSQL
-    private lateinit var writeSQL: WriteSQL
-
+    private val viewModel: DataViewModel by viewModels()
+    private val readSQL = viewModel.getReadSQL()
+    private val writeSQL = viewModel.getWriteSQL()
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_details)
@@ -34,20 +33,19 @@ class ModifyActivity : AppCompatActivity() {
         val btnHome: ImageView = findViewById(R.id.logo)
         val toolbarTitle: TextView = findViewById(R.id.toolbar_title)
 
-        db = SQLiteDB(this)
-        readSQL = ReadSQL(db.writableDatabase)
-        writeSQL = WriteSQL(db.writableDatabase)
+
 
         val fragmentId = intent.getIntExtra("FRAGMENT_ID", -1)
         val accountId = intent.getIntExtra("ACCOUNT_ID", -1)
+        val categoryId = intent.getIntExtra("CATEGORY_ID", -1)
 
 
         val fragment = when (fragmentId) {
             1 -> EditTransactionFragment.newInstance(accountId)
-//            2 -> EditCategoryFragment(readSQL, writeSQL)
-//            3 -> EditTemplateFragment(readSQL, writeSQL)
-//            4 -> EditBudgetFragment(readSQL, writeSQL)
-//            5 -> EditDebitCreditFragment(readSQL, writeSQL)
+            2 -> EditCategoryFragment(categoryId)
+            3 -> EditTemplateFragment()
+            4 -> EditBudgetFragment()
+            5 -> EditDebitCreditFragment()
             else -> null
         }
 

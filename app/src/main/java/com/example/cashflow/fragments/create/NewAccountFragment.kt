@@ -9,16 +9,22 @@ import android.widget.Button
 import android.widget.EditText
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.MainActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
+import com.example.cashflow.db.DataViewModel
 import com.example.cashflow.db.ReadSQL
 import com.example.cashflow.db.WriteSQL
 
-class NewAccountFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  : Fragment() {
+class NewAccountFragment()  : Fragment() {
     private var edtName: EditText? = null
 
     private var accounts: ArrayList<Account>? = null
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -26,6 +32,8 @@ class NewAccountFragment(private val readSQL: ReadSQL, private val writeSQL: Wri
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_new_account, container, false)
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
         edtName = view.findViewById(R.id.edtName)
         val btnCreateAccount = view.findViewById<Button>(R.id.btnCreateAccount)
@@ -40,10 +48,10 @@ class NewAccountFragment(private val readSQL: ReadSQL, private val writeSQL: Wri
         if (name.isEmpty()) {
             Toast.makeText(activity, "Inserisci il nome dell'account", Toast.LENGTH_SHORT).show()
         } else {
-            if (!readSQL.doesAccountExist(name)) {
+            if (!readSQL?.doesAccountExist(name)!!) {
                 val success =
-                    writeSQL.createAccount(name, 0.0) // Assumiamo che il saldo iniziale sia 0
-                if (success) {
+                    writeSQL?.createAccount(name, 0.0) // Assumiamo che il saldo iniziale sia 0
+                if (success == true) {
                     Toast.makeText(activity, "Conto creato!", Toast.LENGTH_SHORT).show()
 
                     // Riavvia MainActivity

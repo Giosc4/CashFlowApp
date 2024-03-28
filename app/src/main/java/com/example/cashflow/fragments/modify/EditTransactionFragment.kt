@@ -26,13 +26,13 @@ import android.widget.Toast
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.utils.OCRManager
 import com.example.cashflow.utils.OCRManager.OCRListener
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
-import com.example.cashflow.db.ReadSQL
-import com.example.cashflow.db.SQLiteDB
-import com.example.cashflow.db.WriteSQL
+import com.example.cashflow.db.DataViewModel
+import com.example.cashflow.db.*
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.theartofdev.edmodo.cropper.CropImage
 import com.theartofdev.edmodo.cropper.CropImageView
@@ -69,9 +69,9 @@ class EditTransactionFragment : Fragment() {
     private var originalTransactionIndex = 0
     private var originalAccountIndex = 0
 
-    private lateinit var db: SQLiteDB
-    private lateinit var readSql: ReadSQL
-    private lateinit var writeSql: WriteSQL
+    private val viewModel: DataViewModel by viewModels()
+    private val readSQL = viewModel.getReadSQL()
+    private val writeSQL = viewModel.getWriteSQL()
 
     companion object {
         private const val PERMISSION_CAMERA = 1
@@ -107,15 +107,11 @@ class EditTransactionFragment : Fragment() {
         cameraButton = view.findViewById(R.id.cameraButton)
         ocrManager = OCRManager(requireContext())
 
-        db = SQLiteDB(context)
-        readSql = ReadSQL(db.writableDatabase)
-        writeSql = WriteSQL(db.writableDatabase)
-
 
         val transactionId = arguments?.getInt(ARG_TRANSACTION_ID) ?: -1
         if (transactionId != -1) {
-            transactionOriginal = readSql.getTransactionById(transactionId)!!
-            accountOriginal = readSql.getAccountByTransactionId(transactionId)!!
+            transactionOriginal = readSQL.getTransactionById(transactionId)!!
+            accountOriginal = readSQL.getAccountByTransactionId(transactionId)!!
             accountOriginalId = accountOriginal.id
         } else {
             // Handle error or invalid transaction ID case
@@ -136,7 +132,7 @@ class EditTransactionFragment : Fragment() {
         val selectedDateString = dateFormat.format(transactionOriginal.date.time)
         selectedTimeTextView?.setText(selectedDateString)
 
-        val city = readSql.getCityById(transactionOriginal.cityId)
+        val city = readSQL.getCityById(transactionOriginal.cityId)
 
         if (city != null) {
             locationEditText?.setText(city.printOnApp())
@@ -187,7 +183,7 @@ class EditTransactionFragment : Fragment() {
             setIncome()
         })
 
-        val localCategories = readSql.getCategories()
+        val localCategories = readSQL.getCategories()
 
 // Utilizza la variabile locale immutabile per lavorare con le categorie
         val categoryId = transactionOriginal.categoryId
@@ -220,7 +216,7 @@ class EditTransactionFragment : Fragment() {
                 // Codice da eseguire quando non viene selezionato nessun elemento
             }
         })
-        accounts = readSql.getAccounts()
+        accounts = readSQL.getAccounts()
 
         //SPINNER ACCOUNTS
         val accountNames = ArrayList<String>()
@@ -378,7 +374,7 @@ class EditTransactionFragment : Fragment() {
 
     private fun deleteTransaction() {
         try {
-            writeSql.deleteTransaction(transactionOriginal.id)
+            writeSQL.deleteTransaction(transactionOriginal.id)
             Toast.makeText(context, "Transazione eliminata", Toast.LENGTH_LONG).show()
             // Logica per tornare indietro o aggiornare UI
         } catch (e: Exception) {
@@ -403,7 +399,7 @@ class EditTransactionFragment : Fragment() {
         }
 
         val cityId =
-            readSql.getIdByCityName(locationEditText?.text.toString()) // Implementare questo metodo in readSQL
+            readSQL.getIdByCityName(locationEditText?.text.toString()) // Implementare questo metodo in readSQL
 
         val updatedTransaction = Transactions(
             transactionOriginal.id,
@@ -415,7 +411,7 @@ class EditTransactionFragment : Fragment() {
             accountId
         )
         try {
-            writeSql.updateTransaction(updatedTransaction)
+            writeSQL.updateTransaction(updatedTransaction)
             Toast.makeText(context, "Transazione aggiornata", Toast.LENGTH_LONG).show()
             // Logica per tornare indietro o aggiornare UI
         } catch (e: Exception) {

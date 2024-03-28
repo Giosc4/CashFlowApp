@@ -7,12 +7,14 @@ import android.util.Log
 import android.widget.ImageButton
 import android.widget.ImageView
 import android.widget.TextView
+import androidx.activity.viewModels
 import androidx.appcompat.app.AppCompatActivity
 import androidx.appcompat.widget.Toolbar
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import androidx.core.view.GravityCompat
 import androidx.drawerlayout.widget.DrawerLayout
+import androidx.fragment.app.viewModels
 import com.google.android.material.navigation.NavigationView
 import com.example.cashflow.box.*
 import com.example.cashflow.dataClass.*
@@ -21,9 +23,11 @@ import com.example.cashflow.utils.Posizione
 
 
 class MainActivity : AppCompatActivity() {
-    private lateinit var db: SQLiteDB
-    private lateinit var readSQL: ReadSQL
-    private lateinit var writeSQL: WriteSQL
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
+
     private var accounts: ArrayList<Account>? = null
     private var city: City? = null
 
@@ -38,9 +42,10 @@ class MainActivity : AppCompatActivity() {
         val toolbar_title: TextView = findViewById(R.id.toolbar_title)
 
         var posizione: Posizione? = null
-        db = SQLiteDB(this)
-        readSQL = ReadSQL(db.writableDatabase)
-        writeSQL = WriteSQL(db.writableDatabase)
+
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
+
 
 
 //        val isDeleted: Boolean = this.deleteDatabase("cashflow.db")
@@ -50,7 +55,7 @@ class MainActivity : AppCompatActivity() {
 //            Log.d("SQLiteDB", "Failed to delete database")
 //        }
 
-        accounts = readSQL.getAccounts()
+        accounts = readSQL!!.getAccounts()
 
         if (ContextCompat.checkSelfPermission(
                 this,
@@ -126,7 +131,7 @@ class MainActivity : AppCompatActivity() {
     }
 
     private fun loadBoxManagerFragment() {
-        val fragment = box_manager_fragment(readSQL, writeSQL)
+        val fragment = box_manager_fragment()
         supportFragmentManager.beginTransaction().apply {
             replace(R.id.linearContainer, fragment)
             commit()

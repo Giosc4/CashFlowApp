@@ -11,21 +11,22 @@ import android.widget.TextView
 import android.widget.Toast
 import androidx.appcompat.app.AlertDialog
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.DetailsActivity
 import com.example.cashflow.MainActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
-import com.example.cashflow.db.SQLiteDB
-import com.example.cashflow.db.ReadSQL
-import com.example.cashflow.db.WriteSQL
+import com.example.cashflow.db.DataViewModel
+import com.example.cashflow.db.*
 
 class ViewAccountFragment : Fragment() {
     private var accountId: Int = -1
-    private lateinit var db: SQLiteDB
-    private lateinit var readSql: ReadSQL
-    private lateinit var writeSql: WriteSQL
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
 
     // Views
     private var nameEditText: EditText? = null
@@ -68,12 +69,11 @@ class ViewAccountFragment : Fragment() {
         saveButton = view.findViewById(R.id.saveButton)
         deleteButton = view.findViewById(R.id.deleteButton)
 
-        db = SQLiteDB(context)
-        readSql = ReadSQL(db.writableDatabase)
-        writeSql = WriteSQL(db.writableDatabase)
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
-        account = readSql.getAccountById(accountId)
-        transactions = readSql.getTransactionsByAccountId(accountId)
+        account = readSQL!!.getAccountById(accountId)
+        transactions = readSQL!!.getTransactionsByAccountId(accountId)
         arguments?.let {
             accountId = it.getInt(ARG_ACCOUNT_ID)
         }
@@ -102,8 +102,8 @@ class ViewAccountFragment : Fragment() {
         val newName = nameEditText!!.text.toString()
         if (newName.isNotEmpty()) {
             try {
-                if (!readSql.doesAccountExist(newName)) {
-                    writeSql.updateAccountName(accountId, newName)
+                if (!readSQL!!.doesAccountExist(newName)) {
+                    writeSQL?.updateAccountName(accountId, newName)
                     Toast.makeText(context, "Account aggiornato: $newName", Toast.LENGTH_LONG)
                         .show()
                 } else {
@@ -134,7 +134,7 @@ class ViewAccountFragment : Fragment() {
 
     private fun deleteAccount() {
         try {
-            writeSql.deleteAccount(accountId)
+            writeSQL?.deleteAccount(accountId)
             Toast.makeText(context, "Account eliminato", Toast.LENGTH_LONG).show()
             if (activity != null && isAdded) {
                 val intent = Intent(requireContext(), MainActivity::class.java)

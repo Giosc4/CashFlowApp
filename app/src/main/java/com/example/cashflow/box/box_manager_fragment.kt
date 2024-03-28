@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import com.example.cashflow.R
 import com.example.cashflow.db.*
 
-class box_manager_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+class box_manager_fragment() :
     Fragment() {
 
     override fun onCreateView(
@@ -22,37 +22,37 @@ class box_manager_fragment(private val readSQL: ReadSQL, private val writeSQL: W
         val linearContainer = view.findViewById<LinearLayout>(R.id.linearContainer)
 
         addBoxFragment(
-            box_account_fragment(readSQL, writeSQL),
+            box_account_fragment(),
             linearContainer,
             "box_account_fragment"
         )
         addBoxFragment(
-            box_transaction_fragment(readSQL, writeSQL),
+            box_transaction_fragment(),
             linearContainer,
             "box_transaction_fragment"
         )
         addBoxFragment(
-            BoxCategoryFragment(readSQL, writeSQL),
+            BoxCategoryFragment(),
             linearContainer,
             "box_category_fragment"
         )
         addBoxFragment(
-            box_template_fragment(readSQL, writeSQL),
+            box_template_fragment(),
             linearContainer,
             "box_template_fragment"
         )
         addBoxFragment(
-            box_budget_fragment(readSQL, writeSQL),
+            box_budget_fragment(),
             linearContainer,
             "box_budget_fragment"
         )
         addBoxFragment(
-            BoxDebitCreditFragment(readSQL, writeSQL, true),
+            BoxDebitCreditFragment(true),
             linearContainer,
             "box_list_debito_fragment"
         )
         addBoxFragment(
-            BoxDebitCreditFragment(readSQL, writeSQL, false),
+            BoxDebitCreditFragment(false),
             linearContainer,
             "box_list_credito_fragment"
         )

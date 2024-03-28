@@ -450,7 +450,6 @@ class ReadSQL(private val db: SQLiteDatabase?) {
                     val description = cursor.getString(descriptionIndex)
                     val amountCategory = cursor.getDouble(amountCategoryIndex)
                     categories.add(Category(id, name, description, amountCategory))
-                    Log.d("getCategories", "Category amountCategory: $amountCategory")
                 }
             }
             cursor.close()

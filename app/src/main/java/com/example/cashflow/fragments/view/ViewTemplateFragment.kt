@@ -12,15 +12,22 @@ import android.widget.GridLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.DetailsActivity
 import com.example.cashflow.ModifyActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.TemplateTransaction
-import com.example.cashflow.db.ReadSQL
+import com.example.cashflow.db.DataViewModel
+import com.example.cashflow.db.*
 
-class ViewTemplateFragment(private val readSQL: ReadSQL) : Fragment() {
+class ViewTemplateFragment() : Fragment() {
 
     private var noDataTextView: TextView? = null
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -32,8 +39,9 @@ class ViewTemplateFragment(private val readSQL: ReadSQL) : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         noDataTextView = view.findViewById(R.id.noDataTextView)
-
-        val templates = readSQL.getAllTemplateTransactions()
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
+        val templates = readSQL!!.getAllTemplateTransactions()
         if (templates.isEmpty()) {
             noDataTextView?.visibility = View.VISIBLE
         } else {

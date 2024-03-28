@@ -7,6 +7,9 @@ import android.util.Log
 import androidx.fragment.app.Fragment
 import android.view.*
 import android.widget.Toast
+import androidx.activity.viewModels
+import androidx.fragment.app.viewModels
+import com.example.cashflow.box.ViewDebitCreditFragment
 
 import java.io.*
 import java.text.SimpleDateFormat
@@ -16,13 +19,16 @@ import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 import com.example.cashflow.fragments.create.*
 import com.example.cashflow.fragments.statistics.*
-import com.example.cashflow.fragments.view.ViewTransactionsFragment
+import com.example.cashflow.fragments.view.*
 
 class MenuManagerFragment() : Fragment() {
 
-    private lateinit var db: SQLiteDB
-    private lateinit var readSQL: ReadSQL
-    private lateinit var writeSQL: WriteSQL
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
+
+
     private var selectedMenuId: Int = 0
     private lateinit var city: City
 
@@ -50,11 +56,8 @@ class MenuManagerFragment() : Fragment() {
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.menu_manager_fragment, container, false)
-
-        db = SQLiteDB(requireContext())
-        readSQL = ReadSQL(db.writableDatabase)
-        writeSQL = WriteSQL(db.writableDatabase)
-
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
         loadFragmentBasedOnMenuId()
         return view
     }
@@ -69,22 +72,28 @@ class MenuManagerFragment() : Fragment() {
                 null
             }
 
-            R.id.new_conto -> NewAccountFragment(readSQL, writeSQL)
-            R.id.new_transaction -> NewTransactionFragment(readSQL, writeSQL, city)
-            R.id.new_budget -> NewBudgetFragment(readSQL, writeSQL)
-            R.id.new_debit_credit -> NewDebitCreditFragment(readSQL, writeSQL)
-            R.id.line_chart -> Line_chart(readSQL, writeSQL)
-            R.id.maps -> MapFragment(readSQL, writeSQL)
-            R.id.income_chart -> IncomeExpenseFragment(true, readSQL)
-            R.id.expense_chart -> IncomeExpenseFragment(false, readSQL)
-            R.id.new_category -> NewCategoryFragment(readSQL, writeSQL)
+            R.id.new_conto -> NewAccountFragment()
+            R.id.new_transaction -> NewTransactionFragment( city)
+            R.id.new_budget -> NewBudgetFragment()
+            R.id.new_debit_credit -> NewDebitCreditFragment()
+            R.id.line_chart -> Line_chart()
+            R.id.maps -> MapFragment()
+            R.id.income_chart -> IncomeExpenseFragment(true)
+            R.id.expense_chart -> IncomeExpenseFragment(false)
+            R.id.new_category -> NewCategoryFragment()
             R.id.save_csv -> {
                 saveToCSV()
                 val intent = Intent(activity, MainActivity::class.java)
                 startActivity(intent)
                 null
             }
-            R.id.list_category -> ViewTransactionsFragment(readSQL, writeSQL)
+            R.id.list_category -> ViewTransactionsFragment()
+            R.id.view_category -> ViewCategoryFragment()
+            R.id.list_transaction -> ViewTransactionsFragment()
+            R.id.list_template -> ViewTemplateFragment()
+            R.id.list_debit -> ViewDebitCreditFragment(true)
+            R.id.list_credit -> ViewDebitCreditFragment(false)
+
 
 
             else -> {
@@ -108,7 +117,7 @@ class MenuManagerFragment() : Fragment() {
 
 
     fun saveToCSV(): Boolean {
-        val accounts = readSQL.getAccounts()
+        val accounts = readSQL?.getAccounts()
 
         // Check if external storage is available and writable
         val state = Environment.getExternalStorageState()
@@ -135,30 +144,34 @@ class MenuManagerFragment() : Fragment() {
                 writer.write("Name, Balance, Transaction Type, Amount, Date, City, Category\n")
 
                 // Write account data to the file
-                for (account in accounts) {
-                    val accountName = account.name
-                    val accountBalance = account.balance
-                    val transactions = readSQL.getTransactionsByAccountId(account.id)
-                    for (transaction in transactions) {
-                        val transactionType = if (transaction.isIncome) "INCOME" else "EXPENSE"
-                        val transactionAmount = transaction.amountValue
-                        val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
-                        val transactionDate = dateFormat.format(transaction.date.time)
-                        val city = readSQL.getCityFromID(transaction.cityId)
-                        val cityName = city?.nameCity ?: "Unknown"
-                        val category = readSQL.getCategoryFromID(transaction.categoryId)
-                        val categoryName = category?.name ?: "Unknown"
-                        val csvData = String.format(
-                            "%s,%.2f,%s,%.2f,%s,%s,%s\n",
-                            accountName,
-                            accountBalance,
-                            transactionType,
-                            transactionAmount,
-                            transactionDate,
-                            cityName,
-                            categoryName
-                        )
-                        writer.write(csvData)
+                if (accounts != null) {
+                    for (account in accounts) {
+                        val accountName = account.name
+                        val accountBalance = account.balance
+                        val transactions = readSQL?.getTransactionsByAccountId(account.id)
+                        if (transactions != null) {
+                            for (transaction in transactions) {
+                                val transactionType = if (transaction.isIncome) "INCOME" else "EXPENSE"
+                                val transactionAmount = transaction.amountValue
+                                val dateFormat = SimpleDateFormat("yyyy-MM-dd", Locale.US)
+                                val transactionDate = dateFormat.format(transaction.date.time)
+                                val city = readSQL?.getCityFromID(transaction.cityId)
+                                val cityName = city?.nameCity ?: "Unknown"
+                                val category = readSQL?.getCategoryFromID(transaction.categoryId)
+                                val categoryName = category?.name ?: "Unknown"
+                                val csvData = String.format(
+                                    "%s,%.2f,%s,%.2f,%s,%s,%s\n",
+                                    accountName,
+                                    accountBalance,
+                                    transactionType,
+                                    transactionAmount,
+                                    transactionDate,
+                                    cityName,
+                                    categoryName
+                                )
+                                writer.write(csvData)
+                            }
+                        }
                     }
                 }
             }

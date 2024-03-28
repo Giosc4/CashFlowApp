@@ -61,6 +61,9 @@
                 android:id="@+id/list_transaction"
                 android:title="Lista Transazioni" />
             <item
+                android:id="@+id/view_category"
+                android:title="Lista Categorie" />
+            <item
                 android:id="@+id/list_template"
                 android:title="Lista Templates" />
             <item

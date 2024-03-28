@@ -1,9 +1,11 @@
 package com.example.cashflow.db
 
+import android.app.Application
 import android.content.Context
 import android.database.sqlite.SQLiteDatabase
 import android.database.sqlite.SQLiteOpenHelper
 import android.util.Log
+
 
 class SQLiteDB(context: Context?) :
     SQLiteOpenHelper(context, DATABASE_NAME, null, DATABASE_VERSION) {
@@ -67,7 +69,17 @@ class SQLiteDB(context: Context?) :
     }
 
 
+
+
     companion object {
+
+        @Volatile private var instance: SQLiteDB? = null
+
+        fun getInstance(context: Context): SQLiteDB =
+            instance ?: synchronized(this) {
+                instance ?: SQLiteDB(context.applicationContext).also { instance = it }
+            }
+
         // Database Version and Name
         private const val DATABASE_VERSION = 1
         private const val DATABASE_NAME = "cashflow.db"

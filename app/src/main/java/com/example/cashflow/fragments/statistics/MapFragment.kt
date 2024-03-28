@@ -9,6 +9,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
@@ -22,11 +23,15 @@ import com.mapbox.maps.MapboxMap
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotation
 import com.mapbox.maps.plugin.annotation.generated.PointAnnotationManager
 
-class MapFragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
+class MapFragment() : Fragment() {
     private lateinit var mapView: MapView
     private lateinit var mapboxMap: MapboxMap
     private lateinit var pointAnnotationManager: PointAnnotationManager
     private val annotationToTransactionsMap = mutableMapOf<PointAnnotation, List<Transactions>>()
+
+    private val viewModel: DataViewModel by viewModels()
+    private val readSQL = viewModel.getReadSQL()
+    private val writeSQL = viewModel.getWriteSQL()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,

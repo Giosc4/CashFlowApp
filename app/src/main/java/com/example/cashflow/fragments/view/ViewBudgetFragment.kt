@@ -14,19 +14,26 @@ import android.widget.ScrollView
 import android.widget.TextView
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.ModifyActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.Budget
-import com.example.cashflow.db.ReadSQL
+import com.example.cashflow.db.DataViewModel
+import com.example.cashflow.db.*
 import com.github.mikephil.charting.charts.HorizontalBarChart
 import com.github.mikephil.charting.data.BarData
 import com.github.mikephil.charting.data.BarDataSet
 import com.github.mikephil.charting.data.BarEntry
 import com.github.mikephil.charting.utils.ColorTemplate
 
-class ViewBudgetFragment(private val readSQL: ReadSQL) : Fragment() {
+class ViewBudgetFragment() : Fragment() {
     private var noDataTextView: TextView? = null
     private lateinit var chartsContainer: LinearLayout
+
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
@@ -36,13 +43,16 @@ class ViewBudgetFragment(private val readSQL: ReadSQL) : Fragment() {
         noDataTextView = view.findViewById(R.id.noDataTextView)
         chartsContainer = view.findViewById(R.id.chartsContainer)
 
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
+
         loadBudgetCharts()
 
         return view
     }
 
     private fun loadBudgetCharts() {
-        val budgets = readSQL.getBudgetData()
+        val budgets = readSQL!!.getBudgetData()
         if (budgets.isEmpty()) {
             noDataTextView?.visibility = View.VISIBLE
         } else {
@@ -86,7 +96,8 @@ class ViewBudgetFragment(private val readSQL: ReadSQL) : Fragment() {
                 }
                 button.setOnClickListener {
                     val intent = Intent(context, ModifyActivity::class.java)
-                    intent.putExtra("FRAGMENT_ID", 4)
+                    intent.putExtra("FRAGMENT_ID", 2)
+                    intent.putExtra("BUDGET_ID", budget.id)
                     context?.startActivity(intent)
                 }
 

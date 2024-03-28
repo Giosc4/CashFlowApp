@@ -11,6 +11,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.R
 import com.github.mikephil.charting.charts.LineChart
 import com.github.mikephil.charting.components.XAxis
@@ -26,7 +27,7 @@ import java.util.Locale
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class Line_chart(private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  : Fragment() {
+class Line_chart()  : Fragment() {
     private var openStartDatePickerButton: Button? = null
     private var openEndDatePickerButton: Button? = null
     private var startDateTextView: TextView? = null
@@ -36,6 +37,10 @@ class Line_chart(private val readSQL: ReadSQL, private val writeSQL: WriteSQL)  
     private var lineChart: LineChart? = null
 
     private var accounts: ArrayList<Account>? = null
+
+    private val viewModel: DataViewModel by viewModels()
+    private val readSQL = viewModel.getReadSQL()
+    private val writeSQL = viewModel.getWriteSQL()
 
     @SuppressLint("MissingInflatedId")
     override fun onCreateView(

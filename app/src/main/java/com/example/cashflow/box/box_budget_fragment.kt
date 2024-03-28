@@ -9,6 +9,7 @@ import android.view.ViewGroup
 import android.widget.Button
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.DetailsActivity
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.Budget
@@ -21,13 +22,16 @@ import kotlin.collections.isNullOrEmpty
 import com.example.cashflow.db.*
 import com.github.mikephil.charting.formatter.IndexAxisValueFormatter
 
-class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) :
+class box_budget_fragment() :
     Fragment() {
     private var horizontalBarChart1: HorizontalBarChart? = null
     private var horizontalBarChart2: HorizontalBarChart? = null
     private var horizontalBarChart3: HorizontalBarChart? = null
     private var noDataTextView: TextView? = null
     private var viewBudgetBtn: Button? = null
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -46,7 +50,10 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
         setupChart(horizontalBarChart2)
         setupChart(horizontalBarChart3)
 
-        val budgetDataList = readSQL.getBudgetData()
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
+
+        val budgetDataList = readSQL!!.getBudgetData()
         if (budgetDataList.isEmpty()) {
             noDataTextView?.visibility = View.VISIBLE
             horizontalBarChart1?.visibility = View.GONE
@@ -65,7 +72,6 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
             intent.putExtra("FRAGMENT_ID", 6)
             context?.startActivity(intent)
         }
-
         return view
     }
 
@@ -78,7 +84,6 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
         chart?.setPinchZoom(true)
     }
 
-
     private fun createBarCharts(budgetDataList: List<Budget>) {
         val chartList = listOf(horizontalBarChart1, horizontalBarChart2, horizontalBarChart3)
 
@@ -87,19 +92,19 @@ class box_budget_fragment(private val readSQL: ReadSQL, private val writeSQL: Wr
                 val chart = chartList[index]
                 val entries = ArrayList<BarEntry>()
 
-                // Assume che readSQL.getCategoryAmountCategory(categoryId: Int) sia un metodo che
-                // restituisce l'amountCategory per la data categoria.
-                // Devi implementare questo metodo nel tuo ReadSQL se non esiste già.
-                val amountCategory = readSQL.getCategoryAmountCategory(budgetData.categoryId)
+                val amountCategory = readSQL?.getCategoryAmountCategory(budgetData.categoryId)
 
-                // Usa l'indice del grafico come l'etichetta sull'asse X (potresti voler usare una etichetta più significativa)
-                entries.add(BarEntry(index.toFloat(), amountCategory.toFloat()))
+                if (amountCategory != null) {
+                    entries.add(BarEntry(index.toFloat(), amountCategory.toFloat()))
+                }
 
                 val dataSet = BarDataSet(entries, budgetData.name)
-                if (amountCategory > budgetData.amount) {
-                    dataSet.setColor(Color.RED) // Spesa supera il budget
-                } else {
-                    dataSet.setColor(Color.GREEN) // Spesa entro il budget
+                if (amountCategory != null) {
+                    if (amountCategory > budgetData.amount) {
+                        dataSet.setColor(Color.RED) // Spesa supera il budget
+                    } else {
+                        dataSet.setColor(Color.GREEN) // Spesa entro il budget
+                    }
                 }
                 dataSet.setValueTextColor(Color.BLACK)
                 dataSet.setDrawValues(false)

@@ -9,10 +9,12 @@ import android.view.ViewGroup
 import android.widget.CheckBox
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
 import com.example.cashflow.R
 import com.example.cashflow.dataClass.Account
+import com.example.cashflow.db.DataViewModel
 import com.example.cashflow.db.ReadSQL
 import com.github.mikephil.charting.charts.BarChart
 import com.github.mikephil.charting.charts.PieChart
@@ -26,7 +28,6 @@ import com.github.mikephil.charting.data.PieEntry
 
 class IncomeExpenseFragment(
     private val isIncome: Boolean,
-    private val readSQL: ReadSQL
 ) : Fragment() {
     private var title: TextView? = null
     private var accountsCheckBox: CheckBox? = null
@@ -35,6 +36,10 @@ class IncomeExpenseFragment(
     private var pieChart: PieChart? = null
     private var barChart: BarChart? = null
     private lateinit var accounts: ArrayList<Account>
+
+    private val viewModel: DataViewModel by viewModels()
+    private val readSQL = viewModel.getReadSQL()
+    private val writeSQL = viewModel.getWriteSQL()
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?

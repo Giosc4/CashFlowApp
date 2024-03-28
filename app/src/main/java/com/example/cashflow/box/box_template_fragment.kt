@@ -12,16 +12,20 @@ import android.widget.Button
 import android.widget.GridLayout
 import android.widget.TextView
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.viewModels
 import com.example.cashflow.DetailsActivity
 import com.example.cashflow.R
 
 import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
-class box_template_fragment(private val readSQL: ReadSQL, private val writeSQL: WriteSQL) : Fragment() {
+class box_template_fragment() : Fragment() {
 
     private var noDataTextView: TextView? = null
     private var viewTemplatesBtn: Button? = null
+    private val viewModel: DataViewModel by viewModels()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
 
     private fun addTemplateButtons(view: View,templates: List<TemplateTransaction>) {
         val gridLayout = view.findViewById<GridLayout>(R.id.gridLayout)
@@ -66,8 +70,10 @@ class box_template_fragment(private val readSQL: ReadSQL, private val writeSQL: 
         super.onViewCreated(view, savedInstanceState)
         noDataTextView = view.findViewById(R.id.noDataTextView)
         viewTemplatesBtn = view.findViewById(R.id.viewTemplatesBtn)
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
-        val templates = readSQL.getAllTemplateTransactions()
+        val templates = readSQL!!.getAllTemplateTransactions()
         if (templates.isEmpty() ) {
             noDataTextView?.visibility = View.VISIBLE
         } else {
