@@ -25,8 +25,8 @@ class EditCategoryFragment(
     private var deleteButton: Button? = null
     private var doneButton: Button? = null
     private val viewModel: DataViewModel by viewModels()
-    private val readSQL = viewModel.getReadSQL()
-    private val writeSQL = viewModel.getWriteSQL()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -40,6 +40,8 @@ class EditCategoryFragment(
         editTextDescription = view.findViewById(R.id.editTextDescription)
         deleteButton = view.findViewById(R.id.deleteButton)
         doneButton = view.findViewById(R.id.doneButton)
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
         loadCategoryData()
 
@@ -56,14 +58,14 @@ class EditCategoryFragment(
 
     private fun loadCategoryData() {
         // Simula il caricamento dei dati della categoria. Sostituire con il codice di lettura effettivo.
-        val category = readSQL.getCategoryById(categoryId)
+        val category = readSQL?.getCategoryById(categoryId)
          edtNameCategory?.setText(category?.name)
          editTextDescription?.setText(category?.description)
     }
 
     private fun deleteCategory(categoryId: Int) {
         try {
-            writeSQL.deleteCategory(categoryId)
+            writeSQL?.deleteCategory(categoryId)
             Toast.makeText(context, "Transazione eliminata", Toast.LENGTH_LONG).show()
             // Logica per tornare indietro o aggiornare UI
             Intent(context, MainActivity::class.java).also {

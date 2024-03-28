@@ -47,12 +47,12 @@ class box_manager_fragment() :
             "box_budget_fragment"
         )
         addBoxFragment(
-            BoxDebitCreditFragment(true),
+            BoxDebitCreditFragment.newInstance(true),
             linearContainer,
             "box_list_debito_fragment"
         )
         addBoxFragment(
-            BoxDebitCreditFragment(false),
+            BoxDebitCreditFragment.newInstance(false),
             linearContainer,
             "box_list_credito_fragment"
         )

@@ -19,7 +19,6 @@ import com.example.cashflow.dataClass.*
 import com.example.cashflow.db.*
 
 class BoxDebitCreditFragment(
-    private val isDebit: Boolean // true per debito, false per credito
 ) : Fragment() {
     private var gridLayout: GridLayout? = null
     private var textViewTitle: TextView? = null
@@ -29,6 +28,17 @@ class BoxDebitCreditFragment(
     private var readSQL: ReadSQL? = null
     private var writeSQL: WriteSQL? = null
 
+    companion object {
+        fun newInstance(isDebit: Boolean): BoxDebitCreditFragment {
+            val fragment = BoxDebitCreditFragment()
+            val args = Bundle().apply {
+                putBoolean("isDebit", isDebit)
+            }
+            fragment.arguments = args
+            return fragment
+        }
+    }
+
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?, savedInstanceState: Bundle?
     ): View? {
@@ -37,6 +47,8 @@ class BoxDebitCreditFragment(
         textViewTitle = view.findViewById(R.id.textViewTitle)
         noDataTextView = view.findViewById(R.id.noDataTextView)
         viewDebitoCreditotBtn = view.findViewById(R.id.viewDebitoCreditotBtn)
+
+        val isDebit = arguments?.getBoolean("isDebit") ?: false
 
         readSQL = viewModel.getReadSQL()
         writeSQL = viewModel.getWriteSQL()

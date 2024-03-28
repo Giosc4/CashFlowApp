@@ -70,8 +70,9 @@ class EditTransactionFragment : Fragment() {
     private var originalAccountIndex = 0
 
     private val viewModel: DataViewModel by viewModels()
-    private val readSQL = viewModel.getReadSQL()
-    private val writeSQL = viewModel.getWriteSQL()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
 
     companion object {
         private const val PERMISSION_CAMERA = 1
@@ -107,11 +108,13 @@ class EditTransactionFragment : Fragment() {
         cameraButton = view.findViewById(R.id.cameraButton)
         ocrManager = OCRManager(requireContext())
 
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
         val transactionId = arguments?.getInt(ARG_TRANSACTION_ID) ?: -1
         if (transactionId != -1) {
-            transactionOriginal = readSQL.getTransactionById(transactionId)!!
-            accountOriginal = readSQL.getAccountByTransactionId(transactionId)!!
+            transactionOriginal = readSQL!!.getTransactionById(transactionId)!!
+            accountOriginal = readSQL!!.getAccountByTransactionId(transactionId)!!
             accountOriginalId = accountOriginal.id
         } else {
             // Handle error or invalid transaction ID case
@@ -132,7 +135,7 @@ class EditTransactionFragment : Fragment() {
         val selectedDateString = dateFormat.format(transactionOriginal.date.time)
         selectedTimeTextView?.setText(selectedDateString)
 
-        val city = readSQL.getCityById(transactionOriginal.cityId)
+        val city = readSQL!!.getCityById(transactionOriginal.cityId)
 
         if (city != null) {
             locationEditText?.setText(city.printOnApp())
@@ -183,7 +186,7 @@ class EditTransactionFragment : Fragment() {
             setIncome()
         })
 
-        val localCategories = readSQL.getCategories()
+        val localCategories = readSQL!!.getCategories()
 
 // Utilizza la variabile locale immutabile per lavorare con le categorie
         val categoryId = transactionOriginal.categoryId
@@ -216,7 +219,7 @@ class EditTransactionFragment : Fragment() {
                 // Codice da eseguire quando non viene selezionato nessun elemento
             }
         })
-        accounts = readSQL.getAccounts()
+        accounts = readSQL!!.getAccounts()
 
         //SPINNER ACCOUNTS
         val accountNames = ArrayList<String>()
@@ -374,7 +377,7 @@ class EditTransactionFragment : Fragment() {
 
     private fun deleteTransaction() {
         try {
-            writeSQL.deleteTransaction(transactionOriginal.id)
+            writeSQL?.deleteTransaction(transactionOriginal.id)
             Toast.makeText(context, "Transazione eliminata", Toast.LENGTH_LONG).show()
             // Logica per tornare indietro o aggiornare UI
         } catch (e: Exception) {
@@ -399,19 +402,23 @@ class EditTransactionFragment : Fragment() {
         }
 
         val cityId =
-            readSQL.getIdByCityName(locationEditText?.text.toString()) // Implementare questo metodo in readSQL
+            readSQL?.getIdByCityName(locationEditText?.text.toString()) // Implementare questo metodo in readSQL
 
-        val updatedTransaction = Transactions(
-            transactionOriginal.id,
-            newIncome,
-            newAmount,
-            calendarDate,
-            cityId,
-            categoryId,
-            accountId
-        )
+        val updatedTransaction = cityId?.let {
+            Transactions(
+                transactionOriginal.id,
+                newIncome,
+                newAmount,
+                calendarDate,
+                it,
+                categoryId,
+                accountId
+            )
+        }
         try {
-            writeSQL.updateTransaction(updatedTransaction)
+            if (updatedTransaction != null) {
+                writeSQL?.updateTransaction(updatedTransaction)
+            }
             Toast.makeText(context, "Transazione aggiornata", Toast.LENGTH_LONG).show()
             // Logica per tornare indietro o aggiornare UI
         } catch (e: Exception) {

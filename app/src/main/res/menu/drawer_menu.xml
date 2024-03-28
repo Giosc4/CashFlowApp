@@ -55,13 +55,10 @@
         <menu>
 
             <item
-                android:id="@+id/list_category"
-                android:title="Lista Categorie" />
-            <item
                 android:id="@+id/list_transaction"
                 android:title="Lista Transazioni" />
             <item
-                android:id="@+id/view_category"
+                android:id="@+id/list_category"
                 android:title="Lista Categorie" />
             <item
                 android:id="@+id/list_template"

@@ -87,8 +87,8 @@ class MenuManagerFragment() : Fragment() {
                 startActivity(intent)
                 null
             }
-            R.id.list_category -> ViewTransactionsFragment()
-            R.id.view_category -> ViewCategoryFragment()
+            R.id.list_transaction -> ViewTransactionsFragment()
+            R.id.list_category -> ViewCategoryFragment()
             R.id.list_transaction -> ViewTransactionsFragment()
             R.id.list_template -> ViewTemplateFragment()
             R.id.list_debit -> ViewDebitCreditFragment(true)

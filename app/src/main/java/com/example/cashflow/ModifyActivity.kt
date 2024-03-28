@@ -20,8 +20,9 @@ import com.google.android.material.navigation.NavigationView
 class ModifyActivity : AppCompatActivity() {
 
     private val viewModel: DataViewModel by viewModels()
-    private val readSQL = viewModel.getReadSQL()
-    private val writeSQL = viewModel.getWriteSQL()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_details)
@@ -33,7 +34,8 @@ class ModifyActivity : AppCompatActivity() {
         val btnHome: ImageView = findViewById(R.id.logo)
         val toolbarTitle: TextView = findViewById(R.id.toolbar_title)
 
-
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
 
         val fragmentId = intent.getIntExtra("FRAGMENT_ID", -1)
         val accountId = intent.getIntExtra("ACCOUNT_ID", -1)

@@ -14,8 +14,8 @@ import com.example.cashflow.db.WriteSQL
 class EditBudgetFragment () :
     Fragment() {
     private val viewModel: DataViewModel by viewModels()
-    private val readSQL = viewModel.getReadSQL()
-    private val writeSQL = viewModel.getWriteSQL()
+    private var readSQL: ReadSQL? = null
+    private var writeSQL: WriteSQL? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -23,6 +23,9 @@ class EditBudgetFragment () :
         savedInstanceState: Bundle?
     ): View? {
         val view = inflater.inflate(R.layout.fragment_edit_budget, container, false)
+        readSQL = viewModel.getReadSQL()
+        writeSQL = viewModel.getWriteSQL()
+
         return view
     }
 

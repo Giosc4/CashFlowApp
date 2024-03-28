@@ -96,7 +96,7 @@ class ViewBudgetFragment() : Fragment() {
                 }
                 button.setOnClickListener {
                     val intent = Intent(context, ModifyActivity::class.java)
-                    intent.putExtra("FRAGMENT_ID", 2)
+                    intent.putExtra("FRAGMENT_ID", 4)
                     intent.putExtra("BUDGET_ID", budget.id)
                     context?.startActivity(intent)
                 }
